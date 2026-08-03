@@ -1,0 +1,20 @@
+# macOS 系统文件
+.DS_Store
+**/.DS_Store
+
+# 大文件（GitHub 单文件上限 100MB，通过其他方式分享）
+*.mov
+*.mp4
+*.avi
+
+# 原始素材备份（未加工的图片素材，队友不需要，可从设计源文件重新导出）
+3B/
+3B-face/
+
+# 编辑器/IDE
+.vscode/
+.idea/
+*.swp
+
+# 依赖（如果以后加）
+node_modules/
