@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 关注你的颈椎健康</title>
+<style>
+  :root {
+    --joy: #ea3323;
+    --max: #5c6470;
+    --chill: #f39c1f;
+    --blink: #ff7a29;
+    --yummy: #1f3fe6;
+    --snow: #eb7fa8;
+
+    --night-sky-top: #0a0f2e;
+    --night-sky-mid: #1a1547;
+    --night-sky-bot: #3d2860;
+
+    --gold: #ffd66b;
+    --gold-bright: #ffe89b;
+    --star-glow: #cad6ff;
+
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-user-select:none; user-select:none; }
+  html, body {
+    height:100%; overflow:hidden;
+    font-family:var(--font); color:#e8ecf5;
+    background: #050311;
+  }
+
+  /* ==================== 舞台 ==================== */
+  #stage {
+    position: fixed; inset: 0;
+    background: linear-gradient(180deg,
+      var(--night-sky-top) 0%,
+      var(--night-sky-mid) 45%,
+      var(--night-sky-bot) 85%,
+      #2a1547 100%);
+    overflow: hidden;
+  }
+
+  /* 静态星空点缀 */
+  .star-static {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s ease-in-out infinite;
+    pointer-events: none;
+    filter: blur(0.3px);
+  }
+  @keyframes twinkle {
+    0%,100% { opacity: 0.5; transform: scale(1); }
+    50%     { opacity: 1;   transform: scale(1.2); }
+  }
+
+  /* 月亮 */
+  .moon {
+    position: absolute;
+    top: 6%; right: 10%;
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fffce0 0%, #d8d4b0 65%, rgba(216,212,176,0) 85%);
+    box-shadow: 0 0 50px rgba(255,232,155,.4), 0 0 100px rgba(255,232,155,.2);
+    z-index: 2;
+  }
+
+  /* 摄像头隐藏(只用其数据,不显示画面) */
+  #cam {
+    position: absolute; top: -9999px; left: -9999px;
+    width: 1px; height: 1px; opacity: 0;
+  }
+  /* 人脸小窗:显示镜像视频 */
+  #cam-preview {
+    position: absolute;
+    width: 11%; aspect-ratio: 1;
+    bottom: 4%; right: 4%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--gold);
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    z-index: 30;
+    background: #1a1547;
+  }
+  #cam-preview video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+  .face-label {
+    position: absolute;
+    bottom: -22px; left: 50%; transform: translateX(-50%);
+    background: rgba(10,15,46,0.85);
+    color: var(--gold-bright);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .face-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6bff9d;
+    box-shadow: 0 0 8px #6bff9d;
+    animation: dotBlink 2s ease-in-out infinite;
+  }
+  @keyframes dotBlink {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.4; }
+  }
+
+  /* ==================== HUD ==================== */
+  .hud-title {
+    position: absolute;
+    top: 20px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    color: #05030d;
+    padding: 6px 22px;
+    border-radius: 20px;
+    font-size: 13px; font-weight: 800;
+    letter-spacing: 2px;
+    z-index: 30;
+    box-shadow: 0 4px 12px rgba(255,214,107,.4);
+  }
+  .hud-left {
+    position: absolute;
+    top: 20px; left: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 30;
+  }
+  .hud-chip {
+    background: rgba(10,15,46,0.7);
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    padding: 7px 16px;
+    border-radius: 22px;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+    backdrop-filter: blur(6px);
+  }
+  .hud-chip .val { color: #fff; font-size: 15px; }
+  .hud-chip .icon { color: var(--gold-bright); }
+
+  /* 右上星座图鉴 */
+  .constellation {
+    position: absolute;
+    top: 20px; right: 20px;
+    background: rgba(10,15,46,0.7);
+    border: 1px solid var(--gold);
+    border-radius: 14px;
+    padding: 10px 16px;
+    z-index: 30;
+    backdrop-filter: blur(6px);
+  }
+  .constellation-label {
+    font-size: 10px; color: var(--gold-bright);
+    font-weight: 800; letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .constellation-svg { width: 110px; height: 60px; }
+  .constellation-count {
+    font-size: 11px; color: var(--gold-bright);
+    text-align: center;
+    margin-top: 4px;
+  }
+  .constellation-count .val { color: #fff; font-weight: 800; font-size: 15px; }
+
+  /* ==================== 流星 ==================== */
+  .meteor {
+    position: absolute;
+    width: 34px; height: 34px;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .meteor .core {
+    position: absolute; inset: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, var(--gold-bright) 60%, rgba(255,232,155,0) 90%);
+    box-shadow: 0 0 20px #fff, 0 0 40px var(--gold-bright);
+    animation: meteorPulse 1.2s ease-in-out infinite;
+  }
+  @keyframes meteorPulse {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.2); }
+  }
+  .meteor .tail {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    width: 90px; height: 3px;
+    background: linear-gradient(90deg,
+      rgba(255,232,155,0.9) 0%,
+      rgba(202,214,255,0.5) 50%,
+      rgba(202,214,255,0) 100%);
+    transform-origin: left center;
+    transform: translateY(-50%) rotate(var(--tail-angle, -15deg));
+    border-radius: 2px;
+    filter: blur(0.5px);
+  }
+  /* 流星即将消失(时间过半) */
+  .meteor.fading .core {
+    animation: meteorFade .6s ease-in-out infinite;
+  }
+  @keyframes meteorFade {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.4; }
+  }
+
+  /* ==================== DD 机器人(准星) ==================== */
+  #dd {
+    position: absolute;
+    top: 40%; left: 50%;
+    width: 68px; height: 68px;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    pointer-events: none;
+    will-change: transform;
+    transition: none;
+  }
+  .dd-body {
+    position: absolute; inset: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, #ffb0a5 0%, var(--joy) 55%, #a51b0c 100%);
+    box-shadow:
+      0 0 20px rgba(234,51,35,.5),
+      inset 0 -4px 8px rgba(0,0,0,.3),
+      inset 0 4px 6px rgba(255,255,255,.4);
+    animation: ddFloat 2.5s ease-in-out infinite;
+    transition: box-shadow .2s;
+  }
+  @keyframes ddFloat {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-3px); }
+  }
+  .dd-eye {
+    position: absolute;
+    top: 40%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #6bff9d 0%, #29d668 60%, rgba(41,214,104,0) 90%);
+    box-shadow: 0 0 8px #6bff9d;
+    animation: eyeBlink 4s infinite;
+    transition: background .2s, box-shadow .2s;
+  }
+  @keyframes eyeBlink {
+    0%,45%,55%,100% { opacity: 1; height: 12px; }
+    48%,52% { opacity: 0.6; height: 3px; }
+  }
+
+  /* 瞄准状态 */
+  #dd.aiming .dd-body {
+    box-shadow:
+      0 0 26px var(--gold-bright),
+      0 0 52px rgba(255,232,155,.4),
+      inset 0 -4px 8px rgba(0,0,0,.3),
+      inset 0 4px 6px rgba(255,255,255,.4);
+  }
+  #dd.aiming .dd-eye {
+    background: radial-gradient(circle, var(--gold-bright) 0%, var(--gold) 60%, rgba(255,214,107,0) 90%);
+    box-shadow: 0 0 12px var(--gold-bright);
+  }
+  /* 倒计时圈 */
+  .dd-timer-svg {
+    position: absolute;
+    top: -6px; left: -6px;
+    width: calc(100% + 12px);
+    height: calc(100% + 12px);
+    opacity: 0;
+    transform: rotate(-90deg);
+    transition: opacity .15s;
+    pointer-events: none;
+  }
+  #dd.aiming .dd-timer-svg { opacity: 1; }
+  .dd-timer-track {
+    fill: none;
+    stroke: rgba(255,232,155,0.2);
+    stroke-width: 4;
+  }
+  .dd-timer-progress {
+    fill: none;
+    stroke: var(--gold-bright);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 226;
+    stroke-dashoffset: 226;
+    filter: drop-shadow(0 0 6px var(--gold-bright));
+    transition: stroke-dashoffset .08s linear;
+  }
+
+  /* ==================== 烟花 ==================== */
+  .firework {
+    position: absolute;
+    width: 100px; height: 100px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 6;
+    animation: fwFade 2s ease-out forwards;
+  }
+  @keyframes fwFade {
+    0%   { opacity: 0; }
+    10%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .firework .particle {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+    animation: fwParticle 1.8s ease-out forwards;
+  }
+  .firework::before {
+    content: "";
+    position: absolute; top: 50%; left: 50%;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,.95) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    animation: fwCenter 1s ease-out forwards;
+  }
+  @keyframes fwCenter {
+    0%   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+  }
+  @keyframes fwParticle {
+    0%   { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot)) translateY(0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--rot)) translateY(-70px) scale(1.6); }
+  }
+
+  /* ==================== 6 只 Doga 底排 ==================== */
+  .dogas-row {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 20%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 3.5%;
+    padding: 0 8% 2%;
+    z-index: 15;
+  }
+  .doga-sit {
+    position: relative;
+    width: 78px; aspect-ratio: 1;
+    border-radius: 50% 50% 40% 40%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,.5);
+    animation: dogaBreath 4s ease-in-out infinite;
+    filter: brightness(0.85);
+  }
+  .doga-sit.d-snow  { background: radial-gradient(circle at 30% 30%, #ffb7cf, var(--snow) 70%, #b0567e); }
+  .doga-sit.d-chill { background: radial-gradient(circle at 30% 30%, #ffd070, var(--chill) 70%, #b06d0b); }
+  .doga-sit.d-yummy { background: radial-gradient(circle at 30% 30%, #6a7cf5, var(--yummy) 70%, #12279c); }
+  .doga-sit.d-joy   { background: radial-gradient(circle at 30% 30%, #ff8b7f, var(--joy) 70%, #a51b0c); transform: scale(1.15); }
+  .doga-sit.d-max   { background: radial-gradient(circle at 30% 30%, #a4adb8, var(--max) 70%, #363c47); }
+  .doga-sit.d-blink { background: radial-gradient(circle at 30% 30%, #ffb583, var(--blink) 70%, #b04d0e); }
+  @keyframes dogaBreath {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-2px); }
+  }
+  .doga-sit.d-joy { animation: dogaBreathJoy 4s ease-in-out infinite; }
+  @keyframes dogaBreathJoy {
+    0%,100% { transform: scale(1.15) translateY(0); }
+    50%     { transform: scale(1.15) translateY(-2px); }
+  }
+  /* Doga 头顶反应表情(烟花绽放时闪现) */
+  .doga-sit .reaction {
+    position: absolute;
+    top: -22px; left: 50%; transform: translateX(-50%);
+    font-size: 18px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .doga-sit.excited .reaction {
+    animation: reactPop 1.2s ease-out;
+  }
+  @keyframes reactPop {
+    0%   { opacity: 0; transform: translate(-50%, 0) scale(0.5); }
+    20%  { opacity: 1; transform: translate(-50%, -6px) scale(1.1); }
+    80%  { opacity: 1; transform: translate(-50%, -10px) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -18px) scale(0.8); }
+  }
+  /* Doga 兴奋时轻微上跳 */
+  .doga-sit.excited {
+    animation: dogaJump 0.6s ease-out !important;
+  }
+  @keyframes dogaJump {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-8px); }
+  }
+  .doga-sit.d-joy.excited {
+    animation: dogaJumpJoy 0.6s ease-out !important;
+  }
+  @keyframes dogaJumpJoy {
+    0%,100% { transform: scale(1.15) translateY(0); }
+    50%     { transform: scale(1.15) translateY(-8px); }
+  }
+
+  /* 底部渐变遮罩 */
+  .ground-fade {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 28%;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(13,9,33,.4) 40%,
+      rgba(13,9,33,.85) 100%);
+    pointer-events: none;
+    z-index: 12;
+  }
+
+  /* ==================== 开始遮罩(对齐拳击派对布局 · 保持深蓝色调) ==================== */
+  .overlay {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    gap: 20px;
+    z-index: 100;
+    background: #050311;
+    transition: opacity .5s ease;
+  }
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .overlay .brand {
+    font-size: 14px; letter-spacing: 6px;
+    color: var(--gold-bright);
+    padding: 6px 16px;
+    border: 1px solid var(--gold-bright);
+    border-radius: 20px;
+  }
+  .overlay .title {
+    font-size: 60px; font-weight: 900; letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, var(--gold-bright) 50%, #a8d0ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 20px rgba(255,214,107,.4));
+  }
+  .overlay .sub {
+    color: #a4a7c8; font-size: 16px; max-width: 520px; line-height: 1.8;
+  }
+  .overlay .sub b { color: var(--gold-bright); }
+
+  /* 4 卡片"how" */
+  .overlay .how {
+    display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; justify-content: center;
+  }
+  .overlay .how-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,232,155,0.2);
+    padding: 14px 20px;
+    border-radius: 12px;
+    min-width: 150px;
+  }
+  .overlay .how-item .icon {
+    font-size: 28px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+  .overlay .how-item .lbl {
+    font-size: 13px; color: var(--gold-bright); font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .overlay .how-item .desc {
+    font-size: 12px; color: #a4a7c8; margin-top: 3px;
+  }
+
+  .overlay .btn {
+    margin-top: 6px;
+    background: linear-gradient(135deg, var(--gold-bright) 0%, var(--gold) 100%);
+    color: #2a1f05; font-weight: 900; font-size: 18px; letter-spacing: 2px;
+    padding: 16px 36px; border: none; border-radius: 32px;
+    box-shadow: 0 6px 24px rgba(255,214,107,.55), inset 0 1px 0 rgba(255,255,255,.4);
+    cursor: pointer; transition: transform .18s ease;
+  }
+  .overlay .btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 32px rgba(255,214,107,.75), inset 0 1px 0 rgba(255,255,255,.4); }
+  .overlay .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .overlay .status {
+    font-size: 12px; color: #7a7a9e;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ==================== 底部操作提示 ==================== */
+  .action-hint {
+    position: absolute;
+    bottom: 25%; left: 50%; transform: translateX(-50%);
+    background: rgba(10,15,46,0.85);
+    border: 1px solid var(--gold);
+    color: var(--gold-bright);
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1px;
+    z-index: 25;
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; gap: 8px;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+  .action-hint.show { opacity: 1; }
+
+  /* 得分弹出 */
+  .score-pop {
+    position: absolute;
+    color: var(--gold-bright);
+    font-size: 24px; font-weight: 900;
+    text-shadow: 0 2px 8px rgba(0,0,0,.6), 0 0 20px rgba(255,232,155,.6);
+    animation: scorePop 1.2s ease-out;
+    pointer-events: none;
+    z-index: 40;
+    transform: translate(-50%, -50%);
+  }
+  @keyframes scorePop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    20%  { opacity: 1; transform: translate(-50%, -60%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
+  }
+
+  /* 调试信息(?debug=1) */
+  #debug {
+    position: absolute;
+    bottom: 20px; left: 20px;
+    background: rgba(0,0,0,0.7);
+    color: #6bff9d;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 11px;
+    z-index: 200;
+    display: none;
+  }
+  #debug.show { display: block; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 月亮 -->
+  <div class="moon"></div>
+
+  <!-- 静态星空 -->
+  <div id="starfield"></div>
+
+  <!-- HUD -->
+  <div class="hud-title">🌌 星光派对</div>
+  <div class="hud-left">
+    <div class="hud-chip"><span class="icon">🎆</span> 烟花 <span class="val" id="scoreFw">0</span></div>
+    <div class="hud-chip"><span class="icon">✦</span> 星屑 <span class="val" id="scoreDust">0</span></div>
+  </div>
+
+  <!-- 星座图鉴 -->
+  <div class="constellation">
+    <div class="constellation-label">今日星座</div>
+    <svg class="constellation-svg" viewBox="0 0 110 60" id="constellation">
+      <!-- 动态填充 -->
+    </svg>
+    <div class="constellation-count"><span class="val" id="starCount">0</span>/12 颗</div>
+  </div>
+
+  <!-- DD 准星 -->
+  <div id="dd">
+    <svg class="dd-timer-svg" viewBox="0 0 80 80">
+      <circle class="dd-timer-track"    cx="40" cy="40" r="36"/>
+      <circle class="dd-timer-progress" cx="40" cy="40" r="36" id="ddTimer"/>
+    </svg>
+    <div class="dd-body"></div>
+    <div class="dd-eye"></div>
+  </div>
+
+  <!-- 底部渐变遮罩 -->
+  <div class="ground-fade"></div>
+
+  <!-- 6 只 Doga 排排坐 -->
+  <div class="dogas-row" id="dogasRow">
+    <div class="doga-sit d-snow"  data-doga="snow">🐕‍🦺<div class="reaction">✨</div></div>
+    <div class="doga-sit d-chill" data-doga="chill">🐩<div class="reaction">💛</div></div>
+    <div class="doga-sit d-yummy" data-doga="yummy">🐕<div class="reaction">!!</div></div>
+    <div class="doga-sit d-joy"   data-doga="joy">🐶<div class="reaction">✨</div></div>
+    <div class="doga-sit d-max"   data-doga="max">🐺<div class="reaction">!!</div></div>
+    <div class="doga-sit d-blink" data-doga="blink">🐕<div class="reaction">🎇</div></div>
+  </div>
+
+  <!-- 摄像头小窗(镜像预览) -->
+  <div id="cam-preview">
+    <video id="cam" autoplay playsinline muted></video>
+    <div class="face-dot" id="faceDot"></div>
+    <div class="face-label">你的镜像</div>
+  </div>
+
+  <!-- 底部操作提示 -->
+  <div class="action-hint" id="hint">
+    <span>🤖</span>
+    <span id="hintText">转头对准流星,让 DD 圈闭合</span>
+  </div>
+
+  <!-- 调试信息 -->
+  <div id="debug">
+    yaw: <span id="dbgYaw">0</span>°
+    pitch: <span id="dbgPitch">0</span>°
+    roll: <span id="dbgRoll">0</span>°
+    fps: <span id="dbgFps">0</span>
+  </div>
+
+</div>
+
+<!-- 开始遮罩 -->
+<div class="overlay" id="overlay">
+  <div class="brand">今天不低头 · 关注你的颈椎健康</div>
+  <div class="title">星光派对</div>
+  <div class="sub">
+    Doga 家族一起看夜空,DD 机器人跟着你的<b>头部动作</b>转动。<br/>
+    转头对准流星,让 <b>DD 的圈画满 1.5 秒</b> → 烟花绽放。
+  </div>
+  <div class="how">
+    <div class="how-item">
+      <div class="icon">◀</div>
+      <div class="lbl">头向左转</div>
+      <div class="desc">接左侧的流星</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">▶</div>
+      <div class="lbl">头向右转</div>
+      <div class="desc">接右侧的流星</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">▲</div>
+      <div class="lbl">抬起头</div>
+      <div class="desc">接高空的流星</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">✦</div>
+      <div class="lbl">稳住 1.5s</div>
+      <div class="desc">让 DD 的圈闭合</div>
+    </div>
+  </div>
+  <button class="btn" id="startBtn">开启摄像头 · 星光点亮!</button>
+  <div class="status" id="status">请用 Chrome / Edge · 需要摄像头权限 · 建议 2 分钟</div>
+</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+// ============ 常量 ============
+const AX = { yaw: -1, pitch: 1, roll: 1 };  // 镜像修正(来自 index.html 实测)
+const SMOOTH = 0.25;
+const AIM_HOLD_MS = 1500;   // 倒计时时长
+const HIT_RADIUS_PX = 60;   // DD 与流星的碰撞半径
+
+// yaw/pitch 映射到屏幕 X/Y 的角度上限(度)
+// yaw ±25° → 屏幕左右满幅 · pitch -20°~+15° → 屏幕上下
+const MAP_YAW_RANGE = 25;
+const MAP_PITCH_UP = 20;
+const MAP_PITCH_DOWN = 15;
+
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
+// ============ 状态 ============
+let faceLandmarker = null;
+let camStream = null;
+let running = false;
+
+let rawAngle = { yaw: 0, pitch: 0, roll: 0 };
+let smoothAngle = { yaw: 0, pitch: 0, roll: 0 };
+let angleBase = { yaw: 0, pitch: 0, roll: 0 };
+let baseInit = false;
+let baseFrames = 0;
+
+let ddX = 50, ddY = 40;   // DD 屏幕位置(百分比)
+let lastVideoTime = -1;
+
+let meteors = [];  // { el, x, y, vx, vy, startTime, life, hit }
+let lastMeteorSpawn = 0;
+let aimTarget = null;  // 当前正在瞄准的流星
+let aimStartTime = 0;
+
+let score = { fireworks: 0, stardust: 0 };
+let stars = [];  // 收集的小星星(0-12,连成星座)
+
+const STAR_POSITIONS = [
+  [10,45],[22,30],[35,20],[48,15],[62,18],[74,28],
+  [86,42],[80,55],[64,52],[46,50],[28,52],[14,58],
+];
+
+// ============ DOM ============
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+const ddEl = $('dd');
+const camEl = $('cam');
+const overlay = $('overlay');
+const startBtn = $('startBtn');
+const statusEl = $('status');
+const faceDot = $('faceDot');
+const ddTimer = $('ddTimer');
+const hint = $('hint');
+const hintText = $('hintText');
+const scoreFwEl = $('scoreFw');
+const scoreDustEl = $('scoreDust');
+const starCountEl = $('starCount');
+const constellationEl = $('constellation');
+const debugEl = $('debug');
+const dbgYaw = $('dbgYaw');
+const dbgPitch = $('dbgPitch');
+const dbgRoll = $('dbgRoll');
+const dbgFps = $('dbgFps');
+
+if (DEBUG) debugEl.classList.add('show');
+
+// ============ 星空生成 ============
+(function genStars(){
+  const field = $('starfield');
+  for (let i=0; i<100; i++) {
+    const s = document.createElement('div');
+    s.className = 'star-static';
+    const size = Math.random() * 2 + 1;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = Math.random()*100 + '%';
+    s.style.top  = Math.random()*70 + '%';
+    s.style.animationDelay = (Math.random()*3) + 's';
+    s.style.animationDuration = (2 + Math.random()*3) + 's';
+    field.appendChild(s);
+  }
+})();
+
+// ============ MediaPipe 加载 ============
+async function loadModel() {
+  statusEl.textContent = '正在加载 AI 模型…（首次约需几秒）';
+  const resolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  faceLandmarker = await FaceLandmarker.createFromOptions(resolver, {
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      delegate: "GPU",
+    },
+    runningMode: "VIDEO",
+    numFaces: 1,
+    outputFacialTransformationMatrixes: true,
+  });
+  statusEl.textContent = '模型就绪 ✓';
+}
+
+// ============ 摄像头 ============
+async function startCamera() {
+  statusEl.textContent = '正在打开摄像头…';
+  camStream = await navigator.mediaDevices.getUserMedia({
+    video: { width: { ideal: 960 }, height: { ideal: 720 }, facingMode: 'user' },
+    audio: false,
+  });
+  camEl.srcObject = camStream;
+  await camEl.play();
+  await new Promise(res => {
+    if (camEl.readyState >= 2) res();
+    else camEl.onloadeddata = () => res();
+  });
+  statusEl.textContent = '摄像头就绪 ✓';
+}
+
+function stopCamera() {
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+}
+
+// ============ 头姿计算(复用 index.html) ============
+function matrixToEuler(m) {
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const r00 = m[0], r10 = m[1], r20 = m[2], r21 = m[6], r22 = m[10];
+  const yaw = Math.asin(clamp(-r20, -1, 1));
+  const pitch = Math.atan2(r21, r22);
+  const roll = Math.atan2(r10, r00);
+  const D = 180 / Math.PI;
+  return { yaw: yaw * D, pitch: pitch * D, roll: roll * D };
+}
+
+function relAngle() {
+  return {
+    yaw:   AX.yaw   * (smoothAngle.yaw   - angleBase.yaw),
+    pitch: AX.pitch * (smoothAngle.pitch - angleBase.pitch),
+    roll:  AX.roll  * (smoothAngle.roll  - angleBase.roll),
+  };
+}
+
+// ============ 流星生成 ============
+function spawnMeteor() {
+  // 从画面外一个随机边飞入,飞向对面区域
+  // 简化处理:从上/左/右三边生成,不从下方(符合"不低头"主题)
+  const stageW = stage.clientWidth;
+  const stageH = stage.clientHeight;
+
+  const startSide = Math.random();
+  let sx, sy, ex, ey;
+  if (startSide < 0.4) {
+    // 从上方飞入
+    sx = 10 + Math.random() * 80;
+    sy = -5;
+    ex = 20 + Math.random() * 60;
+    ey = 30 + Math.random() * 30;
+  } else if (startSide < 0.7) {
+    // 从左上飞入
+    sx = -5;
+    sy = 5 + Math.random() * 30;
+    ex = 40 + Math.random() * 40;
+    ey = 30 + Math.random() * 30;
+  } else {
+    // 从右上飞入
+    sx = 105;
+    sy = 5 + Math.random() * 30;
+    ex = 20 + Math.random() * 40;
+    ey = 30 + Math.random() * 30;
+  }
+
+  const el = document.createElement('div');
+  el.className = 'meteor';
+  el.innerHTML = '<div class="tail"></div><div class="core"></div>';
+
+  // 计算尾迹角度(从飞行方向反向)
+  const dxNorm = ex - sx;
+  const dyNorm = ey - sy;
+  const angle = Math.atan2(dyNorm, dxNorm) * 180 / Math.PI;
+  // 尾迹指向流星后方(与飞行方向相反,即 angle 反过来)
+  const tailAngle = angle + 180;
+  el.style.setProperty('--tail-angle', tailAngle + 'deg');
+
+  stage.appendChild(el);
+
+  const now = performance.now();
+  const life = 8000;  // 流星在屏幕上停留 8 秒(慢节奏,给玩家充分时间瞄准)
+
+  meteors.push({
+    el,
+    startX: sx, startY: sy,
+    endX: ex, endY: ey,
+    startTime: now,
+    life,
+    hit: false,
+  });
+}
+
+function updateMeteors(now) {
+  const stageW = stage.clientWidth;
+  const stageH = stage.clientHeight;
+
+  meteors = meteors.filter(m => {
+    if (m.hit) {
+      m.el.remove();
+      return false;
+    }
+    const t = (now - m.startTime) / m.life;
+    if (t >= 1) {
+      m.el.remove();
+      if (m === aimTarget) resetAim();
+      return false;
+    }
+    // 一旦被瞄准,流星就"悬停"在当前位置(暂停飞行),
+    // 让玩家能稳稳完成 1.5 秒倒计时
+    if (m === aimTarget) {
+      // 保持当前 x/y 不动 · 只更新 startTime 让恢复时能接着走
+      m.el.style.left = m.x + '%';
+      m.el.style.top  = m.y + '%';
+      m.el.classList.remove('fading');
+      return true;
+    }
+    // 使用 ease-out 让流星减速到目标位置
+    const easeT = 1 - Math.pow(1 - t, 2);
+    m.x = m.startX + (m.endX - m.startX) * easeT;
+    m.y = m.startY + (m.endY - m.startY) * easeT;
+    m.el.style.left = m.x + '%';
+    m.el.style.top  = m.y + '%';
+    // 时间过半开始闪烁提示即将消失
+    if (t > 0.6) m.el.classList.add('fading');
+    return true;
+  });
+}
+
+// ============ 碰撞检测 + 瞄准 ============
+function checkAim(now) {
+  const rect = stage.getBoundingClientRect();
+  const ddPxX = (ddX / 100) * rect.width;
+  const ddPxY = (ddY / 100) * rect.height;
+
+  let closest = null;
+  let closestDist = Infinity;
+  for (const m of meteors) {
+    if (m.hit) continue;
+    const mxPx = (m.x / 100) * rect.width;
+    const myPx = (m.y / 100) * rect.height;
+    const dist = Math.hypot(mxPx - ddPxX, myPx - ddPxY);
+    if (dist < HIT_RADIUS_PX && dist < closestDist) {
+      closest = m;
+      closestDist = dist;
+    }
+  }
+
+  if (closest) {
+    if (aimTarget !== closest) {
+      // 换新目标 → 重置
+      aimTarget = closest;
+      aimStartTime = now;
+      ddEl.classList.add('aiming');
+      // 重启 timer 动画
+      ddTimer.style.transition = 'none';
+      ddTimer.style.strokeDashoffset = '226';
+      ddTimer.getBoundingClientRect();  // reflow
+      ddTimer.style.transition = 'stroke-dashoffset 1.5s linear';
+      ddTimer.style.strokeDashoffset = '0';
+    } else {
+      // 持续瞄准
+      const held = now - aimStartTime;
+      if (held >= AIM_HOLD_MS) {
+        // 成功!
+        catchMeteor(closest);
+        resetAim();
+      }
+    }
+  } else {
+    if (aimTarget) resetAim();
+  }
+}
+
+function resetAim() {
+  aimTarget = null;
+  ddEl.classList.remove('aiming');
+  ddTimer.style.transition = 'stroke-dashoffset 0.15s ease';
+  ddTimer.style.strokeDashoffset = '226';
+}
+
+// ============ 成功接住:烟花 + Doga 反应 + 积分 ============
+function catchMeteor(m) {
+  m.hit = true;
+  const mx = m.x, my = m.y;
+
+  // 烟花
+  spawnFirework(mx, my);
+
+  // Doga 反应
+  document.querySelectorAll('.doga-sit').forEach(d => {
+    d.classList.remove('excited');
+    void d.offsetWidth;
+    d.classList.add('excited');
+    setTimeout(() => d.classList.remove('excited'), 1200);
+  });
+
+  // 得分
+  score.fireworks += 1;
+  score.stardust += 5;
+  scoreFwEl.textContent = score.fireworks;
+  scoreDustEl.textContent = score.stardust;
+
+  // 加一颗星到星座
+  if (stars.length < 12) {
+    stars.push(stars.length);
+    renderConstellation();
+  }
+  starCountEl.textContent = stars.length;
+
+  // 弹分数
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.textContent = '+5 ✦';
+  pop.style.left = mx + '%';
+  pop.style.top = my + '%';
+  stage.appendChild(pop);
+  setTimeout(() => pop.remove(), 1200);
+
+  // 提示切换
+  hintText.textContent = '接住了! 🎆';
+  setTimeout(() => {
+    if (running) hintText.textContent = '转头对准下一颗流星';
+  }, 1500);
+}
+
+function spawnFirework(x, y) {
+  const colors = ['#ff9db1', '#9bffb0', '#ffd66b', '#a8d0ff', '#ffb0f5', '#a4f5ff'];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  const fw = document.createElement('div');
+  fw.className = 'firework';
+  fw.style.left = x + '%';
+  fw.style.top = y + '%';
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.color = color;
+    p.style.background = color;
+    p.style.setProperty('--rot', (i * 360 / 14) + 'deg');
+    fw.appendChild(p);
+  }
+  stage.appendChild(fw);
+  setTimeout(() => fw.remove(), 2000);
+}
+
+// ============ 星座渲染 ============
+function renderConstellation() {
+  const svg = constellationEl;
+  svg.innerHTML = '';
+  // 连线
+  for (let i = 0; i < stars.length - 1; i++) {
+    const [x1, y1] = STAR_POSITIONS[i];
+    const [x2, y2] = STAR_POSITIONS[i+1];
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('stroke', 'rgba(255,214,107,0.5)');
+    line.setAttribute('stroke-width', '1');
+    svg.appendChild(line);
+  }
+  // 点
+  for (let i = 0; i < stars.length; i++) {
+    const [x, y] = STAR_POSITIONS[i];
+    const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    c.setAttribute('cx', x); c.setAttribute('cy', y);
+    c.setAttribute('r', 2.5);
+    c.setAttribute('fill', '#ffe89b');
+    svg.appendChild(c);
+  }
+}
+
+// ============ 主循环 ============
+let fpsFrames = 0, fpsLast = performance.now();
+
+function loop(now) {
+  if (!running) return;
+  requestAnimationFrame(loop);
+
+  // fps
+  fpsFrames++;
+  if (now - fpsLast >= 500) {
+    if (DEBUG) dbgFps.textContent = Math.round(fpsFrames * 1000 / (now - fpsLast));
+    fpsFrames = 0; fpsLast = now;
+  }
+
+  // 头姿检测
+  if (faceLandmarker && camEl.readyState >= 2 && camEl.currentTime !== lastVideoTime) {
+    lastVideoTime = camEl.currentTime;
+    let res = null;
+    try { res = faceLandmarker.detectForVideo(camEl, now); } catch(e) {}
+    if (res && res.faceLandmarks && res.faceLandmarks.length > 0) {
+      faceDot.style.background = '#6bff9d';
+      faceDot.style.boxShadow = '0 0 8px #6bff9d';
+      const mtx = res.facialTransformationMatrixes;
+      if (mtx && mtx.length > 0 && mtx[0].data) {
+        rawAngle = matrixToEuler(mtx[0].data);
+      }
+    } else {
+      faceDot.style.background = '#ff5757';
+      faceDot.style.boxShadow = '0 0 8px #ff5757';
+    }
+  }
+
+  // 平滑
+  smoothAngle.yaw   += (rawAngle.yaw   - smoothAngle.yaw)   * SMOOTH;
+  smoothAngle.pitch += (rawAngle.pitch - smoothAngle.pitch) * SMOOTH;
+  smoothAngle.roll  += (rawAngle.roll  - smoothAngle.roll)  * SMOOTH;
+
+  // 初始校准:前 30 帧取平均作为中立基线
+  if (!baseInit) {
+    if (baseFrames < 30) {
+      angleBase.yaw   = (angleBase.yaw   * baseFrames + smoothAngle.yaw)   / (baseFrames + 1);
+      angleBase.pitch = (angleBase.pitch * baseFrames + smoothAngle.pitch) / (baseFrames + 1);
+      angleBase.roll  = (angleBase.roll  * baseFrames + smoothAngle.roll)  / (baseFrames + 1);
+      baseFrames++;
+    } else {
+      baseInit = true;
+      hint.classList.add('show');
+    }
+  }
+
+  const rel = relAngle();
+
+  if (DEBUG) {
+    dbgYaw.textContent = rel.yaw.toFixed(1);
+    dbgPitch.textContent = rel.pitch.toFixed(1);
+    dbgRoll.textContent = rel.roll.toFixed(1);
+  }
+
+  // 头姿 → DD 屏幕位置
+  // yaw:右转(rel.yaw > 0) → DD 向右移动
+  // pitch:抬头(rel.pitch < 0) → DD 向上移动
+  const yawN = Math.max(-1, Math.min(1, rel.yaw / MAP_YAW_RANGE));
+  const pitchN = rel.pitch < 0
+    ? Math.max(-1, rel.pitch / MAP_PITCH_UP)
+    : Math.min(1,  rel.pitch / MAP_PITCH_DOWN);
+
+  // 屏幕 X: 50% + yaw * 40% (即 10~90%)
+  // 屏幕 Y: 40% + pitch * 30% (即 抬头 10%, 平视 40%, 低头 70%)
+  const targetX = 50 + yawN * 40;
+  const targetY = 40 + pitchN * 30;
+
+  // 平滑 DD 位置
+  ddX += (targetX - ddX) * 0.35;
+  ddY += (targetY - ddY) * 0.35;
+
+  ddEl.style.left = ddX + '%';
+  ddEl.style.top  = ddY + '%';
+
+  // 生成流星:控制屏上流星数量,单只时长
+  if (baseInit) {
+    if (now - lastMeteorSpawn > 3500 && meteors.filter(m => !m.hit).length < 2) {
+      spawnMeteor();
+      lastMeteorSpawn = now;
+    }
+    updateMeteors(now);
+    checkAim(now);
+  }
+}
+
+// ============ 启动流程 ============
+async function start() {
+  startBtn.disabled = true;
+  try {
+    await loadModel();
+    await startCamera();
+    // 隐藏 overlay
+    overlay.classList.add('hidden');
+    running = true;
+    baseInit = false;
+    baseFrames = 0;
+    angleBase = { yaw: 0, pitch: 0, roll: 0 };
+    hintText.textContent = '请正视屏幕 · 校准中…';
+    requestAnimationFrame(loop);
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = '出错了:' + (e.message || e);
+    startBtn.disabled = false;
+  }
+}
+
+startBtn.addEventListener('click', start);
+
+// 页面离开时释放摄像头
+window.addEventListener('beforeunload', stopCamera);
+
+// ESC 键退出(展示时用)
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && running) {
+    running = false;
+    stopCamera();
+    overlay.classList.remove('hidden');
+    startBtn.disabled = false;
+    statusEl.textContent = '已停止。可重新开始';
+  }
+});
+</script>
+</body>
+</html>

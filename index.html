@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Joy · 陪你舒展颈椎</title>
+<title>今天不低头 · 关注你的颈椎健康</title>
 <style>
   :root {
     --teal: #5ec7b0;
@@ -15,25 +15,102 @@
     --ink: #3a4a55;
     --ink-soft: #6b7a84;
     --card: rgba(255, 255, 255, 0.92);
+
+    /* 散步主题 · 深墨绿背景 + 星光派对金色文字(和夜晚共用金色语言) */
+    --moss: #7ed37a;
+    --moss-bright: #a4e89f;
+    --moss-deep: #3f9f5c;
+    --forest-top: #051f13;
+    --forest-mid: #0a2e1e;
+    --forest-bot: #0d3d2a;
+
+    /* 星光派对同款金 —— 主文字色 */
+    --party-gold: #ffd66b;
+    --party-gold-bright: #ffe89b;
+    --party-star: #cad6ff;
+
     --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
-  html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--ink); background: #0f1526; }
+  html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--ink); background: var(--forest-top); }
 
-  #stage { position: fixed; inset: 0; }
-
-  #cam {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; transform: scaleX(-1);
-    filter: saturate(0.9) brightness(1.0);
+  #stage { position: fixed; inset: 0;
+    background:
+      linear-gradient(180deg,
+        #cfe5d0 0%,
+        #b8dcbb 30%,
+        #96c99a 60%,
+        #6da972 100%);
   }
+
+  /* 摄像头:全屏 video 已废,改成右下 11% 圆形小窗(与其他关卡统一) */
+  #cam {
+    position: absolute;
+    width: 11%; aspect-ratio: 1;
+    bottom: 4%; right: 4%;
+    object-fit: cover;
+    transform: scaleX(-1);
+    border-radius: 50%;
+    border: 3px solid var(--party-gold);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    z-index: 25;
+    background: #1a1547;
+    opacity: 0;
+    transition: opacity .4s ease;
+    pointer-events: none;
+  }
+  #cam { border-color: var(--party-gold); }
+  #faceDot {
+    position: absolute;
+    bottom: 4%; right: 4%;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #6bff9d;
+    box-shadow: 0 0 8px #6bff9d;
+    transform: translate(-14px, -14px);
+    z-index: 26;
+    transition: background .2s, box-shadow .2s;
+    display: none;
+  }
+  @keyframes dotBlink { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .face-label {
+    position: absolute;
+    bottom: calc(4% - 24px); right: 4%;
+    width: 11%; text-align: center;
+    color: var(--party-gold-bright); font-size: 10px; font-weight: 700;
+    letter-spacing: 1px;
+    z-index: 26;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    display: none;
+  }
+  /* 摄像头启动后才显示 */
+  body.cam-active #cam { opacity: 1; }
+  body.cam-active #faceDot { display: block; animation: dotBlink 2s ease-in-out infinite; }
+  body.cam-active .face-label { display: block; }
+  /* 樱花天空:柔和渐云 & 静态樱花点缀 */
   #veil {
     position: absolute; inset: 0; pointer-events: none;
     background:
-      radial-gradient(120% 90% at 50% 38%, rgba(20,28,52,0.15) 0%, rgba(24,32,60,0.42) 55%, rgba(14,20,42,0.66) 100%),
-      linear-gradient(180deg, rgba(20,26,48,0.25), rgba(10,14,30,0.5));
+      radial-gradient(ellipse at 20% 18%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 42%),
+      radial-gradient(ellipse at 78% 24%, rgba(190,230,180,0.4) 0%, rgba(190,230,180,0) 42%);
   }
   #game { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  /* 顶部金色品牌条(与星光派对文字色一致,场景绿色和其他 3 关做区分) */
+  .hud-title {
+    position: absolute;
+    top: 20px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--party-gold-bright), var(--party-gold));
+    color: #05030d;
+    padding: 6px 22px;
+    border-radius: 20px;
+    font-size: 13px; font-weight: 800;
+    letter-spacing: 2px;
+    z-index: 22;
+    box-shadow: 0 4px 12px rgba(255,214,107,0.4);
+    pointer-events: none;
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .hud-title.show { opacity: 1; }
 
   /* ---------- HUD ---------- */
   #hud {
@@ -43,12 +120,15 @@
   }
   #hud.show { opacity: 1; }
   .chip {
-    background: var(--card); border-radius: 22px; padding: 13px 22px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.28); backdrop-filter: blur(6px);
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(255,194,58,0.55);
+    border-radius: 22px; padding: 10px 18px;
+    box-shadow: 0 6px 20px rgba(120,100,60,0.18);
+    backdrop-filter: blur(8px);
   }
-  .chip .label { font-size: 14px; color: var(--ink-soft); letter-spacing: 1px; }
-  .chip .value { font-size: 30px; font-weight: 700; line-height: 1.15; }
-  .value .unit { font-size: 15px; font-weight: 500; color: var(--ink-soft); margin-left: 3px; }
+  .chip .label { font-size: 12px; color: #7a6a54; letter-spacing: 1px; font-weight: 700; }
+  .chip .value { font-size: 22px; font-weight: 800; line-height: 1.15; color: #4a3010; }
+  .value .unit { font-size: 13px; font-weight: 500; color: #7a6a54; margin-left: 3px; }
   #comboChip { transition: transform .18s ease, opacity .18s ease; opacity: 0; transform: scale(0.9); }
   #comboChip.show { opacity: 1; transform: scale(1); }
   #comboChip .value { color: var(--peach); }
@@ -64,6 +144,10 @@
   #routeDots .rd.cur { background: #fff; transform: scale(1.35); box-shadow: 0 0 12px #fff; }
   #routeDots .rd-sep { width: 1px; height: 16px; background: rgba(255,255,255,0.22); margin: 0 4px; border-radius: 1px; }
 
+  /* Joy 散步进度条 */
+  .progWrap { width: 160px; height: 8px; border-radius: 8px; background: rgba(150,180,180,0.25); overflow: hidden; margin-top: 4px; }
+  .progFill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffd9a0, #ffc23a); border-radius: 8px; transition: width .4s cubic-bezier(.22,1,.36,1); }
+
   /* ---------- 小星的话 ---------- */
   #coach {
     position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
@@ -77,110 +161,206 @@
     transition: transform .25s ease; min-height: 18px; color: var(--ink);
   }
 
-  /* ---------- 遮罩层 ---------- */
+  /* ---------- 遮罩层(深墨绿背景 + 星光派对同款金色文字) ---------- */
   .overlay {
     position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center;
-    padding: 26px; gap: 14px; z-index: 5;
+    padding: 40px 20px; gap: 20px; z-index: 5;
     background:
-      radial-gradient(130% 100% at 50% 20%, rgba(38,46,78,0.4), rgba(15,21,38,0.9)),
-      linear-gradient(180deg, #1a2140 0%, #0f1526 100%);
+      radial-gradient(140% 100% at 50% 18%, rgba(255,214,107,0.06), rgba(5,31,19,0.98)),
+      linear-gradient(180deg, var(--forest-top) 0%, var(--forest-mid) 55%, var(--forest-bot) 100%);
+    color: #e8ecf5;
   }
   .overlay.hidden { display: none; }
 
-  #homeStarWrap { width: 150px; height: 150px; position: relative; }
+  .overlay .brand {
+    font-size: 14px; letter-spacing: 6px;
+    color: var(--party-gold-bright);
+    padding: 6px 16px;
+    border: 1px solid var(--party-gold-bright);
+    border-radius: 20px;
+    background: transparent;
+  }
+
+  #homeStarWrap { width: 82px; height: 82px; position: relative; flex: none; }
   #homeStar { width: 100%; height: 100%; display: block; }
+
+  /* 次要区:回访状态 + 高级设置(视觉往下压,不与主线抢戏) */
+  .home-secondary {
+    margin-top: 20px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(126,211,122,0.15);
+    width: 100%; max-width: 520px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+    opacity: 0.9;
+  }
+  .secondary-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 8px 14px;
+  }
+  .secondary-info {
+    display: flex; flex-direction: column; gap: 6px;
+    align-items: flex-start; text-align: left;
+  }
+  .secondary-info .grow { width: 220px; }
+  .advanced {
+    width: 320px;
+    background: rgba(126,211,122,0.04);
+    border: 1px solid rgba(126,211,122,0.14);
+    border-radius: 14px;
+    padding: 4px 14px 6px;
+  }
+  .advanced > summary {
+    cursor: pointer;
+    font-size: 12px;
+    color: #8fae95;
+    padding: 8px 0;
+    letter-spacing: 1px;
+    list-style: none;
+    outline: none;
+  }
+  .advanced > summary::-webkit-details-marker { display: none; }
+  .advanced > summary::before { content: "▸ "; }
+  .advanced[open] > summary::before { content: "▾ "; }
+  .advanced[open] > summary { color: var(--moss-bright); }
+  .advanced .sens { width: 100%; margin: 4px 0; background: transparent; border: none; padding: 0; }
+
+  .status {
+    font-size: 12px; color: #7a7a9e;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
 
   .streak {
     display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,194,58,0.14); border: 1px solid rgba(255,194,58,0.35);
-    color: var(--gold); font-weight: 700; font-size: 14px; padding: 6px 16px; border-radius: 22px;
+    background: rgba(126,211,122,0.14); border: 1px solid rgba(126,211,122,0.4);
+    color: var(--moss-bright); font-weight: 700; font-size: 13px; padding: 5px 14px; border-radius: 22px;
   }
-  .title { font-size: 30px; font-weight: 800; letter-spacing: 1px; color: #f4f7ff; }
-  .title .em { color: var(--gold); }
-  .subtitle { font-size: 15px; color: #aab4cc; line-height: 1.7; max-width: 430px; }
-  .subtitle b { color: #dbe3f5; }
+  .title {
+    font-size: 60px; font-weight: 900; letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, var(--party-gold-bright) 50%, #a8d0ff 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 20px rgba(255,214,107,.4));
+  }
+  .title .em { -webkit-text-fill-color: initial; background: none; color: var(--party-gold-bright); }
+  .subtitle { font-size: 16px; color: #a4a7c8; line-height: 1.8; max-width: 520px; }
+  .subtitle b { color: var(--party-gold-bright); }
 
   /* 成长条 */
   .grow { width: 260px; }
-  .grow .grow-top { display: flex; justify-content: space-between; font-size: 12px; color: #9aa6c2; margin-bottom: 6px; }
-  .grow .grow-top .stage { color: var(--gold); font-weight: 700; }
-  .grow .bar { height: 8px; border-radius: 8px; background: rgba(255,255,255,0.12); overflow: hidden; }
-  .grow .fill { height: 100%; width: 0%; border-radius: 8px; background: linear-gradient(90deg, var(--peach-soft), var(--gold)); transition: width .8s cubic-bezier(.22,1,.36,1); }
+  .grow .grow-top { display: flex; justify-content: space-between; font-size: 12px; color: #8fae95; margin-bottom: 6px; }
+  .grow .grow-top .stage { color: var(--moss-bright); font-weight: 700; }
+  .grow .bar { height: 6px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .grow .fill { height: 100%; width: 0%; border-radius: 6px; background: linear-gradient(90deg, var(--moss), var(--moss-bright)); transition: width .8s cubic-bezier(.22,1,.36,1); }
 
   .btn {
     margin-top: 6px; border: none; cursor: pointer; font-family: var(--font);
-    background: linear-gradient(135deg, var(--peach-soft), var(--peach));
-    color: #6b3a12; font-size: 18px; font-weight: 800; padding: 15px 42px; border-radius: 30px;
-    box-shadow: 0 12px 30px rgba(255,178,122,0.35); transition: transform .12s ease, box-shadow .12s ease;
+    background: linear-gradient(135deg, var(--party-gold-bright) 0%, var(--party-gold) 100%);
+    color: #2a1f05; font-size: 18px; font-weight: 900; padding: 16px 36px; border-radius: 32px;
+    box-shadow: 0 6px 24px rgba(255,214,107,.55), inset 0 1px 0 rgba(255,255,255,.4);
+    letter-spacing: 2px;
+    transition: transform .18s ease;
     pointer-events: auto;
   }
-  .btn:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(255,178,122,0.45); }
+  .btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 32px rgba(255,214,107,.75), inset 0 1px 0 rgba(255,255,255,.4); }
   .btn:active { transform: translateY(0); }
-  .btn:disabled { opacity: .6; cursor: default; transform: none; }
-  .btn.ghost { background: rgba(255,255,255,0.1); color: #dbe3f5; box-shadow: none; border: 1px solid rgba(255,255,255,0.2); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.ghost {
+    background: rgba(255,255,255,0.06); color: #dbe3f5;
+    box-shadow: none; border: 1px solid rgba(255,232,155,0.22);
+    letter-spacing: 1px;
+  }
 
   .row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: center; }
-  .hint { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 9px 15px; font-size: 12px; color: #8b97b3; }
-  .stat-inline { font-size: 13px; color: #8b97b3; }
-  .stat-inline b { color: #cfd8ee; font-weight: 700; }
+  .hint { background: rgba(126,211,122,0.06); border: 1px solid rgba(126,211,122,0.15); border-radius: 14px; padding: 8px 14px; font-size: 11px; color: #8fae95; }
+  .stat-inline { font-size: 12px; color: #7a9a82; }
+  .stat-inline b { color: #cfe6d3; font-weight: 700; }
 
   /* 提醒开关 */
-  .toggle { display: inline-flex; align-items: center; gap: 9px; font-size: 13px; color: #9aa6c2; cursor: pointer; pointer-events: auto; }
+  .toggle { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; color: #8fae95; cursor: pointer; pointer-events: auto; }
   .toggle input { display: none; }
-  .sw { width: 40px; height: 23px; border-radius: 20px; background: rgba(255,255,255,0.18); position: relative; transition: background .2s; flex: none; }
-  .sw::after { content: ""; position: absolute; top: 2.5px; left: 2.5px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; }
-  .toggle input:checked + .sw { background: var(--teal); }
-  .toggle input:checked + .sw::after { transform: translateX(17px); }
+  .sw { width: 38px; height: 22px; border-radius: 20px; background: rgba(255,255,255,0.15); position: relative; transition: background .2s; flex: none; }
+  .sw::after { content: ""; position: absolute; top: 2.5px; left: 2.5px; width: 17px; height: 17px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .toggle input:checked + .sw { background: var(--moss); }
+  .toggle input:checked + .sw::after { transform: translateX(16px); }
 
   /* 灵敏度滑杆 */
-  .sens { width: 300px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 12px 16px; margin-top: 2px; }
-  .sens-top { display: flex; justify-content: space-between; font-size: 13px; color: #aab4cc; margin-bottom: 8px; }
-  .sens-top #sensLabel { color: var(--gold); font-weight: 700; }
+  .sens { width: 300px; background: rgba(255,255,255,0.03); border: 1px solid rgba(126,211,122,0.15); border-radius: 14px; padding: 10px 14px; margin-top: 2px; }
+  .sens-top { display: flex; justify-content: space-between; font-size: 12px; color: #8fae95; margin-bottom: 6px; }
+  .sens-top #sensLabel { color: var(--moss-bright); font-weight: 700; }
   .sens-right { display: inline-flex; align-items: center; gap: 12px; }
-  .sens-reset { pointer-events: auto; cursor: pointer; font-size: 12px; font-weight: 600; color: #8b97b3; text-decoration: none; opacity: 0; transition: opacity .2s; }
+  .sens-reset { pointer-events: auto; cursor: pointer; font-size: 11px; font-weight: 600; color: #7a9a82; text-decoration: none; opacity: 0; transition: opacity .2s; }
   .sens-reset.show { opacity: 1; }
-  .sens-reset:hover { color: var(--teal); }
+  .sens-reset:hover { color: var(--moss-bright); }
   .sens-row { display: flex; align-items: center; gap: 10px; }
-  .sens-end { font-size: 11px; color: #7a86a2; flex: none; }
-  #sensRange { -webkit-appearance: none; appearance: none; flex: 1; height: 6px; border-radius: 6px; background: linear-gradient(90deg, rgba(94,199,176,0.5), var(--gold)); outline: none; pointer-events: auto; cursor: pointer; }
-  #sensRange::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: pointer; }
-  #sensRange::-moz-range-thumb { width: 20px; height: 20px; border: none; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: pointer; }
+  .sens-end { font-size: 11px; color: #7a9a82; flex: none; }
+  #sensRange { -webkit-appearance: none; appearance: none; flex: 1; height: 5px; border-radius: 6px; background: linear-gradient(90deg, rgba(126,211,122,0.3), var(--moss-bright)); outline: none; pointer-events: auto; cursor: pointer; }
+  #sensRange::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: pointer; }
+  #sensRange::-moz-range-thumb { width: 18px; height: 18px; border: none; border-radius: 50%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); cursor: pointer; }
 
   /* 校准 */
-  #calRing { font-size: 70px; font-weight: 800; color: var(--gold); }
-  .loader { width: 42px; height: 42px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.18); border-top-color: var(--peach); animation: spin .9s linear infinite; }
+  #calRing { font-size: 70px; font-weight: 800; color: var(--moss-bright); }
+  .loader { width: 42px; height: 42px; border-radius: 50%; border: 5px solid rgba(255,255,255,0.18); border-top-color: var(--moss); animation: spin .9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg) } }
 
   /* 结算 */
   .stat-row { display: flex; gap: 40px; margin: 4px 0; }
-  .stat-big { font-size: 42px; font-weight: 800; color: var(--gold); line-height: 1; }
-  .stat-lbl { font-size: 13px; color: #9aa6c2; margin-top: 6px; }
-  .dust-pop { font-size: 15px; color: var(--peach-soft); font-weight: 700; }
+  .stat-big { font-size: 42px; font-weight: 800; color: var(--moss-bright); line-height: 1; }
+  .stat-lbl { font-size: 13px; color: #8fae95; margin-top: 6px; }
+  .dust-pop { font-size: 15px; color: var(--moss-bright); font-weight: 700; }
 
-  .tiny { font-size: 12px; color: #7a86a2; }
-  .badge { display:inline-block; background: rgba(94,199,176,0.18); color:var(--teal); font-size:12px; font-weight:700; padding:4px 13px; border-radius:20px; border:1px solid rgba(94,199,176,0.35); }
-  a.reset { pointer-events: auto; color: #9aa6c2; font-size: 15px; text-decoration: none; cursor: pointer; }
+  .tiny { font-size: 12px; color: #7a9a82; }
+  .badge { display:inline-block; background: rgba(126,211,122,0.14); color: var(--moss-bright); font-size:12px; font-weight:700; padding:4px 13px; border-radius:20px; border:1px solid rgba(126,211,122,0.35); }
+  a.reset { pointer-events: auto; color: #8fae95; font-size: 15px; text-decoration: none; cursor: pointer; }
+
+  /* 图鉴收藏 */
+  .codex-wrap { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 380px; margin: 8px 0; }
+  .codex-title { flex-basis: 100%; text-align: center; font-size: 13px; color: #8fae95; margin-bottom: 4px; letter-spacing: 1px; }
+  .codex-chip { background: rgba(126,211,122,0.14); border: 1px solid rgba(126,211,122,0.4); color: var(--moss-bright); font-size: 13px; font-weight: 600; padding: 5px 12px; border-radius: 16px; }
+
+  /* 首页 · 4 张 how 卡片(星光派对同款金色边+文字) */
+  .how-grid { display: flex; gap: 20px; flex-wrap: nowrap; justify-content: center; margin-top: 8px; max-width: 720px; }
+  .how-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,232,155,0.22);
+    padding: 14px 18px;
+    border-radius: 12px;
+    min-width: 130px;
+    flex: 1 1 auto;
+    text-align: center;
+  }
+  .how-item .how-icon { font-size: 28px; margin-bottom: 4px; display: block; color: #fff; }
+  .how-item b { display: block; font-size: 13px; color: var(--party-gold-bright); font-weight: 700; letter-spacing: 1px; }
+  .how-item .how-desc { font-size: 12px; color: #a4a7c8; margin-top: 3px; }
+  .how-hint { font-size: 12px; color: #7a7a9e; text-align: center; margin-top: 4px; letter-spacing: 1px; }
 </style>
 </head>
 <body>
 <div id="stage">
-  <video id="cam" autoplay playsinline muted></video>
   <div id="veil"></div>
   <canvas id="game"></canvas>
+
+  <!-- 顶部森林绿品牌条 -->
+  <div class="hud-title" id="hudTitle">🌿 Joy 散步 · 森林公园</div>
+
+  <!-- 摄像头小窗(镜像预览) -->
+  <video id="cam" autoplay playsinline muted></video>
+  <div id="faceDot"></div>
+  <div class="face-label">你的镜像</div>
 
   <!-- HUD -->
   <div id="hud">
     <div class="chip">
-      <div class="label">今晚点亮</div>
-      <div class="value"><span id="scoreNum">0</span><span class="unit">/ 12</span></div>
+      <div class="label">和 Joy 一起收集</div>
+      <div class="value"><span id="boneNum">0</span>🦴 <span id="petalNum" style="margin-left:14px;">0</span>🌸</div>
     </div>
     <div class="hud-right">
-      <div class="chip" id="comboChip">
-        <div class="label">稳稳保持</div>
-        <div class="value"><span id="comboNum">0</span><span class="unit">连</span></div>
+      <div class="chip" id="progChip" style="min-width:180px;">
+        <div class="label">Joy 的散步进度</div>
+        <div class="progWrap"><div class="progFill" id="progFill"></div></div>
       </div>
-      <div id="routeDots"></div>
       <div class="chip" style="pointer-events:auto; padding:10px 20px;">
         <a class="reset" id="recalibrate">重新校准</a>
       </div>
@@ -194,55 +374,73 @@
 
   <!-- 首页（回来的钩子） -->
   <div class="overlay" id="homeScreen">
-    <div id="homeStarWrap"><canvas id="homeStar"></canvas></div>
-    <div id="streakLine"></div>
-    <div class="title" id="homeTitle"><span class="em">Joy</span> 来啦</div>
+    <div class="brand">今天不低头 · 关注你的颈椎健康</div>
+    <div class="title" id="homeTitle"><span class="em">Joy</span> 想去散步</div>
     <div class="subtitle" id="homeSub">
-      这是 Joy，它想陪你一起接住夜空里的星星。<br/>
-      <b>转头、抬头、耳朵找肩</b>带 Joy 够到星光 —— 每一下稳稳保持，都是给颈椎的放松。
+      Joy 会自己往前走,你负责用<b>头部动作</b>陪它躲避障碍。<br/>
+      60 秒的一段森林漫步,让颈椎在治愈里舒展。
     </div>
 
-    <div class="grow">
-      <div class="grow-top"><span class="stage" id="stageName">新朋友</span><span id="stageNext"></span></div>
-      <div class="bar"><div class="fill" id="growFill"></div></div>
-    </div>
-
-    <button class="btn" id="startBtn">开启摄像头，和 Joy 一起 →</button>
-    <div class="stat-inline" id="statLine"></div>
-
-    <div class="sens">
-      <div class="sens-top">
-        <span>颈部活动幅度</span>
-        <span class="sens-right">
-          <a class="sens-reset" id="sensReset">恢复默认</a>
-          <span id="sensLabel">适中</span>
-        </span>
+    <div class="how-grid">
+      <div class="how-item">
+        <span class="how-icon">◀▶</span>
+        <b>转头</b>
+        <div class="how-desc">换车道 · 躲水坑</div>
       </div>
-      <div class="sens-row">
-        <span class="sens-end">省力</span>
-        <input type="range" id="sensRange" min="0" max="100" value="50" />
-        <span class="sens-end">大幅</span>
+      <div class="how-item">
+        <span class="how-icon">▲</span>
+        <b>抬头</b>
+        <div class="how-desc">让 Joy 跳过树桩</div>
       </div>
-      <div class="tiny" style="margin-top:4px;">往「大幅」拖 → 需要把头转到更大角度才算达标；往「省力」拖 → 小幅度即可，适合刚开始或颈部不适时</div>
+      <div class="how-item">
+        <span class="how-icon">▼</span>
+        <b>低头</b>
+        <div class="how-desc">让 Joy 蹲下钻树枝</div>
+      </div>
+      <div class="how-item">
+        <span class="how-icon">↺</span>
+        <b>侧头</b>
+        <div class="how-desc">钻过歪树洞</div>
+      </div>
     </div>
 
-    <div class="row" style="margin-top:2px;">
+    <button class="btn" id="startBtn">开启摄像头 · WALK TIME!</button>
+    <div class="status" id="loadNote">请用 Chrome / Edge · 需要摄像头权限 · 约 60 秒</div>
+
+    <!-- 隐藏的次要区容器:保留 DOM 引用给 refreshHome/applySensitivity/setupReminder,视觉上不显示 -->
+    <div class="home-secondary" style="display:none;">
+      <div id="homeStarWrap"><canvas id="homeStar"></canvas></div>
+      <div id="streakLine"></div>
+      <div class="grow">
+        <div class="grow-top"><span class="stage" id="stageName">新朋友</span><span id="stageNext"></span></div>
+        <div class="bar"><div class="fill" id="growFill"></div></div>
+      </div>
+      <div class="stat-inline" id="statLine"></div>
+      <div class="sens">
+        <div class="sens-top">
+          <span>颈部活动幅度</span>
+          <span class="sens-right">
+            <a class="sens-reset" id="sensReset">恢复默认</a>
+            <span id="sensLabel">适中</span>
+          </span>
+        </div>
+        <div class="sens-row">
+          <span class="sens-end">省力</span>
+          <input type="range" id="sensRange" min="0" max="100" value="50" />
+          <span class="sens-end">大幅</span>
+        </div>
+      </div>
       <label class="toggle" id="remindToggle">
         <input type="checkbox" id="remindChk" />
         <span class="sw"></span>
         <span>工作时每 90 分钟叫我起来动动</span>
       </label>
     </div>
-    <div class="row">
-      <div class="hint">📷 画面只在本机处理，绝不上传</div>
-      <div class="hint">💡 正对屏幕、光线充足更准</div>
-    </div>
-    <div class="tiny" id="loadNote"></div>
   </div>
 
   <!-- 校准页 -->
   <div class="overlay hidden" id="calScreen">
-    <div class="subtitle" style="font-size:19px;color:#f4f7ff;font-weight:700;">坐直，轻轻收下巴，和 Joy 一起深呼吸～</div>
+    <div class="subtitle" style="font-size:19px;color:#e8f5ea;font-weight:700;">坐直,轻轻收下巴,和 Joy 一起深呼吸～</div>
     <div id="calRing">3</div>
     <div class="tiny">正在记住你端正坐姿时的中立位置</div>
   </div>
@@ -250,15 +448,16 @@
   <!-- 结算页 -->
   <div class="overlay hidden" id="doneScreen">
     <div id="doneStarWrap" style="width:150px;height:120px;"><canvas id="doneStar" style="width:100%;height:100%;"></canvas></div>
-    <div class="title" style="font-size:26px;">星空点亮啦 <span class="em">🌟</span></div>
+    <div class="title" style="font-size:26px;">散步结束啦 <span class="em">🌿</span></div>
     <div class="stat-row">
-      <div><div class="stat-big" id="doneCount">0</div><div class="stat-lbl">个动作做到位</div></div>
-      <div><div class="stat-big" id="doneTime">0s</div><div class="stat-lbl">用时</div></div>
+      <div><div class="stat-big" id="doneCount">0</div><div class="stat-lbl">个礼物收到</div></div>
+      <div><div class="stat-big" id="doneTime">0s</div><div class="stat-lbl">陪 Joy 走了</div></div>
     </div>
     <div class="dust-pop" id="dustPop">+0 星屑</div>
-    <div class="subtitle" id="doneMsg">脖子是不是轻松了一点？</div>
+    <div class="codex-wrap" id="doneCodex"></div>
+    <div class="subtitle" id="doneMsg">脖子是不是轻松了一点?</div>
     <div class="row">
-      <button class="btn" id="againBtn">再来一组 ↻</button>
+      <button class="btn" id="againBtn">再走一段 ↻</button>
       <button class="btn ghost" id="restBtn">先去休息</button>
     </div>
   </div>
@@ -313,13 +512,11 @@ function currentStage() { return STAGES[stageIndex(save.starDust)]; }
 const video = document.getElementById('cam');
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
-const scoreNum = document.getElementById('scoreNum');
-const comboNum = document.getElementById('comboNum');
-const comboChip = document.getElementById('comboChip');
 const bubble = document.getElementById('bubble');
 const coach = document.getElementById('coach');
 const hud = document.getElementById('hud');
-const routeDots = document.getElementById('routeDots');
+const hudTitle = document.getElementById('hudTitle');
+const faceDot = document.getElementById('faceDot');
 const homeScreen = document.getElementById('homeScreen');
 const calScreen = document.getElementById('calScreen');
 const doneScreen = document.getElementById('doneScreen');
@@ -413,15 +610,20 @@ function relAngle() {
   };
 }
 
-// 达标所需角度(度)——由灵敏度滑杆驱动，值越大越费力(要转得越到位)。
-// pitch 上抬(后伸)封顶更保守；低头较累，阈值放宽更好够；roll(侧屈)天然幅度最小。
-let reach = { yaw: 28, pitchUp: 14, pitchDown: 11, roll: 13 };
+// 达标所需角度(度)——由灵敏度滑杆驱动。散步 v3 里,值越大 = 需要更大幅度动作才触发跳/蹲/切道/侧倾。
+// 阈值大幅提高,逼玩家真的转到位而非'一闪而过'
+let reach = { yaw: 18, pitchUp: 14, pitchDown: 12, roll: 15 };
 function applySensitivity() {
   const base = sliderToReach(sensPos());
-  reach.yaw = base;
-  reach.pitchUp = base * 0.50;   // 抬头：小角度即达标 → 不鼓励过度后仰
-  reach.pitchDown = base * 0.40; // 低头：正面摄像头易丢脸，阈值要小，还没低到看不见脸就达标
-  reach.roll = base * 0.48;      // 侧屈：正面摄像头下 roll 角天然偏小，阈值调低更好够
+  const scale = base / 28;
+  reach.yaw = 18 * scale;
+  reach.pitchUp = 14 * scale;
+  reach.pitchDown = 12 * scale;
+  reach.roll = 15 * scale;
+  YAW_LANE_THRESH = reach.yaw;
+  PITCH_JUMP_THRESH = reach.pitchUp;
+  PITCH_CROUCH_THRESH = reach.pitchDown;
+  ROLL_TILT_THRESH = reach.roll;
 }
 
 // 滑杆 0~100(右=大幅) ↔ 达标基准角(度，即 reach.yaw)。分段映射：
@@ -451,66 +653,126 @@ function sensPos() {
   const s = save.sensPos;
   return (typeof s === 'number' && s >= 0 && s <= 100) ? s : 50;
 }
-let cursor = { x: W/2, y: H/2 };
-let prevCursor = { x: W/2, y: H/2 };
+let prevCursor = { x: W/2, y: H/2 };  // 保留:用于给 drawStarCreature 传 Joy 水平速度(做倾斜)
 let facePresent = false;
 let mood = 0.4;          // 0=蔫 1=神采奕奕，平滑
 let catchPulse = 0;      // 抓到时的弹跳
 let blink = 0;           // 眨眼相位
 let nextBlink = 1500;
 
-// 目标 / 一组循环
-const HOLD_TIME = 2500;        // 稳稳保持约 2.5s 才算达标（稳 > 快）
-const CENTER_BAND = 8;         // 回中判定：主轴相对角小于此值(度)视为已放松回正
-const PURITY_BAND = 20;        // 动作纯度：非主轴角度超过此值(度)视为掺了别的动作。放宽以容忍转头时自然的头部联动
-const PURITY_BAND_ROLL = 38;   // 侧屈节对 yaw 的容差(度)：侧头必然带转动，需比一般容差大得多
-let target = null;
-let collected = 0;
-let SESSION_TARGETS = 12;      // 由 routine 长度动态决定
-let combo = 0, bestCombo = 0;
+// ==================== 散步玩法参数(v2:跳/蹲/切道)====================
+const WALK_DURATION = 60000;      // 一次散步时长(ms) = 1 分钟
+// 我们改成"按时长"结束,不再按距离结束(距离仍用于视觉滚动 & 元素间距)
+const LANES_X = [0.28, 0.5, 0.72]; // 三条车道的水平位置(屏幕比例)
+const JOY_Y_GROUND = 0.72;         // Joy 在画面里的地面纵向位置
+const JOY_R = 42;
+const PICKUP_RADIUS = 62;          // 通用拾取半径(像素)
+const HIT_RADIUS = 40;             // 撞障碍半径
+// 自动前进速度(固定,不由头控)
+const WORLD_SPEED = 2.2;
+// yaw 到车道:头转过阈值切道
+let YAW_LANE_THRESH = 18;          // 头转过此角度,切一次道(提高:逼玩家真转到位)
+// pitch 触发跳/蹲的阈值(度)
+let PITCH_JUMP_THRESH = 14;        // 抬头 > 阈值 → 跳(pitch<0 是抬头)
+let PITCH_CROUCH_THRESH = 12;      // 低头 > 阈值 → 蹲
+// roll 侧屈:钻树洞用
+let ROLL_TILT_THRESH = 15;         // 头侧倾过此角度算侧屈到位
+// 触发前需要"稳"多久(毫秒),防止一闪而过
+const ACTION_HOLD_MS = 180;
+const JUMP_DURATION = 700;         // 跳跃总时长(ms)
+const JUMP_HEIGHT = 90;
+const CROUCH_HEIGHT = 26;
+const FLING_VEL_WALK = 30;         // 甩头阈值(度/帧),稍微放宽
+
+// 世界状态
+let walkStart = 0;
+let walkDist = 0;
 let sessionStart = 0;
-let particles = [];
-let trail = [];
-let relaxing = false;          // true=刚接住，等玩家回到正中再出下一颗
-let relaxCenterMs = 0;         // 已回中并保持的时长
-const FLING_VEL = 15;          // 主轴角速度(度/帧)超过此值才视为"甩头"，不计分。放宽：大幅够星光时的自然速度不该被误判
-let curSegAxis = null;         // 当前段落轴，用于切段提示
-let plan = [];                 // 展开后的逐目标序列
-let impureMsgAt = 0;           // 纠正提示节流
+let items = [];
+let nextItemAt = 0;
+let joyLane = 1;
+let joyLaneX = 0;
+let joyState = 'ground';           // 'ground' | 'jumping' | 'crouching'
+let jumpStart = 0;
+let joyDizzy = 0;
+let joyHurt = 0;
+let joyTilt = 0;                   // Joy 侧倾角度(-1..+1),用于钻树洞
+let bones = 0, petals = 0;
+let pickupBursts = [];
+let sceneParticles = [];
+let bubbles = [];
+let nextBubbleAt = 0;
+let pickupLog = new Set();
+let recentEvent = null;
 
-// 分段式 routine：每段一个运动平面，往返式（到位保持→回中放松→反向）。
-// 段与段之间天然回中，杜绝"摇头绕环"。pitch 的 sign<0=抬头(后伸,更保守) / >0=低头。
-const ROUTINE_SEGMENTS = [
-  { axis: 'yaw',   name: '转头',     intro: '第一节 · 慢慢向两侧转头', signs: [-1, +1, -1, +1] },
-  { axis: 'pitch', name: '抬头低头', intro: '第二节 · 轻抬头、缓低头',  signs: [-1, +1, -1, +1] },
-  { axis: 'roll',  name: '侧屈',     intro: '第三节 · 耳朵找肩，慢慢来', signs: [-1, +1, -1, +1] },
-];
-function segPos(axis, sign) {
-  if (axis === 'yaw')   return sign < 0 ? { nx: 0.12, ny: 0.50 } : { nx: 0.88, ny: 0.50 };
-  if (axis === 'pitch') return sign < 0 ? { nx: 0.50, ny: 0.14 } : { nx: 0.50, ny: 0.84 };
-  return sign < 0 ? { nx: 0.17, ny: 0.66 } : { nx: 0.83, ny: 0.66 }; // roll
-}
-function segDir(axis, sign) {
-  if (axis === 'yaw')   return sign < 0 ? '带 Joy 慢慢向左转头 ←' : '再慢慢向右转头 →';
-  if (axis === 'pitch') return sign < 0 ? '轻轻抬头，够上面的星星 ↑' : '慢慢低头，下巴找胸口 ↓';
-  return sign < 0 ? '左耳朵，轻轻靠向左肩' : '右耳朵，轻轻靠向右肩';
-}
-function buildRoutine() {
-  const arr = [];
-  for (const seg of ROUTINE_SEGMENTS) {
-    seg.signs.forEach((sign, i) => {
-      arr.push({ axis: seg.axis, sign, segName: seg.name, intro: i === 0 ? seg.intro : null, ...segPos(seg.axis, sign), dir: segDir(seg.axis, sign) });
-    });
-  }
-  return arr;
-}
+// 保持型小事件(如'看小鸟'):当前活跃事件
+let holdEvent = null;               // { kind, axis, sign, startedAt, holdMs, targetMs, done }
+let nextHoldEventAt = 0;
 
-const CHEERS = ['稳稳接住啦！', '保持得真好~', '就是这样，慢慢来', '这一下很到位！', '颈椎松开了呢', 'Joy 好安心✨'];
-const IMPURE_HINTS = {
-  shrug: '肩膀放松，沉下来～',
-  lean: '坐直一点，只用脖子就好',
-  fast: '慢一点，稳稳的～',
+// 头姿累计"保持"计数(毫秒),用于防一闪而过
+let yawHoldSign = 0;                // 当前 yaw 已保持的方向(-1/0/+1)
+let yawHoldMs = 0;
+let pitchHoldSign = 0;
+let pitchHoldMs = 0;
+let rollHoldSign = 0;
+let rollHoldMs = 0;
+
+// yaw 切道:上次切道后是否已回中(过零重置)
+let lastLaneSwitchAt = 0;
+let yawCommitted = false;           // 已经触发过一次切道,须回中才能再切
+let pitchWasCommitted = false;
+
+// 拾取时的鼓励文案
+const WALK_CHEERS = ['真棒~', '好眼力!', 'Joy 好开心', '嗯,给你', '香香的~', '这个好看~'];
+const WALK_HINTS = {
+  fling: '慢慢来,Joy 会跟上的~',
+  hitObstacle: '哎呀,撞到啦!',
+  hitPuddle: '小心水坑呀',
 };
+
+// ==================== 图鉴 ====================
+// 每个条目:id、名字、图形绘制类型(供 canvas 用)、来源(pickup / event / scene)
+const CODEX = [
+  { id: 'bone',      name: '骨头',    type: 'pickup', desc: 'Joy 最爱的零食' },
+  { id: 'flower',    name: '小雏菊',  type: 'pickup', desc: '路边偶尔开一两朵' },
+  { id: 'butterfly', name: '蝴蝶',    type: 'pickup', desc: '跳起来才够得到' },
+  { id: 'squirrel',  name: '小松鼠',  type: 'event',  desc: '看见你就竖起尾巴' },
+  { id: 'bird',      name: '小鸟',    type: 'event',  desc: '从头顶飞过' },
+  { id: 'rainbow',   name: '彩虹',    type: 'event',  desc: '雨后才会出现' },
+  { id: 'mailbox',   name: '红色邮筒','type': 'scene', desc: '街角的老朋友' },
+  { id: 'pond',      name: '小池塘',  type: 'scene',  desc: '有小鱼在打瞌睡' },
+];
+
+// ==================== 治愈气泡文案池 ====================
+const BUBBLES_QUOTE = [
+  '休息一下,没关系呀 ☁️',
+  '你今天已经很棒了',
+  '慢一点,慢一点,时间够的',
+  '一切都会好起来的 🌿',
+  '深呼吸,然后继续',
+  '你不需要什么都做对',
+  '疲惫也是被允许的',
+  '这一刻就是好的',
+];
+const BUBBLES_TIP = [
+  '💡 每 45 分钟站起来伸个懒腰',
+  '💡 手机放低一点,颈椎会感谢你',
+  '💡 屏幕和眼睛要保持一臂距离',
+  '💡 喝一杯水,让身体重启',
+  '💡 双肩下沉,不要一直耸肩',
+  '💡 下巴微收,可以减轻颈椎压力',
+];
+const BUBBLES_AD = [
+  '🛒 京东健康 · 颈椎按摩仪 6 折',
+  '🛒 京东健康 · 记忆棉护颈枕好评榜 TOP1',
+  '🛒 京东健康 · 办公室伸展指南 免费领',
+];
+function pickBubbleText() {
+  const r = Math.random();
+  if (r < 0.60) return { text: BUBBLES_QUOTE[Math.floor(Math.random() * BUBBLES_QUOTE.length)], kind: 'quote' };
+  if (r < 0.90) return { text: BUBBLES_TIP[Math.floor(Math.random() * BUBBLES_TIP.length)], kind: 'tip' };
+  return { text: BUBBLES_AD[Math.floor(Math.random() * BUBBLES_AD.length)], kind: 'ad' };
+}
 
 // ================= 声音 =================
 let audioCtx = null;
@@ -560,6 +822,9 @@ function loop(now) {
   if (!faceLandmarker || video.readyState < 2) return;
 
   now = now || performance.now();
+  const dt = loop._last ? (now - loop._last) : 16.7;
+  loop._last = now;
+
   if (video.currentTime !== lastVideoTime) {
     lastVideoTime = video.currentTime;
     let res = null;
@@ -572,13 +837,17 @@ function loop(now) {
       const el = face[EYE_L], er = face[EYE_R];
       rawEyeDist = Math.hypot(el.x - er.x, el.y - er.y);
       facePresent = true;
+      if (faceDot) { faceDot.style.background = '#6bff9d'; faceDot.style.boxShadow = '0 0 8px #6bff9d'; }
       // 三轴头姿角度
       const mtx = res.facialTransformationMatrixes;
       if (mtx && mtx.length > 0 && mtx[0].data) {
         rawAngle = matrixToEuler(mtx[0].data);
         haveMatrix = true;
       }
-    } else facePresent = false;
+    } else {
+      facePresent = false;
+      if (faceDot) { faceDot.style.background = '#ff5757'; faceDot.style.boxShadow = '0 0 8px #ff5757'; }
+    }
   }
 
   smoothNose.x += (rawNose.x - smoothNose.x) * SMOOTH;
@@ -589,167 +858,32 @@ function loop(now) {
   smoothAngle.roll  += (rawAngle.roll  - smoothAngle.roll)  * SMOOTH;
 
   const rel = relAngle();
-  // 主轴角速度(度/帧)——甩头防护用
-  const axis = curSegAxis || 'yaw';
-  angleVel = Math.abs(rel[axis] - prevRel[axis]);
-  prevRel = { ...rel };
+  // 主轴角速度(度/帧)——甩头防护用(散步玩法沿用 pitch/yaw 做甩头检测,合并到 updateWorldFromHead)
+  angleVel = Math.max(Math.abs(rel.yaw - prevRel.yaw), Math.abs(rel.pitch - prevRel.pitch));
 
-  // 由"当前段落轴"驱动 cursor：转头→x / 俯仰→y / 侧屈→x(下移一带以区别转头)
-  driveCursor(rel);
+  // 散步玩法:头姿驱动世界速度 & Joy 车道
+  if (state === 'playing') updateWorldFromHead(rel, dt);
+  else prevRel = { ...rel };
 
   // 心情：有脸且在游戏 → 上升；丢脸 → 下降
   const moodTarget = !facePresent ? 0.12 : (state === 'playing' ? 0.9 : 0.55);
   mood += (moodTarget - mood) * 0.05;
   catchPulse = Math.max(0, catchPulse - 0.045);
 
-  update(now);
+  updateWalk(now);
   render(now);
 }
 function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 
-// 角度 → 屏幕光标。fraction 到 ±1 即"够到目标角"，此时 Joy 正好落在星光上；
-// 超过目标角(overshoot)夹到 ±1，Joy 稳稳钉在星上而非飞过去 → 大幅动作也能接住并保持。
-function driveCursor(rel) {
-  prevCursor.x = cursor.x; prevCursor.y = cursor.y;
-  const ax = curSegAxis || 'yaw';
-  let nx = 0.5, ny = 0.5;
-  if (ax === 'yaw') {
-    const f = clamp(rel.yaw / reach.yaw, -1, 1);
-    nx = 0.5 + f * 0.38; ny = 0.5;           // f=±1 → 0.88/0.12，正好落在目标星上
-  } else if (ax === 'pitch') {
-    const denom = rel.pitch < 0 ? reach.pitchUp : reach.pitchDown;
-    const f = clamp(rel.pitch / denom, -1, 1);
-    ny = 0.5 + f * 0.35; nx = 0.5;           // f=±1 → 0.85/0.15
-  } else { // roll：侧屈，y 固定在下方一带，视觉上区别于转头
-    const f = clamp(rel.roll / reach.roll, -1, 1);
-    nx = 0.5 + f * 0.33; ny = 0.66;          // f=±1 → 0.83/0.17
-  }
-  cursor.x = clamp(nx, 0.05, 0.95) * W;
-  cursor.y = clamp(ny, 0.06, 0.94) * H;
-}
-
-// ================= 游戏逻辑 =================
-function spawnTarget() {
-  const s = plan[collected];
-  if (!s) return finish();
-  curSegAxis = s.axis;
-  relaxing = false; relaxCenterMs = 0;
-  // 星光从对应边缘飘入
-  const fromX = s.nx < 0.5 ? -0.08 : s.nx > 0.5 ? 1.08 : s.nx;
-  const fromY = s.ny < 0.5 ? -0.08 : s.ny > 0.5 ? 1.08 : s.ny;
-  target = { nx: s.nx, ny: s.ny, cxr: fromX, cyr: fromY, r: 44, hold: 0, dir: s.dir, axis: s.axis, sign: s.sign, born: performance.now() };
-  // 每段首个目标：先报节名，稍后再给方向提示
-  if (s.intro) {
-    say(s.intro, true);
-    const cur = target;
-    setTimeout(() => { if (target === cur && state === 'playing') say(cur.dir, true); }, 1400);
-  } else {
-    say(s.dir, true);
-  }
-  updateDots();
-}
-
-// 非主轴是否"干净"(未掺杂别的动作)；返回 null=干净，否则返回提示 key
-function purityIssue(rel) {
-  const ax = curSegAxis;
-  if (ax === 'yaw'   && Math.abs(rel.roll) > PURITY_BAND)      return 'shrug'; // 转头时头歪→多半在耸肩
-  if (ax === 'pitch' && Math.abs(rel.roll) > PURITY_BAND)      return 'shrug';
-  // 侧屈时头部自然带转动(生理耦合 + Euler 角耦合)，yaw 容差要放得很宽，否则正常侧头被误判
-  if (ax === 'roll'  && Math.abs(rel.yaw) > PURITY_BAND_ROLL)  return 'shrug';
-  // 探头/前倾：脸明显变大。仅在头基本朝正前方时判；侧屈节头在歪、脸尺度会变，跳过以免误判。
-  const facingForward = ax !== 'roll' && Math.abs(rel.yaw) < 12 && Math.abs(rel.pitch) < 12;
-  if (facingForward && baseEyeDist > 0 && smoothEyeDist > baseEyeDist * 1.30) return 'lean';
-  return null;
-}
-
-function update(now) {
-  // 拖尾
-  trail.push({ x: cursor.x, y: cursor.y, life: 1 });
-  if (trail.length > 14) trail.shift();
-  trail.forEach(t => t.life -= 0.07);
-  trail = trail.filter(t => t.life > 0);
-
-  particles.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life -= 0.02; });
-  particles = particles.filter(p => p.life > 0);
-
-  // 眨眼
+// 眨眼 / 粒子更新(散步版轻量版)
+function updateAmbient() {
+  // 眨眼相位
   nextBlink -= 16.7;
   if (nextBlink <= 0 && blink <= 0) { blink = 1; nextBlink = 1800 + Math.random() * 2500; }
   if (blink > 0) blink -= 0.12;
-
-  if (state !== 'playing' || !target) return;
-
-  const rel = relAngle();
-
-  // 接住后进入"回中放松"过渡：必须回到正中并稳住，才出下一颗（杜绝连续绕环）
-  if (relaxing) {
-    if (Math.abs(rel[curSegAxis]) < CENTER_BAND) {
-      relaxCenterMs += 16.7;
-      if (relaxCenterMs >= 450) { spawnTarget(); }
-    } else { relaxCenterMs = Math.max(0, relaxCenterMs - 20); }
-    return;
-  }
-
-  // 星光飘入到位
-  target.cxr += (target.nx - target.cxr) * 0.08;
-  target.cyr += (target.ny - target.cyr) * 0.08;
-
-  const tx = target.nx * W, ty = target.ny * H;
-  const d = Math.hypot(cursor.x - tx, cursor.y - ty);
-  const inside = d < target.r + 16;
-
-  // 甩头防护：主轴角速度过大 → 不累积保持，并提示慢下来
-  if (angleVel > FLING_VEL) {
-    target.hold = Math.max(0, target.hold - 40);
-    maybeHint('fast', now);
-    return;
-  }
-
-  if (inside && facePresent) {
-    const issue = purityIssue(rel);
-    if (issue) { // 掺了别的动作：不计保持，温柔纠正
-      target.hold = Math.max(0, target.hold - 20);
-      maybeHint(issue, now);
-    } else {
-      target.hold += 16.7;
-      if (target.hold >= HOLD_TIME) collect(tx, ty);
-    }
-  } else {
-    target.hold = Math.max(0, target.hold - 26);
-  }
 }
 
-// 纠正提示节流（避免刷屏）
-function maybeHint(key, now) {
-  if (now - impureMsgAt < 2200) return;
-  impureMsgAt = now;
-  say(IMPURE_HINTS[key] || '慢慢来～');
-}
-
-function collect(tx, ty) {
-  collected++; combo++; bestCombo = Math.max(bestCombo, combo);
-  scoreNum.textContent = collected;
-  comboNum.textContent = combo;
-  comboChip.classList.toggle('show', combo >= 2);
-  catchPulse = 1;
-  say(CHEERS[collected % CHEERS.length]);
-  burst(tx, ty);
-  playCatch(combo);
-  updateDots();
-  if (collected >= SESSION_TARGETS) return finish();
-  // 进入回中放松过渡，而非立刻出下一颗
-  relaxing = true; relaxCenterMs = 0;
-  target.hold = 0;
-}
-
-function burst(x, y) {
-  for (let i = 0; i < 20; i++) {
-    const a = (Math.PI * 2 * i) / 20 + Math.random();
-    const sp = 2 + Math.random() * 3.5;
-    particles.push({ x, y, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 1, life: 1, hue: 42 + Math.random()*40 });
-  }
-}
-
+// 气泡文案(散步版沿用原有实现)
 let bubbleTimer = null;
 function say(t, sticky = false) {
   bubble.textContent = t;
@@ -758,106 +892,728 @@ function say(t, sticky = false) {
   bubbleTimer = setTimeout(() => { bubble.style.transform = 'translateY(0)'; }, 180);
 }
 
-function updateDots() {
-  routeDots.innerHTML = '';
-  let lastAxis = null;
-  for (let i = 0; i < SESSION_TARGETS; i++) {
-    const ax = plan[i] ? plan[i].axis : null;
-    // 段与段之间插一个细分隔，视觉上分成 转头/俯仰/侧屈 三组
-    if (lastAxis && ax && ax !== lastAxis) {
-      const sep = document.createElement('div');
-      sep.className = 'rd-sep';
-      routeDots.appendChild(sep);
+// ==================== 散步玩法 v3:头姿 → 切道 / 跳 / 蹲 / 侧倾 ====================
+// 关键改动:
+// 1. 阈值提高(逼真转到位),动作需保持 ACTION_HOLD_MS 才算数,防"一闪而过"
+// 2. 加入 roll 侧倾(钻树洞)
+// 3. 保持型事件(看小鸟等)独立判定
+function updateWorldFromHead(rel, dt) {
+  // 甩头防护
+  const maxAngleVel = Math.max(Math.abs(rel.yaw - prevRel.yaw), Math.abs(rel.pitch - prevRel.pitch));
+  if (maxAngleVel > FLING_VEL_WALK) {
+    joyDizzy = 45;
+    maybeSay('fling');
+  }
+  prevRel = { ...rel };
+
+  const now = performance.now();
+
+  // ===== 头姿保持累计:超过阈值方向持续保持 dt ms =====
+  const yawSign = rel.yaw > YAW_LANE_THRESH ? 1 : (rel.yaw < -YAW_LANE_THRESH ? -1 : 0);
+  if (yawSign !== 0 && yawSign === yawHoldSign) yawHoldMs += dt;
+  else { yawHoldSign = yawSign; yawHoldMs = 0; }
+
+  const pitchSign = rel.pitch < -PITCH_JUMP_THRESH ? -1 : (rel.pitch > PITCH_CROUCH_THRESH ? 1 : 0);
+  if (pitchSign !== 0 && pitchSign === pitchHoldSign) pitchHoldMs += dt;
+  else { pitchHoldSign = pitchSign; pitchHoldMs = 0; }
+
+  const rollSign = rel.roll > ROLL_TILT_THRESH ? 1 : (rel.roll < -ROLL_TILT_THRESH ? -1 : 0);
+  if (rollSign !== 0 && rollSign === rollHoldSign) rollHoldMs += dt;
+  else { rollHoldSign = rollSign; rollHoldMs = 0; }
+
+  // ===== yaw 切道:方向保持 > ACTION_HOLD_MS 才触发一次;须回中重置 =====
+  if (yawSign !== 0 && yawHoldMs >= ACTION_HOLD_MS && !yawCommitted) {
+    const newLane = clamp(joyLane + yawSign, 0, 2);
+    if (newLane !== joyLane) {
+      joyLane = newLane;
+      lastLaneSwitchAt = now;
     }
-    lastAxis = ax;
-    const d = document.createElement('div');
-    d.className = 'rd' + (i < collected ? ' done' : i === collected ? ' cur' : '');
-    routeDots.appendChild(d);
+    yawCommitted = true;
+  }
+  // yaw 回到中立带才允许下一次切换
+  if (Math.abs(rel.yaw) < YAW_LANE_THRESH * 0.5) yawCommitted = false;
+
+  // Joy 屏幕 x 位置平滑到目标车道
+  const targetX = LANES_X[joyLane] * W;
+  joyLaneX += (targetX - joyLaneX) * 0.18;
+
+  // ===== pitch 触发跳 / 蹲(同样需要保持 ACTION_HOLD_MS)=====
+  if (joyState !== 'jumping') {
+    if (pitchSign === -1 && pitchHoldMs >= ACTION_HOLD_MS && !pitchWasCommitted) {
+      joyState = 'jumping';
+      jumpStart = now;
+      pitchWasCommitted = true;
+      playJump();
+    } else if (pitchSign === 1) {
+      // 低头 = 蹲(不锁,持续)
+      joyState = 'crouching';
+    } else if (joyState === 'crouching') {
+      // 回中 → 站起
+      joyState = 'ground';
+    }
+    if (Math.abs(rel.pitch) < PITCH_JUMP_THRESH * 0.4) pitchWasCommitted = false;
+  } else {
+    if (now - jumpStart >= JUMP_DURATION) joyState = 'ground';
+  }
+
+  // ===== roll 侧倾:实时 tracking,用于钻树洞;Joy 视觉上跟着倾 =====
+  const rollT = clamp(rel.roll / ROLL_TILT_THRESH, -1.4, 1.4);
+  joyTilt += (rollT - joyTilt) * 0.15;
+
+  // ===== 保持型事件(看小鸟)判定 =====
+  if (holdEvent && !holdEvent.done) {
+    // 玩家在做正确的动作 && 保持够时间?
+    const angle = holdEvent.axis === 'pitch' ? -rel.pitch : (holdEvent.axis === 'yaw' ? rel.yaw : rel.roll);
+    const meetsAngle = holdEvent.sign > 0 ? angle > holdEvent.needAngle : angle < -holdEvent.needAngle;
+    if (meetsAngle) {
+      holdEvent.holdMs += dt;
+      if (holdEvent.holdMs >= holdEvent.targetMs) {
+        completeHoldEvent();
+      }
+    } else {
+      holdEvent.holdMs = Math.max(0, holdEvent.holdMs - dt * 0.5);
+    }
   }
 }
 
-// ================= 渲染 =================
+// Joy 当前的 y 偏移(相对地面):跳=负(往上),蹲=正(往下)
+function joyYOffset(now) {
+  if (joyState === 'jumping') {
+    const t = clamp((now - jumpStart) / JUMP_DURATION, 0, 1);
+    // 抛物线弹跳:sin(π*t)
+    return -Math.sin(t * Math.PI) * JUMP_HEIGHT;
+  }
+  if (joyState === 'crouching') return CROUCH_HEIGHT;
+  return 0;
+}
+
+// 生成路上元素(v3 版:障碍 + 拾取 + 事件 + 树洞)
+function maybeSpawnItem() {
+  if (walkDist < nextItemAt) return;
+  // 慢节奏:间隔稍大,配合更大阈值的高难动作
+  nextItemAt = walkDist + 320 + Math.random() * 220;
+
+  const roll = Math.random();
+  const lane = Math.floor(Math.random() * 3);
+  let type;
+  // 障碍 50%(含新树洞),拾取 45%,松鼠事件 5%
+  if (roll < 0.15) type = 'stump';       // 跳过
+  else if (roll < 0.28) type = 'branch'; // 蹲下
+  else if (roll < 0.40) type = 'puddle'; // 切道
+  else if (roll < 0.50) type = 'tunnel'; // 侧倾钻树洞(新)
+  else if (roll < 0.68) type = 'bone';
+  else if (roll < 0.82) type = 'flower';
+  else if (roll < 0.94) type = 'butterfly';
+  else type = 'event_squirrel';
+
+  // 树洞方向:左 / 右
+  const tiltDir = type === 'tunnel' ? (Math.random() < 0.5 ? -1 : 1) : 0;
+
+  items.push({
+    type, lane, tiltDir,
+    x: LANES_X[lane] * W,
+    y: -60,
+    taken: false,
+    hit: false,
+    born: performance.now(),
+  });
+}
+
+// ===== 保持型事件(如"看小鸟")=====
+// 每 18-25 秒随机触发一次
+function maybeSpawnHoldEvent(now) {
+  if (holdEvent || now < nextHoldEventAt) return;
+  const pool = [
+    { kind: 'bird',    axis: 'pitch', sign: 1,  needAngle: 12, targetMs: 1500, prompt: '一只小鸟停在树上~抬头看看它', reward: 'bird', emoji: '🐦' },
+    { kind: 'rainbow', axis: 'pitch', sign: 1,  needAngle: 12, targetMs: 1800, prompt: '看!天上有彩虹', reward: 'rainbow', emoji: '🌈' },
+    { kind: 'pond',    axis: 'pitch', sign: -1, needAngle: 10, targetMs: 1500, prompt: '路边有个小池塘~低头看看', reward: 'pond', emoji: '💧' },
+    { kind: 'mailbox', axis: 'yaw',   sign: 1,  needAngle: 15, targetMs: 1500, prompt: '街角有红色邮筒 →', reward: 'mailbox', emoji: '📮' },
+  ];
+  const p = pool[Math.floor(Math.random() * pool.length)];
+  holdEvent = { ...p, holdMs: 0, startedAt: now, done: false, expireAt: now + 6000 };
+  say(p.prompt, true);
+  nextHoldEventAt = now + 18000 + Math.random() * 7000;
+}
+
+function completeHoldEvent() {
+  if (!holdEvent) return;
+  holdEvent.done = true;
+  pickupLog.add(holdEvent.reward);
+  petals += 2;
+  catchPulse = 1;
+  say(`✨ 发现 ${holdEvent.emoji} !`, true);
+  playCatch(6);
+  updateHudCounts();
+  // 保持型事件的粒子(在画面中央)
+  for (let i = 0; i < 24; i++) {
+    const a = (Math.PI * 2 * i) / 24 + Math.random();
+    const sp = 2 + Math.random() * 2.5;
+    pickupBursts.push({ x: W/2, y: H*0.4, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 1, life: 1, hue: 40 + Math.random()*60 });
+  }
+  setTimeout(() => { if (holdEvent && holdEvent.done) holdEvent = null; }, 1200);
+}
+
+let sayCooldown = 0;
+function maybeSay(key) {
+  const now = performance.now();
+  if (now - sayCooldown < 1800) return;
+  sayCooldown = now;
+  say(WALK_HINTS[key] || '~');
+}
+
+// 治愈气泡:每 12-18 秒飘出一个
+function maybeSpawnBubble(now) {
+  if (now < nextBubbleAt) return;
+  nextBubbleAt = now + 12000 + Math.random() * 6000;
+  const b = pickBubbleText();
+  bubbles.push({
+    text: b.text,
+    kind: b.kind,
+    x: 0.15 * W + Math.random() * 0.7 * W,
+    y: H * 0.65,
+    born: now,
+    ttl: 5000,  // 显示 5 秒
+  });
+}
+
+function updateWalk(now) {
+  if (state !== 'playing') return;
+
+  // 世界固定速度自动滚动
+  const speed = joyDizzy > 0 ? 0 : WORLD_SPEED;
+  if (joyDizzy > 0) joyDizzy--;
+
+  // 元素向下位移
+  items.forEach(it => { it.y += speed; });
+  walkDist += speed;
+
+  // 移除滚出画面的元素
+  items = items.filter(it => it.y < H + 80 && (!it.taken || (now - (it.takenAt || 0)) < 500) && (!it.hit || (now - (it.hitAt || 0)) < 500));
+
+  maybeSpawnItem();
+  maybeSpawnBubble(now);
+  maybeSpawnHoldEvent(now);
+
+  // 保持型事件过期
+  if (holdEvent && !holdEvent.done && now > holdEvent.expireAt) {
+    holdEvent = null;
+  }
+
+  // 拾取 & 碰撞:根据 Joy 车道 + 垂直状态判断
+  const joyY_px = JOY_Y_GROUND * H + joyYOffset(now);
+  const isJumping = joyState === 'jumping';
+  const isCrouching = joyState === 'crouching';
+  const inLane = (it) => Math.abs(it.x - joyLaneX) < 45;
+  const inYReach = (it) => Math.abs(it.y - JOY_Y_GROUND * H) < 55;
+
+  for (const it of items) {
+    if (it.taken || it.hit) continue;
+    if (!inYReach(it) || !inLane(it)) continue;
+
+    if (it.type === 'stump' || it.type === 'branch') {
+      const dodged = (it.type === 'stump' && isJumping) || (it.type === 'branch' && isCrouching);
+      if (!dodged) {
+        it.hit = true; it.hitAt = now;
+        joyHurt = 20;
+        joyDizzy = 30;
+        maybeSay('hitObstacle');
+      } else {
+        it.dodged = true;
+      }
+    } else if (it.type === 'tunnel') {
+      // 树洞:必须头侧倾到对应方向才能钻过
+      // tiltDir=-1 表示洞口向左(玩家须头向左侧倾,joyTilt<-0.7);tiltDir=+1 反之
+      const tiltMatch = it.tiltDir < 0 ? joyTilt < -0.7 : joyTilt > 0.7;
+      if (!tiltMatch) {
+        it.hit = true; it.hitAt = now;
+        joyHurt = 20;
+        joyDizzy = 30;
+        maybeSay('hitObstacle');
+      } else {
+        it.dodged = true;
+      }
+    } else if (it.type === 'puddle') {
+      it.hit = true; it.hitAt = now;
+      joyHurt = 20;
+      joyDizzy = 30;
+      maybeSay('hitPuddle');
+    } else if (it.type === 'bone' || it.type === 'flower' || it.type === 'butterfly') {
+      const canPickup =
+        (it.type === 'butterfly' && isJumping) ||
+        (it.type === 'flower' && !isJumping) ||
+        (it.type === 'bone' && !isJumping);
+      if (canPickup) {
+        it.taken = true; it.takenAt = now;
+        catchPulse = 1;
+        if (it.type === 'bone') { bones++; pickupLog.add('bone'); }
+        else if (it.type === 'flower') { petals++; pickupLog.add('flower'); }
+        else { petals++; pickupLog.add('butterfly'); }
+        say(WALK_CHEERS[(bones + petals) % WALK_CHEERS.length]);
+        burstPickup(it.x, it.y, it.type);
+        playCatch(Math.min(8, bones + petals));
+        updateHudCounts();
+      }
+    } else if (it.type === 'event_squirrel') {
+      it.taken = true; it.takenAt = now;
+      pickupLog.add('squirrel');
+      say('看!小松鼠 🐿️');
+      catchPulse = 1;
+    }
+  }
+
+  // Joy 受伤闪红
+  if (joyHurt > 0) joyHurt--;
+
+  // 粒子
+  pickupBursts.forEach(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.02; });
+  pickupBursts = pickupBursts.filter(p => p.life > 0);
+
+  // 治愈气泡:向上飘,超过 ttl 消失
+  bubbles.forEach(b => {
+    const age = now - b.born;
+    b.y = H * 0.65 - (age / b.ttl) * 120;
+    b.alpha = age < 500 ? age / 500 : (age > b.ttl - 800 ? Math.max(0, (b.ttl - age) / 800) : 1);
+  });
+  bubbles = bubbles.filter(b => now - b.born < b.ttl);
+
+  // 场景装饰花瓣
+  if (Math.random() < 0.05) {
+    sceneParticles.push({
+      x: Math.random() * W, y: -10,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: 0.6 + Math.random() * 1.0,
+      rot: Math.random() * Math.PI,
+      vrot: (Math.random() - 0.5) * 0.05,
+      hue: 340 + Math.random() * 30,
+      alpha: 0.35 + Math.random() * 0.35,
+      size: 4 + Math.random() * 4,
+    });
+  }
+  sceneParticles.forEach(p => { p.x += p.vx; p.y += p.vy + speed * 0.4; p.rot += p.vrot; });
+  sceneParticles = sceneParticles.filter(p => p.y < H + 20);
+
+  // 进度条(按时长)
+  const walkElapsed = now - sessionStart;
+  const progFill = document.getElementById('progFill');
+  if (progFill) progFill.style.width = Math.min(100, (walkElapsed / WALK_DURATION) * 100) + '%';
+
+  // 到达终点(按时长)
+  if (walkElapsed >= WALK_DURATION) finish();
+}
+
+function burstPickup(x, y, type) {
+  const hue = type === 'bone' ? 42 : (type === 'butterfly' ? 280 : 340);
+  for (let i = 0; i < 14; i++) {
+    const a = (Math.PI * 2 * i) / 14 + Math.random();
+    const sp = 1.5 + Math.random() * 2.5;
+    pickupBursts.push({ x, y, vx: Math.cos(a)*sp, vy: Math.sin(a)*sp - 1.2, life: 1, hue: hue + Math.random()*30 });
+  }
+}
+
+function updateHudCounts() {
+  const b = document.getElementById('boneNum');
+  const p = document.getElementById('petalNum');
+  if (b) b.textContent = bones;
+  if (p) p.textContent = petals;
+}
+
+// updateDots 保留但清空
+function updateDots() {
+  const el = document.getElementById('routeDots');
+  if (el) el.innerHTML = '';
+}
+
+function playJump() { beep(660, 0.10, 'sine', 0.14); beep(880, 0.10, 'sine', 0.10, 0.06); }
+
+// ================= 渲染(散步玩法 v2) =================
 function render(now) {
   ctx.clearRect(0, 0, W, H);
-
-  // 回中放松过渡：中央画一个柔和的"回正"光环，引导放松
-  if (state === 'playing' && relaxing) {
-    const cxp = W/2, cyp = curSegAxis === 'roll' ? H*0.66 : H/2;
-    const pulse = 1 + Math.sin(now / 380) * 0.12;
-    ctx.beginPath(); ctx.arc(cxp, cyp, 52 * pulse, 0, 7);
-    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(185,174,240,0.55)'; ctx.setLineDash([6, 8]); ctx.stroke(); ctx.setLineDash([]);
-  }
-
-  if (state === 'playing' && target && !relaxing) {
-    const tx = target.cxr * W, ty = target.cyr * H;
-    const prog = target.hold / HOLD_TIME;
-    const pulse = 1 + Math.sin(now / 300) * 0.06;
-    const r = target.r * pulse;
-
-    // 侧屈段：给一条倾斜引导弧，暗示"耳朵找肩"的方向
-    if (target.axis === 'roll') {
-      ctx.save();
-      ctx.translate(tx, ty);
-      ctx.rotate((target.sign < 0 ? -1 : 1) * 0.5);
-      ctx.beginPath(); ctx.ellipse(0, 0, r + 26, r + 12, 0, -0.9, 0.9);
-      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,210,140,0.4)'; ctx.stroke();
-      ctx.restore();
-    }
-
-    const g = ctx.createRadialGradient(tx, ty, 3, tx, ty, r + 30);
-    g.addColorStop(0, 'rgba(255,210,120,0.7)');
-    g.addColorStop(1, 'rgba(255,194,58,0)');
-    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(tx, ty, r + 30, 0, 7); ctx.fill();
-    // 目标 = Joy 剪影（轻微摇摆），替代五角星
-    drawJoyTarget(tx, ty, r * 0.92, Math.sin(now / 900) * 0.12, 0.92);
-
-    if (prog > 0) {
-      ctx.beginPath(); ctx.arc(tx, ty, r + 10, -Math.PI/2, -Math.PI/2 + prog * Math.PI * 2);
-      ctx.lineWidth = 6; ctx.strokeStyle = '#ffc23a'; ctx.lineCap = 'round'; ctx.stroke();
-    }
-  }
-
-  // 拖尾
-  trail.forEach(t => {
-    ctx.globalAlpha = t.life * 0.35;
-    ctx.beginPath(); ctx.arc(t.x, t.y, 7 * t.life + 2, 0, 7);
-    ctx.fillStyle = 'rgba(255,210,140,1)'; ctx.fill();
-  });
-  ctx.globalAlpha = 1;
-
-  particles.forEach(p => {
-    ctx.globalAlpha = Math.max(0, p.life);
-    ctx.beginPath(); ctx.arc(p.x, p.y, 4 * p.life + 1, 0, 7);
-    ctx.fillStyle = `hsl(${p.hue}, 90%, 65%)`; ctx.fill();
-  });
-  ctx.globalAlpha = 1;
+  updateAmbient();
 
   if (state === 'playing' || state === 'calibrating') {
-    // 侧屈段：Joy 主动跟着"耳朵找肩"的方向歪头示范
-    let tiltOverride = null;
-    if (state === 'playing' && curSegAxis === 'roll') {
-      const rel = relAngle();
-      tiltOverride = clamp(rel.roll / (reach.roll || 26), -1, 1) * 0.5;
+    drawWalkScene(now);
+    // 元素:按 y 排序,让近处的画在上面
+    const sortedItems = [...items].sort((a, b) => a.y - b.y);
+    for (const it of sortedItems) drawItem(it, now);
+
+    pickupBursts.forEach(p => {
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.beginPath(); ctx.arc(p.x, p.y, 4 * p.life + 1, 0, 7);
+      ctx.fillStyle = `hsl(${p.hue}, 85%, 65%)`; ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    sceneParticles.forEach(p => drawSakuraPetal(p));
+
+    // Joy 主体(在路面之上)
+    const joyY_px = JOY_Y_GROUND * H + joyYOffset(now);
+    // Joy 阴影:根据高度变淡
+    const jumpH = -joyYOffset(now);
+    const shadowScale = clamp(1 - jumpH / JUMP_HEIGHT * 0.4, 0.6, 1);
+    const shadowAlpha = 0.28 * shadowScale;
+    ctx.globalAlpha = shadowAlpha;
+    ctx.beginPath();
+    ctx.ellipse(joyLaneX, JOY_Y_GROUND * H + 30, 36 * shadowScale, 8 * shadowScale, 0, 0, 7);
+    ctx.fillStyle = '#000'; ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // 受伤闪红
+    if (joyHurt > 0) {
+      ctx.globalAlpha = (joyHurt / 20) * 0.4;
+      ctx.beginPath(); ctx.arc(joyLaneX, joyY_px, JOY_R + 18, 0, 7);
+      ctx.fillStyle = '#ff5555'; ctx.fill();
+      ctx.globalAlpha = 1;
     }
-    drawStarCreature(ctx, cursor.x, cursor.y, currentStage(), now, mood, catchPulse, blink, cursor.x - prevCursor.x, tiltOverride);
+
+    // Joy 蹲下时压扁 + 侧倾时旋转
+    const squash = joyState === 'crouching' ? 0.75 : 1.0;
+    ctx.save();
+    ctx.translate(joyLaneX, joyY_px);
+    ctx.scale(1.05, squash);
+    ctx.translate(-joyLaneX, -joyY_px);
+    // Joy 头部倾斜:优先受伤时的抖动,其次侧屈动作,最后水平速度
+    const tiltForJoy = joyDizzy > 0 ? Math.sin(now / 90) * 0.3
+                    : Math.abs(joyTilt) > 0.15 ? joyTilt * 0.55
+                    : null;
+    drawStarCreature(ctx, joyLaneX, joyY_px, currentStage(), now, mood, catchPulse, blink, joyLaneX - prevCursor.x, tiltForJoy);
+    ctx.restore();
+    prevCursor.x = joyLaneX;
+
+    // 保持型事件:画一个大圆圈进度提示
+    if (holdEvent && !holdEvent.done) {
+      const cx = W/2, cy = H * 0.4;
+      const prog = clamp(holdEvent.holdMs / holdEvent.targetMs, 0, 1);
+      // 光环
+      ctx.beginPath(); ctx.arc(cx, cy, 60, 0, 7);
+      ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+      ctx.lineWidth = 6; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx, cy, 60, -Math.PI/2, -Math.PI/2 + prog * Math.PI * 2);
+      ctx.strokeStyle = '#ffc23a'; ctx.lineWidth = 8; ctx.lineCap = 'round';
+      ctx.stroke();
+      // 中央 emoji
+      ctx.font = '48px ' + getComputedStyle(document.body).fontFamily;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(holdEvent.emoji, cx, cy);
+      ctx.textBaseline = 'alphabetic';
+    }
+
+    // 治愈气泡:飘在画面中间偏上
+    drawBubbles();
   }
 
   if (state === 'playing' && !facePresent) {
     ctx.font = '600 16px ' + getComputedStyle(document.body).fontFamily;
-    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillText('Joy 找不到你了，露个脸吧～', W/2, 66);
+    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(60,80,80,0.85)';
+    ctx.fillText('Joy 找不到你了,露个脸吧～', W/2, 66);
   }
 
-  // 调参用：?debug=1 显示三轴角度、当前段、角速度
+  // ?debug=1
   if (DEBUG && (state === 'playing' || state === 'calibrating')) {
     const rel = relAngle();
     ctx.font = '600 13px monospace'; ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(8, H - 88, 232, 80);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(8, H - 120, 280, 110);
     ctx.fillStyle = '#8effc7';
-    ctx.fillText(`matrix:${haveMatrix?'ok':'--'}  seg:${curSegAxis||'-'}${relaxing?' (relax)':''}`, 16, H - 68);
-    ctx.fillText(`yaw  ${rel.yaw.toFixed(1)}  (reach ${reach.yaw.toFixed(0)})`, 16, H - 50);
-    ctx.fillText(`pitch ${rel.pitch.toFixed(1)}  roll ${rel.roll.toFixed(1)}`, 16, H - 32);
-    ctx.fillText(`vel ${angleVel.toFixed(1)}  eye ${(smoothEyeDist/(baseEyeDist||1)).toFixed(2)}x`, 16, H - 14);
+    ctx.fillText(`matrix:${haveMatrix?'ok':'--'}  lane:${joyLane}  state:${joyState}  dizzy:${joyDizzy}`, 16, H - 100);
+    ctx.fillText(`yaw  ${rel.yaw.toFixed(1)}  pitch ${rel.pitch.toFixed(1)}  roll ${rel.roll.toFixed(1)}`, 16, H - 82);
+    ctx.fillText(`thresh yaw:${YAW_LANE_THRESH.toFixed(0)} pitch↑${PITCH_JUMP_THRESH.toFixed(0)} pitch↓${PITCH_CROUCH_THRESH.toFixed(0)}`, 16, H - 64);
+    ctx.fillText(`elapsed ${((performance.now() - sessionStart)/1000).toFixed(1)}s/${WALK_DURATION/1000}s  items ${items.length}`, 16, H - 46);
+    ctx.fillText(`pickups b:${bones} p:${petals}  codex ${pickupLog.size}  bubbles ${bubbles.length}`, 16, H - 28);
+  }
+}
+
+// 画散步场景:透视三车道 + 路边草
+function drawWalkScene(now) {
+  const pathTopY = H * 0.28;
+  const pathBotY = H;
+  // 用三车道 x 计算左右边界
+  const topSpread = 0.10;   // 顶部小径宽度占屏
+  const botSpread = 0.50;   // 底部宽度占屏
+  const topL = W * (0.5 - topSpread), topR = W * (0.5 + topSpread);
+  const botL = W * (0.5 - botSpread), botR = W * (0.5 + botSpread);
+
+  // 小径底色
+  ctx.fillStyle = 'rgba(230,210,175,0.62)';
+  ctx.beginPath();
+  ctx.moveTo(topL, pathTopY); ctx.lineTo(topR, pathTopY);
+  ctx.lineTo(botR, pathBotY); ctx.lineTo(botL, pathBotY);
+  ctx.closePath(); ctx.fill();
+
+  // 两条车道分割线(透视)
+  ctx.strokeStyle = 'rgba(160,140,100,0.35)';
+  ctx.lineWidth = 1.5;
+  const laneEdges = [1/6, 3/6, 5/6];  // 左道右边界 / 中道右边界 / 右道右边界...改为 [1/3, 2/3] 分割 3 道
+  for (const frac of [1/3, 2/3]) {
+    const t_top = topL + (topR - topL) * frac;
+    const t_bot = botL + (botR - botL) * frac;
+    ctx.beginPath(); ctx.moveTo(t_top, pathTopY); ctx.lineTo(t_bot, pathBotY); ctx.stroke();
+  }
+
+  // 路面边缘
+  ctx.strokeStyle = 'rgba(180,160,120,0.55)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(topL, pathTopY); ctx.lineTo(botL, pathBotY);
+  ctx.moveTo(topR, pathTopY); ctx.lineTo(botR, pathBotY);
+  ctx.stroke();
+
+  // 滚动的横向石板缝
+  const stripeSpace = 55;
+  const scroll = (walkDist * 1.6) % stripeSpace;
+  for (let sy = pathTopY + scroll; sy < H + stripeSpace; sy += stripeSpace) {
+    const t = (sy - pathTopY) / (H - pathTopY);
+    const L = topL + (botL - topL) * t;
+    const R = topR + (botR - topR) * t;
+    ctx.strokeStyle = `rgba(180,160,120,${0.10 + t * 0.15})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(L, sy); ctx.lineTo(R, sy); ctx.stroke();
+  }
+}
+
+function drawBubbles() {
+  ctx.textAlign = 'center';
+  ctx.font = '600 15px ' + getComputedStyle(document.body).fontFamily;
+  for (const b of bubbles) {
+    const bg = b.kind === 'ad' ? 'rgba(255,220,180,0.94)'
+              : b.kind === 'tip' ? 'rgba(200,235,220,0.94)'
+              : 'rgba(230,220,250,0.94)';
+    const border = b.kind === 'ad' ? '#e5934a'
+                  : b.kind === 'tip' ? '#5ec7b0'
+                  : '#b9aef0';
+    ctx.globalAlpha = b.alpha ?? 1;
+    // 测量文字宽度
+    const tw = ctx.measureText(b.text).width;
+    const padX = 14, padY = 10;
+    const rw = tw + padX * 2, rh = 30;
+    const rx = b.x - rw / 2, ry = b.y - rh / 2;
+    // 圆角矩形
+    const rad = 15;
+    ctx.beginPath();
+    ctx.moveTo(rx + rad, ry);
+    ctx.lineTo(rx + rw - rad, ry);
+    ctx.quadraticCurveTo(rx + rw, ry, rx + rw, ry + rad);
+    ctx.lineTo(rx + rw, ry + rh - rad);
+    ctx.quadraticCurveTo(rx + rw, ry + rh, rx + rw - rad, ry + rh);
+    ctx.lineTo(rx + rad, ry + rh);
+    ctx.quadraticCurveTo(rx, ry + rh, rx, ry + rh - rad);
+    ctx.lineTo(rx, ry + rad);
+    ctx.quadraticCurveTo(rx, ry, rx + rad, ry);
+    ctx.closePath();
+    ctx.fillStyle = bg; ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = border; ctx.stroke();
+    // 文字
+    ctx.fillStyle = '#3a4a55';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(b.text, b.x, b.y);
+  }
+  ctx.globalAlpha = 1;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+}
+
+function drawSakuraPetal(p) {
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.rotate(p.rot);
+  ctx.globalAlpha = p.alpha;
+  ctx.fillStyle = `hsl(${p.hue}, 65%, 82%)`;
+  ctx.beginPath();
+  ctx.ellipse(0, 0, p.size, p.size * 0.55, 0, 0, 7);
+  ctx.fill();
+  ctx.restore();
+  ctx.globalAlpha = 1;
+}
+
+function drawItem(it, now) {
+  const age = now - it.born;
+  const fadeIn = clamp(age / 400, 0, 1);
+  ctx.globalAlpha = fadeIn;
+  if (it.taken) {
+    const t = clamp((now - it.takenAt) / 500, 0, 1);
+    ctx.globalAlpha = (1 - t) * fadeIn;
+    const dx = (60 - it.x) * t, dy = (30 - it.y) * t;
+    drawItemGlyph(it.x + dx, it.y + dy, it.type, 1 - t * 0.6, it);
+  } else if (it.hit) {
+    const t = clamp((now - it.hitAt) / 500, 0, 1);
+    ctx.globalAlpha = (1 - t) * fadeIn;
+    drawItemGlyph(it.x, it.y, it.type, 1, it);
+  } else {
+    drawItemGlyph(it.x, it.y, it.type, 1 + Math.sin(now / 300 + it.born) * 0.06, it);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawItemGlyph(x, y, type, scale, it) {
+  const s = scale;
+  if (type === 'bone') {
+    // 骨头:两个圆头 + 中间横
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-0.35);
+    ctx.fillStyle = '#fff7e0';
+    ctx.strokeStyle = 'rgba(160,130,80,0.7)';
+    ctx.lineWidth = 2;
+    const w = 40 * s, h = 15 * s;
+    // 中间横条
+    ctx.fillRect(-w/2 + 8, -h/2, w - 16, h);
+    // 两端圆
+    ctx.beginPath(); ctx.arc(-w/2 + 6, -h/2, 9 * s, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(-w/2 + 6, h/2, 9 * s, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(w/2 - 6, -h/2, 9 * s, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(w/2 - 6, h/2, 9 * s, 0, 7); ctx.fill();
+    // 描边
+    ctx.beginPath(); ctx.arc(-w/2 + 6, -h/2, 9 * s, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(-w/2 + 6, h/2, 9 * s, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(w/2 - 6, -h/2, 9 * s, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.arc(w/2 - 6, h/2, 9 * s, 0, 7); ctx.stroke();
+    ctx.restore();
+  } else if (type === 'flower') {
+    // 花朵:5 片粉色花瓣 + 黄色花心
+    ctx.save();
+    ctx.translate(x, y);
+    for (let i = 0; i < 5; i++) {
+      ctx.save();
+      ctx.rotate((i * Math.PI * 2) / 5);
+      ctx.fillStyle = 'rgba(255,180,200,0.95)';
+      ctx.beginPath();
+      ctx.ellipse(0, -12 * s, 9 * s, 12 * s, 0, 0, 7);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = '#ffc23a';
+    ctx.beginPath(); ctx.arc(0, 0, 5 * s, 0, 7); ctx.fill();
+    ctx.restore();
+  } else if (type === 'butterfly') {
+    // 蝴蝶:两片翅膀(悬浮在空中,高于地面)
+    ctx.save();
+    ctx.translate(x, y - 48);   // 视觉上悬浮在跳跃可及位置
+    // 简单振翅
+    const wing = 1 + Math.sin(performance.now() / 80) * 0.15;
+    ctx.fillStyle = 'rgba(200,150,240,0.92)';
+    ctx.beginPath(); ctx.ellipse(-9 * s, 0, 12 * wing * s, 10 * s, -0.3, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(9 * s, 0, 12 * wing * s, 10 * s, 0.3, 0, 7); ctx.fill();
+    // 身体
+    ctx.fillStyle = '#4a3060';
+    ctx.beginPath(); ctx.ellipse(0, 0, 2 * s, 8 * s, 0, 0, 7); ctx.fill();
+    ctx.restore();
+    // 一条淡淡的引导虚线,标记它离地的位置
+    ctx.setLineDash([3, 4]);
+    ctx.strokeStyle = 'rgba(200,150,240,0.35)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 48); ctx.stroke();
+    ctx.setLineDash([]);
+  } else if (type === 'stump') {
+    // 树桩:棕色的圆柱形障碍(需要跳过)
+    ctx.save();
+    ctx.translate(x, y);
+    // 顶部椭圆
+    ctx.fillStyle = '#c9a06b';
+    ctx.beginPath(); ctx.ellipse(0, -10 * s, 20 * s, 8 * s, 0, 0, 7); ctx.fill();
+    // 侧面
+    ctx.fillStyle = '#8b6a3c';
+    ctx.beginPath();
+    ctx.moveTo(-20 * s, -10 * s);
+    ctx.lineTo(20 * s, -10 * s);
+    ctx.lineTo(18 * s, 15 * s);
+    ctx.lineTo(-18 * s, 15 * s);
+    ctx.closePath(); ctx.fill();
+    // 年轮
+    ctx.strokeStyle = 'rgba(90,60,30,0.6)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.ellipse(0, -10 * s, 12 * s, 5 * s, 0, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(0, -10 * s, 6 * s, 2.5 * s, 0, 0, 7); ctx.stroke();
+    ctx.restore();
+  } else if (type === 'branch') {
+    // 低矮树枝:横过路面的树枝,需要蹲下钻过
+    ctx.save();
+    ctx.translate(x, y);
+    // 一根横向的枝干,悬在空中
+    ctx.strokeStyle = '#8b6a3c';
+    ctx.lineWidth = 8 * s;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(-42 * s, -32);
+    ctx.lineTo(42 * s, -30);
+    ctx.stroke();
+    // 几片叶子
+    ctx.fillStyle = 'rgba(90,160,110,0.85)';
+    for (let i = -30; i <= 30; i += 15) {
+      ctx.beginPath();
+      ctx.ellipse(i * s, -34 + Math.sin(i) * 2, 7 * s, 4 * s, 0.4, 0, 7);
+      ctx.fill();
+    }
+    // 一条淡淡的"低于线"引导:从树枝到地面
+    ctx.setLineDash([2, 3]);
+    ctx.strokeStyle = 'rgba(139,106,60,0.3)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-40 * s, -30); ctx.lineTo(-40 * s, 0);
+    ctx.moveTo(40 * s, -30); ctx.lineTo(40 * s, 0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  } else if (type === 'puddle') {
+    // 水坑:蓝色椭圆
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(60,110,140,0.35)';
+    ctx.beginPath(); ctx.ellipse(2, 4, 40 * s, 16 * s, 0, 0, 7); ctx.fill();
+    const g = ctx.createRadialGradient(0, 0, 4, 0, 0, 40);
+    g.addColorStop(0, 'rgba(180,220,240,0.85)');
+    g.addColorStop(1, 'rgba(100,160,200,0.55)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.ellipse(0, 0, 38 * s, 14 * s, 0, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(-8, -3, 16 * s, 4 * s, 0, 0, 7); ctx.stroke();
+    ctx.restore();
+  } else if (type === 'tunnel') {
+    // 树洞:一个倾斜的洞口,tiltDir<0 洞口向左歪(需要头向左侧倾钻过),>0 向右歪
+    const dir = it && it.tiltDir ? it.tiltDir : 1;
+    ctx.save();
+    ctx.translate(x, y - 20);
+    // 洞口整体倾斜
+    ctx.rotate(dir * 0.55);
+    // 外框(树干)
+    ctx.fillStyle = '#8b6a3c';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 42 * s, 32 * s, 0, 0, 7);
+    ctx.fill();
+    // 洞口(深色)
+    ctx.fillStyle = '#3a2a1c';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 30 * s, 22 * s, 0, 0, 7);
+    ctx.fill();
+    // 洞口反光
+    ctx.fillStyle = 'rgba(180,140,100,0.5)';
+    ctx.beginPath();
+    ctx.ellipse(-8, -6, 10 * s, 4 * s, -0.3, 0, 7);
+    ctx.fill();
+    ctx.restore();
+    // 方向提示箭头(不倾斜的地面提示)
+    ctx.save();
+    ctx.translate(x, y + 30);
+    ctx.fillStyle = 'rgba(255,194,58,0.8)';
+    ctx.font = '700 22px ' + getComputedStyle(document.body).fontFamily;
+    ctx.textAlign = 'center';
+    ctx.fillText(dir < 0 ? '↖ 头向左歪' : '↗ 头向右歪', 0, 0);
+    ctx.restore();
+  } else if (type === 'event_squirrel') {
+    // 松鼠事件:一只小松鼠站在路边草丛里
+    ctx.save();
+    ctx.translate(x, y - 12);
+    // 身体
+    ctx.fillStyle = '#c48858';
+    ctx.beginPath(); ctx.ellipse(0, 0, 12 * s, 10 * s, 0, 0, 7); ctx.fill();
+    // 头
+    ctx.beginPath(); ctx.arc(-8 * s, -8 * s, 7 * s, 0, 7); ctx.fill();
+    // 大尾巴(标志性)
+    ctx.beginPath();
+    ctx.ellipse(12 * s, -2 * s, 6 * s, 14 * s, -0.5, 0, 7);
+    ctx.fill();
+    // 眼睛
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(-10 * s, -9 * s, 1.5, 0, 7); ctx.fill();
+    ctx.restore();
   }
 }
 
@@ -937,7 +1693,7 @@ function drawStarCreature(c, x, y, stage, now, moodV, pop, blinkV, vx, tiltOverr
 // ================= 校准（坐直·收下巴·记住中立位） =================
 function calibrate() {
   state = 'calibrating';
-  hud.classList.remove('show'); coach.classList.remove('show');
+  hud.classList.remove('show'); hudTitle.classList.remove('show'); coach.classList.remove('show');
   calScreen.classList.remove('hidden');
   let samples = [], count = 3;
   calRing.textContent = count;
@@ -969,33 +1725,60 @@ function avg(a) { return a.reduce((s, v) => s + v, 0) / a.length; }
 
 function beginSession() {
   state = 'playing';
-  plan = buildRoutine();
-  SESSION_TARGETS = plan.length;
-  collected = 0; combo = 0; bestCombo = 0;
-  relaxing = false; relaxCenterMs = 0; curSegAxis = null;
-  scoreNum.textContent = 0; comboChip.classList.remove('show');
-  const unitEl = scoreNum.parentElement.querySelector('.unit');
-  if (unitEl) unitEl.textContent = '/ ' + SESSION_TARGETS;
+  // 散步 v3 初始化
+  walkStart = performance.now();
+  walkDist = 0;
+  items = [];
+  nextItemAt = 300;
+  joyLane = 1;
+  joyLaneX = LANES_X[1] * W;
+  joyState = 'ground';
+  jumpStart = 0;
+  joyDizzy = 0;
+  joyHurt = 0;
+  joyTilt = 0;
+  bones = 0; petals = 0;
+  pickupBursts = [];
+  sceneParticles = [];
+  bubbles = [];
+  nextBubbleAt = performance.now() + 4000;
+  pickupLog = new Set();
+  lastLaneSwitchAt = 0;
+  yawHoldSign = 0; yawHoldMs = 0;
+  pitchHoldSign = 0; pitchHoldMs = 0;
+  rollHoldSign = 0; rollHoldMs = 0;
+  yawCommitted = false;
+  pitchWasCommitted = false;
+  holdEvent = null;
+  nextHoldEventAt = performance.now() + 10000; // 开局 10 秒后第一个保持事件
   sessionStart = performance.now();
-  hud.classList.add('show'); coach.classList.add('show');
-  updateDots();
-  say('坐直、收下巴，跟着星光慢慢来～', true);
+  hud.classList.add('show'); hudTitle.classList.add('show'); coach.classList.add('show');
+  updateHudCounts();
+  const progFill = document.getElementById('progFill');
+  if (progFill) progFill.style.width = '0%';
+  say('转头切道 · 抬头跳 · 低头蹲 · 侧头钻树洞 —— 开始咯~', true);
   playStart();
-  spawnTarget();
 }
 
 function finish() {
-  state = 'done'; target = null;
-  hud.classList.remove('show'); coach.classList.remove('show');
+  if (state === 'done') return;
+  state = 'done';
+  hud.classList.remove('show'); hudTitle.classList.remove('show'); coach.classList.remove('show');
   const secs = Math.round((performance.now() - sessionStart) / 1000);
 
-  // 结算存档
+  // 结算存档:骨头/花瓣 + 图鉴数
   const prevStage = stageIndex(save.starDust);
-  const dust = collected * 6 + bestCombo * 2;
+  const totalPicked = bones + petals;
+  const codexCount = pickupLog.size;
+  const dust = bones * 6 + petals * 4 + codexCount * 5; // 图鉴条目额外加分
   save.starDust += dust;
-  save.totalStretches += collected;
+  save.totalStretches += totalPicked;
   save.totalSessions += 1;
-  save.bestCombo = Math.max(save.bestCombo, bestCombo);
+  // 记录已解锁图鉴到存档
+  if (!save.codex) save.codex = [];
+  const codexSet = new Set(save.codex);
+  pickupLog.forEach(id => codexSet.add(id));
+  save.codex = [...codexSet];
   const t = todayStr();
   if (save.lastPlayed === t) { /* 今日已计连续 */ }
   else if (save.lastPlayed === yesterdayStr()) save.streak += 1;
@@ -1004,11 +1787,25 @@ function finish() {
   persist();
   const newStage = stageIndex(save.starDust);
 
-  document.getElementById('doneCount').textContent = collected;
+  document.getElementById('doneCount').textContent = totalPicked;
   document.getElementById('doneTime').textContent = secs + 's';
-  document.getElementById('dustPop').textContent = `+${dust} 星屑　·　连续照顾 ${save.streak} 天`;
-  const msgs = ['转头、抬头、侧屈都做全了，脖子松开了吧？💧', `最稳保持 ${bestCombo} 连，身体记住这个感觉了`, '每 90 分钟来一组，颈椎会谢谢你 🌿', 'Joy 把你的用心都收下了 🌟'];
-  document.getElementById('doneMsg').textContent = msgs[collected % msgs.length];
+  document.getElementById('dustPop').textContent = `🦴 ${bones} · 🌸 ${petals} · 图鉴 ${codexCount}　+${dust} 星屑`;
+  // 图鉴解锁列表(本次发现的条目)
+  const codexEl = document.getElementById('doneCodex');
+  if (codexEl) {
+    const items = [...pickupLog].map(id => {
+      const entry = CODEX.find(c => c.id === id);
+      return entry ? `<span class="codex-chip">✨ ${entry.name}</span>` : '';
+    }).join('');
+    codexEl.innerHTML = codexCount > 0 ? `<div class="codex-title">今日发现</div>${items}` : '';
+  }
+  const msgs = [
+    '一路走下来,脖子是不是松开了一点?🌿',
+    'Joy 收到你的心意啦,今天很满足 🌟',
+    '陪它散步的这一分钟,颈椎会记得的',
+    'Joy 把你捡的骨头都收好啦 ✨',
+  ];
+  document.getElementById('doneMsg').textContent = msgs[totalPicked % msgs.length];
   drawStaticStar('doneStar', currentStage(), 0.95);
   doneScreen.classList.remove('hidden');
   playFinish();
@@ -1133,20 +1930,20 @@ function refreshHome() {
   } else if (save.lastPlayed === t) {
     streakLine.innerHTML = `<span class="streak">🌙 今天已经陪过 Joy · 连续 ${save.streak} 天</span>`;
     title.innerHTML = `Joy 今天<span class="em">很满足</span>`;
-    sub.innerHTML = `已经玩过啦，但 Joy 随时想再和你转两圈～<br/><b>再来一组</b>，让脖子更松一点。`;
+    sub.innerHTML = `已经陪它散步过啦,但 Joy 还想再走一段～<br/><b>再走一段</b>,让脖子更松一点。`;
   } else if (save.lastPlayed === yesterdayStr()) {
     streakLine.innerHTML = `<span class="streak">🔥 连续 ${save.streak} 天 · 别断在今天呀</span>`;
     title.innerHTML = `Joy 在<span class="em">等你</span>`;
-    sub.innerHTML = `你们昨天玩得很开心，<br/>今天也来<b>转头、抬头</b>陪 Joy 一会儿吧。`;
+    sub.innerHTML = `你们昨天玩得很开心,<br/>今天也带 Joy 去<b>公园散散步</b>吧。`;
   } else {
     streakLine.innerHTML = `<span class="streak">🌫️ Joy 有点想你了</span>`;
-    title.innerHTML = `好久不见，<span class="em">Joy</span>`;
-    sub.innerHTML = `Joy 有点没精神了 —— <br/>陪它接一组星星，一起打起精神吧。`;
+    title.innerHTML = `好久不见,<span class="em">Joy</span>`;
+    sub.innerHTML = `Joy 好几天没出门了 ——<br/>陪它去<b>散散步</b>,一起打起精神吧。`;
   }
 
   document.getElementById('statLine').innerHTML =
     save.totalSessions === 0 ? '' :
-    `累计舒展 <b>${save.totalStretches}</b> 次 · 完成 <b>${save.totalSessions}</b> 组 · 最高连击 <b>${save.bestCombo}</b>`;
+    `累计舒展 <b>${save.totalStretches}</b> 次 · 完成 <b>${save.totalSessions}</b> 组`;
 
   document.getElementById('remindChk').checked = !!save.remind;
   syncSens();
@@ -1178,6 +1975,7 @@ async function boot() {
   try {
     document.getElementById('startBtn').disabled = true;
     await Promise.all([loadModel(), startCamera()]);
+    document.body.classList.add('cam-active');
     homeScreen.classList.add('hidden');
     requestAnimationFrame(loop);
     calibrate();
@@ -1193,8 +1991,9 @@ function showError(e) {
 }
 function goHome() {
   state = 'home';
+  document.body.classList.remove('cam-active');
   doneScreen.classList.add('hidden'); levelScreen.classList.add('hidden');
-  hud.classList.remove('show'); coach.classList.remove('show');
+  hud.classList.remove('show'); hudTitle.classList.remove('show'); coach.classList.remove('show');
   homeScreen.classList.remove('hidden');
   refreshHome();
 }

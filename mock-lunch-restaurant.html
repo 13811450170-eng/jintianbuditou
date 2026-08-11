@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 关注你的颈椎健康</title>
+<style>
+  :root {
+    --joy: #ea3323;
+    --max: #5c6470;
+    --chill: #f39c1f;
+    --blink: #ff7a29;
+    --yummy: #1f3fe6;
+    --snow: #eb7fa8;
+
+    --stage-bg: #2a1810;
+    --stage-warm: #4a2e1f;
+    --wood: #6b4423;
+    --wood-light: #8b5a2e;
+    --gold: #d4a44a;
+    --gold-bright: #ffb84d;
+    --gold-glow: #ffe89b;
+    --cream: #fff2d4;
+
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-user-select:none; user-select:none; }
+  html, body {
+    height:100%; overflow:hidden;
+    font-family:var(--font); color:#e8ecf5;
+    background: #1a1410;
+  }
+
+  /* ==================== 舞台 ==================== */
+  #stage {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(255,232,155,.08) 0%, transparent 60%),
+      radial-gradient(ellipse at center, var(--stage-warm) 0%, var(--stage-bg) 70%, #0d0705 100%);
+    overflow: hidden;
+  }
+
+  /* 餐厅氛围灯 */
+  .lantern {
+    position: absolute;
+    width: 14px; height: 32px;
+    border-radius: 7px;
+    background: radial-gradient(circle, var(--gold-glow) 0%, var(--gold-bright) 70%, rgba(255,184,77,0) 90%);
+    filter: blur(1px);
+    animation: flicker 3s ease-in-out infinite;
+    z-index: 3;
+  }
+  .lantern::after {
+    content: ""; position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    width: 1px; height: 12px; background: #6b4423;
+  }
+  .lantern.l1 { top: 4%; left: 12%; animation-delay: 0s; }
+  .lantern.l2 { top: 6%; left: 88%; animation-delay: -1s; }
+  .lantern.l3 { top: 4%; left: 50%; animation-delay: -2s; }
+  @keyframes flicker {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%     { opacity: 0.7; transform: scale(0.94); }
+  }
+
+  /* 圆桌(半圆感,承载食客) */
+  .table {
+    position: absolute;
+    top: 62%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 88%;
+    height: 70%;
+    border-radius: 50%;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255,232,155,.15) 0%, transparent 55%),
+      linear-gradient(135deg, var(--wood-light) 0%, var(--wood) 55%, #4a2e1f 100%);
+    box-shadow:
+      inset 0 -12px 32px rgba(0,0,0,.5),
+      inset 0 12px 24px rgba(255,232,155,.15),
+      0 24px 48px rgba(0,0,0,.5);
+    z-index: 2;
+  }
+  .table::before {
+    content: "";
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%; aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle, var(--cream) 0%, #f5e6c8 55%, transparent 58%);
+    box-shadow: inset 0 0 24px rgba(107,68,35,.2);
+  }
+  .table::after {
+    content: "🍲";
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 40px;
+    opacity: 0.7;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,.4));
+  }
+
+  /* ==================== HUD ==================== */
+  .hud-title {
+    position: absolute;
+    top: 20px; left: 50%; transform: translateX(-50%);
+    background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+    color: #2a1810;
+    padding: 6px 22px;
+    border-radius: 20px;
+    font-size: 13px; font-weight: 800;
+    letter-spacing: 2px;
+    z-index: 30;
+    box-shadow: 0 4px 12px rgba(212,164,74,.4);
+  }
+  .hud-left {
+    position: absolute;
+    top: 20px; left: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 30;
+  }
+  .hud-chip {
+    background: rgba(42,24,16,0.8);
+    border: 1px solid var(--gold);
+    color: var(--gold-glow);
+    padding: 7px 14px;
+    border-radius: 22px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+    backdrop-filter: blur(6px);
+  }
+  .hud-chip .val { color: #fff; font-size: 15px; }
+
+  /* Wave 指示 */
+  .hud-wave {
+    position: absolute;
+    top: 60px; left: 50%; transform: translateX(-50%);
+    background: rgba(42,24,16,0.85);
+    border: 1px solid var(--gold);
+    color: var(--gold-glow);
+    padding: 4px 16px;
+    border-radius: 16px;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px;
+    z-index: 30;
+    backdrop-filter: blur(6px);
+  }
+
+  /* ==================== 摄像头小窗 ==================== */
+  #cam-preview {
+    position: absolute;
+    width: 11%; aspect-ratio: 1;
+    bottom: 4%; right: 4%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--gold);
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+    z-index: 30;
+    background: #2a1810;
+  }
+  #cam-preview video {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+  }
+  .face-label {
+    position: absolute;
+    bottom: -22px; left: 50%; transform: translateX(-50%);
+    background: rgba(42,24,16,0.85);
+    color: var(--gold-glow);
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .face-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6bff9d;
+    box-shadow: 0 0 8px #6bff9d;
+    animation: dotBlink 2s ease-in-out infinite;
+  }
+  @keyframes dotBlink {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.4; }
+  }
+
+  /* ==================== 食客 ==================== */
+  .diner {
+    position: absolute;
+    width: 96px; height: 96px;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+  .diner-avatar {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 46px;
+    box-shadow: 0 8px 20px rgba(0,0,0,.6);
+    transition: transform .2s cubic-bezier(.22,1,.36,1);
+    position: relative;
+  }
+  .diner.d-joy   .diner-avatar { background: radial-gradient(circle at 30% 30%, #ff8b7f 0%, var(--joy) 65%, #a51b0c 100%); }
+  .diner.d-yummy .diner-avatar { background: radial-gradient(circle at 30% 30%, #6a7cf5 0%, var(--yummy) 65%, #12279c 100%); }
+  .diner.d-max   .diner-avatar { background: radial-gradient(circle at 30% 30%, #a4adb8 0%, var(--max) 65%, #363c47 100%); }
+  .diner.d-snow  .diner-avatar { background: radial-gradient(circle at 30% 30%, #ffb7cf 0%, var(--snow) 65%, #b0567e 100%); }
+  .diner.d-chill .diner-avatar { background: radial-gradient(circle at 30% 30%, #ffd070 0%, var(--chill) 65%, #b06d0b 100%); }
+  .diner.d-blink .diner-avatar { background: radial-gradient(circle at 30% 30%, #ffb583 0%, var(--blink) 65%, #b04d0e 100%); }
+
+  .diner-name {
+    position: absolute;
+    bottom: -18px; left: 50%; transform: translateX(-50%);
+    background: rgba(42,24,16,0.9);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 8px;
+    font-size: 10px; font-weight: 800;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  /* 饥饿态:发光 + 抖动 */
+  .diner.hungry .diner-avatar {
+    animation: hungryPulse 0.6s ease-in-out infinite;
+    box-shadow: 0 0 24px currentColor, 0 8px 20px rgba(0,0,0,.5);
+  }
+  .diner.d-joy.hungry   .diner-avatar { color: var(--joy); }
+  .diner.d-yummy.hungry .diner-avatar { color: var(--yummy); }
+  .diner.d-max.hungry   .diner-avatar { color: var(--max); }
+  .diner.d-snow.hungry  .diner-avatar { color: var(--snow); }
+  .diner.d-chill.hungry .diner-avatar { color: var(--chill); }
+  .diner.d-blink.hungry .diner-avatar { color: var(--blink); }
+  @keyframes hungryPulse {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.07); }
+  }
+
+  /* 被瞄准态:金色外圈 */
+  .diner.aimed .diner-avatar {
+    box-shadow:
+      0 0 0 4px var(--gold-glow),
+      0 0 30px var(--gold-glow),
+      0 8px 20px rgba(0,0,0,.5);
+  }
+
+  /* 吃到食物态:微跳 + 满足脸 */
+  .diner.fed .diner-avatar {
+    animation: dinerJump 0.7s ease-out;
+  }
+  @keyframes dinerJump {
+    0%   { transform: translateY(0) scale(1); }
+    30%  { transform: translateY(-14px) scale(1.15); }
+    100% { transform: translateY(0) scale(1); }
+  }
+
+  /* 饥饿气泡 */
+  .hunger-bubble {
+    position: absolute;
+    background: #fff;
+    color: #2a1810;
+    padding: 6px 12px 6px 8px;
+    border-radius: 14px;
+    font-size: 12px; font-weight: 700;
+    box-shadow: 0 6px 16px rgba(0,0,0,.4);
+    display: flex; align-items: center; gap: 6px;
+    animation: bubbleIn .3s cubic-bezier(.22,1,.36,1);
+    z-index: 12;
+    max-width: 200px;
+    line-height: 1.3;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  @keyframes bubbleIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .hunger-bubble .food-icon { font-size: 16px; }
+  .hunger-bubble.timeout {
+    animation: bubbleOut .4s ease-in forwards;
+  }
+  @keyframes bubbleOut {
+    from { opacity: 1; transform: scale(1); }
+    to   { opacity: 0; transform: scale(0.8) translateY(6px); }
+  }
+
+  /* 气泡按方向的边框色 */
+  .diner.d-joy   .hunger-bubble { border: 2px solid var(--joy); }
+  .diner.d-yummy .hunger-bubble { border: 2px solid var(--yummy); }
+  .diner.d-max   .hunger-bubble { border: 2px solid var(--max); }
+  .diner.d-snow  .hunger-bubble { border: 2px solid var(--snow); }
+  .diner.d-chill .hunger-bubble { border: 2px solid var(--chill); }
+  .diner.d-blink .hunger-bubble { border: 2px solid var(--blink); }
+
+  /* 剩余时间条 · 环形 */
+  .timer-ring {
+    position: relative;
+    width: 14px; height: 14px;
+    flex-shrink: 0;
+    margin-left: 4px;
+  }
+  .timer-ring svg {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg);
+  }
+  .timer-ring circle {
+    fill: none;
+    stroke-width: 2.5;
+  }
+  .timer-ring .track  { stroke: rgba(0,0,0,0.15); }
+  .timer-ring .fill   { stroke: #ff5757; stroke-linecap: round; }
+
+  /* ==================== 6 位置(上半圆均匀分布 · 全部不低头) ==================== */
+  /* Max · 8-9 点 · yaw 左 65° */
+  .diner.pos-max   { top: 48%; left: 10%; }
+  .diner.pos-max   .hunger-bubble { left: 108%; top: 40%; transform: translateY(-50%); }
+
+  /* Yummy · 10 点 · yaw 左 + roll 左 */
+  .diner.pos-yummy { top: 28%; left: 20%; }
+  .diner.pos-yummy .hunger-bubble { left: 100%; top: 48%; transform: translateY(-50%); }
+
+  /* Joy · 11 点 · pitch↑ 微仰 */
+  .diner.pos-joy   { top: 18%; left: 38%; }
+  .diner.pos-joy   .hunger-bubble { top: 108%; left: 50%; transform: translateX(-50%); }
+
+  /* Chill · 1 点 · pitch↑ 微仰 */
+  .diner.pos-chill { top: 18%; left: 62%; }
+  .diner.pos-chill .hunger-bubble { top: 108%; left: 50%; transform: translateX(-50%); }
+
+  /* Blink · 2 点 · yaw 右 + roll 右 */
+  .diner.pos-blink { top: 28%; left: 80%; }
+  .diner.pos-blink .hunger-bubble { right: 100%; top: 48%; transform: translateY(-50%); }
+
+  /* Snow · 3-4 点 · yaw 右 65° */
+  .diner.pos-snow  { top: 48%; left: 90%; }
+  .diner.pos-snow  .hunger-bubble { right: 108%; top: 40%; transform: translateY(-50%); }
+
+  /* ==================== 玩家准星(勺子) ==================== */
+  #cursor {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 64px; height: 64px;
+    transform: translate(-50%, -50%);
+    z-index: 25;
+    pointer-events: none;
+    will-change: transform;
+  }
+  .cursor-body {
+    position: absolute; inset: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #fff5d9 0%, var(--gold-bright) 55%, #b06d0b 100%);
+    box-shadow:
+      0 0 20px rgba(255,184,77,.5),
+      inset 0 -4px 8px rgba(0,0,0,.3),
+      inset 0 4px 6px rgba(255,255,255,.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+    animation: cursorFloat 2.5s ease-in-out infinite;
+  }
+  .cursor-body::after {
+    content: "🥄";
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+  }
+  @keyframes cursorFloat {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-3px); }
+  }
+  #cursor.aiming .cursor-body {
+    box-shadow:
+      0 0 30px var(--gold-glow),
+      0 0 60px rgba(255,232,155,.5),
+      inset 0 -4px 8px rgba(0,0,0,.3);
+  }
+  /* 倒计时圈 */
+  .cursor-timer-svg {
+    position: absolute;
+    top: -6px; left: -6px;
+    width: calc(100% + 12px);
+    height: calc(100% + 12px);
+    opacity: 0;
+    transform: rotate(-90deg);
+    transition: opacity .15s;
+    pointer-events: none;
+  }
+  #cursor.aiming .cursor-timer-svg { opacity: 1; }
+  .cursor-timer-track {
+    fill: none;
+    stroke: rgba(255,232,155,0.2);
+    stroke-width: 4;
+  }
+  .cursor-timer-progress {
+    fill: none;
+    stroke: var(--gold-glow);
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 226;
+    stroke-dashoffset: 226;
+    filter: drop-shadow(0 0 6px var(--gold-glow));
+    transition: stroke-dashoffset .08s linear;
+  }
+
+  /* ==================== 喂食成功效果 ==================== */
+  .feed-burst {
+    position: absolute;
+    pointer-events: none;
+    z-index: 20;
+    transform: translate(-50%, -50%);
+  }
+  .feed-burst .food-fly {
+    position: absolute;
+    font-size: 28px;
+    left: 50%; top: 50%;
+    animation: foodBurst 0.9s ease-out forwards;
+  }
+  @keyframes foodBurst {
+    0%   { opacity: 1; transform: translate(-50%, -50%) rotate(var(--rot)) translateY(0) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--rot)) translateY(-50px) scale(1.4); }
+  }
+  .feed-burst .ring {
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 30px; height: 30px;
+    margin: -15px 0 0 -15px;
+    border-radius: 50%;
+    border: 3px solid var(--gold-glow);
+    animation: ringExpand 0.7s ease-out forwards;
+  }
+  @keyframes ringExpand {
+    0%   { opacity: 1; transform: scale(0.4); }
+    100% { opacity: 0; transform: scale(3.5); }
+  }
+
+  /* 得分弹出 */
+  .score-pop {
+    position: absolute;
+    color: var(--gold-glow);
+    font-size: 26px; font-weight: 900;
+    text-shadow: 0 2px 8px rgba(0,0,0,.6), 0 0 20px rgba(255,232,155,.6);
+    animation: scorePop 1.2s ease-out forwards;
+    pointer-events: none;
+    z-index: 40;
+    transform: translate(-50%, -50%);
+  }
+  @keyframes scorePop {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+    20%  { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -160%) scale(1); }
+  }
+
+  /* ==================== 底部操作提示 ==================== */
+  .action-hint {
+    position: absolute;
+    bottom: 4%; left: 50%; transform: translateX(-50%);
+    background: rgba(42,24,16,0.9);
+    border: 1px solid var(--gold);
+    color: var(--cream);
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1px;
+    z-index: 25;
+    backdrop-filter: blur(6px);
+    display: flex; align-items: center; gap: 8px;
+    opacity: 0;
+    transition: opacity .3s;
+    white-space: nowrap;
+  }
+  .action-hint.show { opacity: 1; }
+
+  /* ==================== 开始遮罩 ==================== */
+  .overlay {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    gap: 18px;
+    z-index: 100;
+    background: #1a1410;
+    transition: opacity .5s ease;
+  }
+  .overlay.hidden { opacity: 0; pointer-events: none; }
+  .overlay .brand {
+    font-size: 13px; letter-spacing: 6px;
+    color: var(--gold-glow);
+    padding: 6px 16px;
+    border: 1px solid var(--gold-glow);
+    border-radius: 20px;
+  }
+  .overlay .title {
+    font-size: 56px; font-weight: 900; letter-spacing: 2px;
+    background: linear-gradient(135deg, #fff 0%, var(--gold-glow) 50%, #ffb0a5 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 20px rgba(255,184,77,.4));
+  }
+  .overlay .sub {
+    color: #cfa476; font-size: 15px; max-width: 540px; line-height: 1.8;
+  }
+  .overlay .sub b { color: var(--gold-glow); }
+  .overlay .how {
+    display: flex; gap: 20px; margin-top: 8px; flex-wrap: wrap; justify-content: center;
+  }
+  .overlay .how-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,232,155,0.2);
+    padding: 14px 20px;
+    border-radius: 12px;
+    min-width: 140px;
+  }
+  .overlay .how-item .icon { font-size: 26px; margin-bottom: 4px; color: #fff; }
+  .overlay .how-item .lbl { font-size: 12px; color: var(--gold-glow); font-weight: 700; letter-spacing: 1px; }
+  .overlay .how-item .desc { font-size: 11px; color: #a4835a; margin-top: 3px; }
+  .overlay .btn {
+    margin-top: 6px;
+    background: linear-gradient(135deg, #ffe89b 0%, #ffd66b 100%);
+    color: #2a1f05; font-weight: 900; font-size: 18px; letter-spacing: 2px;
+    padding: 16px 36px; border: none; border-radius: 32px;
+    box-shadow: 0 6px 24px rgba(255,214,107,.55), inset 0 1px 0 rgba(255,255,255,.4);
+    cursor: pointer; transition: transform .18s ease;
+  }
+  .overlay .btn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 10px 32px rgba(255,214,107,.75), inset 0 1px 0 rgba(255,255,255,.4); }
+  .overlay .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .overlay .status {
+    font-size: 12px; color: #7a5a3a;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .overlay .no-lookdown {
+    font-size: 11px; color: var(--gold-bright);
+    background: rgba(255,184,77,0.1);
+    padding: 6px 14px;
+    border-radius: 12px;
+    border: 1px dashed var(--gold);
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* ==================== 结算浮层 ==================== */
+  .result {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    gap: 20px;
+    z-index: 90;
+    background: #1a1410;
+  }
+  .result.show { display: flex; }
+  .result .badge {
+    font-size: 12px; letter-spacing: 4px;
+    color: var(--gold-glow);
+    padding: 5px 14px;
+    border: 1px solid var(--gold-glow);
+    border-radius: 20px;
+  }
+  .result .big {
+    font-size: 44px; font-weight: 900;
+    background: linear-gradient(135deg, #fff, var(--gold-glow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .result .stats {
+    display: flex; gap: 30px; margin: 10px 0;
+    color: var(--cream);
+  }
+  .result .stats .num {
+    font-size: 32px; font-weight: 900; color: var(--gold-glow);
+    display: block;
+  }
+  .result .stats .lbl {
+    font-size: 11px; letter-spacing: 2px; color: #a4835a;
+  }
+  .result .btn {
+    background: linear-gradient(135deg, #ffe89b 0%, #ffd66b 100%);
+    color: #2a1f05; font-weight: 900; font-size: 15px; letter-spacing: 2px;
+    padding: 12px 28px; border: none; border-radius: 24px;
+    box-shadow: 0 4px 16px rgba(255,214,107,.45);
+    cursor: pointer;
+  }
+
+  /* 调试信息 */
+  #debug {
+    position: absolute;
+    bottom: 20px; left: 20px;
+    background: rgba(0,0,0,0.7);
+    color: #6bff9d;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 11px;
+    z-index: 200;
+    display: none;
+  }
+  #debug.show { display: block; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 氛围灯 -->
+  <div class="lantern l1"></div>
+  <div class="lantern l2"></div>
+  <div class="lantern l3"></div>
+
+  <!-- 圆桌 -->
+  <div class="table"></div>
+
+  <!-- HUD -->
+  <div class="hud-title">🍽 Doga 餐厅</div>
+  <div class="hud-wave" id="wave">WAVE 1 · 教学</div>
+  <div class="hud-left">
+    <div class="hud-chip"><span>🐾</span> 喂食 <span class="val" id="scoreFed">0</span> / 15</div>
+    <div class="hud-chip"><span>✦</span> 星屑 <span class="val" id="scoreDust">0</span></div>
+  </div>
+
+  <!-- 6 只 Doga 食客 · 上半圆 -->
+  <div class="diner d-max pos-max" data-diner="max">
+    <div class="diner-avatar">🐺</div>
+    <div class="diner-name">Max</div>
+  </div>
+  <div class="diner d-yummy pos-yummy" data-diner="yummy">
+    <div class="diner-avatar">🐕</div>
+    <div class="diner-name">Yummy</div>
+  </div>
+  <div class="diner d-joy pos-joy" data-diner="joy">
+    <div class="diner-avatar">🐶</div>
+    <div class="diner-name">Joy</div>
+  </div>
+  <div class="diner d-chill pos-chill" data-diner="chill">
+    <div class="diner-avatar">🐩</div>
+    <div class="diner-name">Chill</div>
+  </div>
+  <div class="diner d-blink pos-blink" data-diner="blink">
+    <div class="diner-avatar">🐕</div>
+    <div class="diner-name">Blink</div>
+  </div>
+  <div class="diner d-snow pos-snow" data-diner="snow">
+    <div class="diner-avatar">🐕‍🦺</div>
+    <div class="diner-name">Snow</div>
+  </div>
+
+  <!-- 玩家准星:金勺 -->
+  <div id="cursor">
+    <svg class="cursor-timer-svg" viewBox="0 0 80 80">
+      <circle class="cursor-timer-track"    cx="40" cy="40" r="36"/>
+      <circle class="cursor-timer-progress" cx="40" cy="40" r="36" id="cursorTimer"/>
+    </svg>
+    <div class="cursor-body"></div>
+  </div>
+
+  <!-- 摄像头小窗 -->
+  <div id="cam-preview">
+    <video id="cam" autoplay playsinline muted></video>
+    <div class="face-dot" id="faceDot"></div>
+    <div class="face-label">你的镜像</div>
+  </div>
+
+  <!-- 底部操作提示 -->
+  <div class="action-hint" id="hint">
+    <span id="hintText">转头对准饿了的 Doga · 稳住 1 秒</span>
+  </div>
+
+  <!-- 调试信息 -->
+  <div id="debug">
+    yaw: <span id="dbgYaw">0</span>°
+    pitch: <span id="dbgPitch">0</span>°
+    roll: <span id="dbgRoll">0</span>°
+    fps: <span id="dbgFps">0</span>
+  </div>
+
+</div>
+
+<!-- 开始遮罩 -->
+<div class="overlay" id="overlay">
+  <div class="brand">今天不低头 · 关注你的颈椎健康</div>
+  <div class="title">Doga 餐厅</div>
+  <div class="sub">
+    6 只 Doga 围坐圆桌等你喂食。<br/>
+    转头对准饿了的 Doga,让金勺<b> 圈闭合 1 秒</b> → 喂食成功。
+  </div>
+  <div class="how">
+    <div class="how-item">
+      <div class="icon">◀▶</div>
+      <div class="lbl">左右转头</div>
+      <div class="desc">对准两侧食客</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">▲</div>
+      <div class="lbl">抬起头</div>
+      <div class="desc">对准正上方食客</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">↖↗</div>
+      <div class="lbl">侧屈头部</div>
+      <div class="desc">对准斜上方食客</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">✦</div>
+      <div class="lbl">稳住 1s</div>
+      <div class="desc">让金勺圈闭合</div>
+    </div>
+  </div>
+  <button class="btn" id="startBtn">开启摄像头 · 开饭!</button>
+  <div class="status" id="status">请用 Chrome / Edge · 需要摄像头权限 · 15 次喂食一场</div>
+</div>
+
+<!-- 结算浮层 -->
+<div class="result" id="result">
+  <div class="badge">今日午餐结算</div>
+  <div class="big" id="resultTitle">吃饱啦!</div>
+  <div class="stats">
+    <div><span class="num" id="rStars">0</span><span class="lbl">✦ 星屑</span></div>
+    <div><span class="num" id="rFed">0</span><span class="lbl">🐾 喂食</span></div>
+    <div><span class="num" id="rMiss">0</span><span class="lbl">💤 错过</span></div>
+  </div>
+  <div class="sub" style="color:#cfa476; font-size:13px; max-width:400px; line-height:1.7;">
+    整场没低过头 —— 颈椎训练不知不觉完成了。
+  </div>
+  <button class="btn" id="restartBtn">再来一场</button>
+</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+// ============ 常量 ============
+const AX = { yaw: -1, pitch: 1, roll: 1 };  // 镜像修正
+const SMOOTH = 0.25;
+const AIM_HOLD_MS = 1000;                    // 保持 1 秒喂食成功
+const HIT_RADIUS_PX = 70;                    // 勺子与食客的碰撞半径
+
+// 头姿映射到屏幕坐标(和夜晚一致,拿到跨关卡一致手感)
+const MAP_YAW_RANGE = 25;
+const MAP_PITCH_UP = 20;
+const MAP_PITCH_DOWN = 15;
+
+// 每只食客的相对位置(%),用于精准锚定 → 复用 CSS 类的 top/left
+const DINER_POS = {
+  max:   { x: 10, y: 48 },
+  yummy: { x: 20, y: 28 },
+  joy:   { x: 38, y: 18 },
+  chill: { x: 62, y: 18 },
+  blink: { x: 80, y: 28 },
+  snow:  { x: 90, y: 48 },
+};
+
+// 6 只 Doga 的台词库 + 食物 icon
+const DINER = {
+  joy:   { food: '🍖', color: 'var(--joy)',
+    lines: ['我我我!我也要!', '啊啊等我一下!', '主人是我的,我先吃!', '快啊,快开饭!'] },
+  yummy: { food: '🍎', color: 'var(--yummy)',
+    lines: ['差 0.3g,重做!', '勉强 7 分,不及格。', '这个搭配... 你认真的?', '米其林 3 星我都不吃这个。'] },
+  max:   { food: '🍗', color: 'var(--max)',
+    lines: ['快点!饿死了!', '一天跑十座山头,给我三份!', '慢一秒把桌子啃了!', '快!给我肉肉肉!'] },
+  snow:  { food: '🥗', color: 'var(--snow)',
+    lines: ['人家不吃太多,会胖的...', '偶像包袱先放一边啊', '哼,拍不好看不吃!', '再来一份...(小声)'] },
+  chill: { food: '🍵', color: 'var(--chill)',
+    lines: ['有热汤吗?想暖一下...', '不着急,慢慢来~', '啊,能麻烦一下吗?', '这个我配唐三彩饼干...'] },
+  blink: { food: '🍰', color: 'var(--blink)',
+    lines: ['我请客!随便点!', '这个不够,再来 100 份!', '不好吃?我买下这家店!', '哈哈这个便宜我不要!'] },
+};
+
+// Wave 配置(按成功次数升级)
+const WAVES = [
+  { name: 'WAVE 1 · 教学',   maxHungry: 1, timerMs: 5500, gapMs: 500,  threshold: 0  },
+  { name: 'WAVE 2 · 进阶',   maxHungry: 2, timerMs: 4500, gapMs: 350,  threshold: 5  },
+  { name: 'WAVE 3 · 挑战',   maxHungry: 3, timerMs: 3500, gapMs: 250,  threshold: 10 },
+];
+const TARGET_FED = 15;   // 一场 15 次结算
+
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
+// ============ 状态 ============
+let faceLandmarker = null;
+let camStream = null;
+let running = false;
+
+let rawAngle = { yaw:0, pitch:0, roll:0 };
+let smoothAngle = { yaw:0, pitch:0, roll:0 };
+let angleBase = { yaw:0, pitch:0, roll:0 };
+let baseInit = false;
+let baseFrames = 0;
+
+let cursorX = 50, cursorY = 40;
+let lastVideoTime = -1;
+
+let hungry = {};   // { who: { el, bubble, startTime, timerMs, timerFill } }
+let aimTarget = null;
+let aimStartTime = 0;
+let lastSpawnAt = 0;
+
+let score = { fed: 0, missed: 0, dust: 0 };
+
+// ============ DOM ============
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+const cursorEl = $('cursor');
+const cursorTimer = $('cursorTimer');
+const camEl = $('cam');
+const overlay = $('overlay');
+const startBtn = $('startBtn');
+const statusEl = $('status');
+const faceDot = $('faceDot');
+const hintEl = $('hint');
+const hintText = $('hintText');
+const waveEl = $('wave');
+const scoreFedEl = $('scoreFed');
+const scoreDustEl = $('scoreDust');
+const resultEl = $('result');
+const rStars = $('rStars'), rFed = $('rFed'), rMiss = $('rMiss');
+const restartBtn = $('restartBtn');
+const debugEl = $('debug');
+const dbgYaw = $('dbgYaw'), dbgPitch = $('dbgPitch'), dbgRoll = $('dbgRoll'), dbgFps = $('dbgFps');
+
+if (DEBUG) debugEl.classList.add('show');
+
+// ============ MediaPipe 加载 ============
+async function loadModel() {
+  statusEl.textContent = '正在加载 AI 模型…(首次约需几秒)';
+  const resolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  faceLandmarker = await FaceLandmarker.createFromOptions(resolver, {
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      delegate: "GPU",
+    },
+    runningMode: "VIDEO",
+    numFaces: 1,
+    outputFacialTransformationMatrixes: true,
+  });
+  statusEl.textContent = '模型就绪 ✓';
+}
+
+async function startCamera() {
+  statusEl.textContent = '正在打开摄像头…';
+  camStream = await navigator.mediaDevices.getUserMedia({
+    video: { width: { ideal: 960 }, height: { ideal: 720 }, facingMode: 'user' },
+    audio: false,
+  });
+  camEl.srcObject = camStream;
+  await camEl.play();
+  await new Promise(res => {
+    if (camEl.readyState >= 2) res();
+    else camEl.onloadeddata = () => res();
+  });
+  statusEl.textContent = '摄像头就绪 ✓';
+}
+
+function stopCamera() {
+  if (camStream) {
+    camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+  }
+}
+
+// ============ 头姿计算 ============
+function matrixToEuler(m) {
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const r00 = m[0], r10 = m[1], r20 = m[2], r21 = m[6], r22 = m[10];
+  const yaw = Math.asin(clamp(-r20, -1, 1));
+  const pitch = Math.atan2(r21, r22);
+  const roll = Math.atan2(r10, r00);
+  const D = 180 / Math.PI;
+  return { yaw: yaw * D, pitch: pitch * D, roll: roll * D };
+}
+
+function relAngle() {
+  return {
+    yaw:   AX.yaw   * (smoothAngle.yaw   - angleBase.yaw),
+    pitch: AX.pitch * (smoothAngle.pitch - angleBase.pitch),
+    roll:  AX.roll  * (smoothAngle.roll  - angleBase.roll),
+  };
+}
+
+// ============ Wave 状态 ============
+function currentWave() {
+  let cur = WAVES[0];
+  for (const w of WAVES) if (score.fed >= w.threshold) cur = w;
+  return cur;
+}
+
+function updateWaveUI() {
+  const w = currentWave();
+  if (waveEl.textContent !== w.name) {
+    waveEl.textContent = w.name;
+    waveEl.animate([
+      { transform: 'translateX(-50%) scale(1)', filter: 'brightness(1)' },
+      { transform: 'translateX(-50%) scale(1.15)', filter: 'brightness(1.4)' },
+      { transform: 'translateX(-50%) scale(1)', filter: 'brightness(1)' },
+    ], { duration: 700, easing: 'ease-out' });
+  }
+}
+
+// ============ 饥饿气泡生成 ============
+function spawnHungry(now) {
+  const w = currentWave();
+  const activeCount = Object.keys(hungry).length;
+  if (activeCount >= w.maxHungry) return;
+
+  // 从空闲食客里随机挑一只
+  const idle = Object.keys(DINER).filter(k => !hungry[k]);
+  if (!idle.length) return;
+  const who = idle[Math.floor(Math.random() * idle.length)];
+  const cfg = DINER[who];
+  const line = cfg.lines[Math.floor(Math.random() * cfg.lines.length)];
+
+  const dinerEl = document.querySelector(`.diner[data-diner="${who}"]`);
+  dinerEl.classList.add('hungry');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'hunger-bubble';
+  bubble.innerHTML = `
+    <span class="food-icon">${cfg.food}</span>
+    <span>${line}</span>
+    <div class="timer-ring">
+      <svg viewBox="0 0 20 20">
+        <circle class="track" cx="10" cy="10" r="8"/>
+        <circle class="fill"  cx="10" cy="10" r="8"
+                stroke-dasharray="50.27" stroke-dashoffset="0"/>
+      </svg>
+    </div>
+  `;
+  dinerEl.appendChild(bubble);
+  const timerFill = bubble.querySelector('.fill');
+
+  hungry[who] = {
+    el: dinerEl,
+    bubble,
+    timerFill,
+    startTime: now,
+    timerMs: w.timerMs,
+  };
+}
+
+function removeHungry(who, reason /* 'fed' | 'missed' */) {
+  const h = hungry[who];
+  if (!h) return;
+  h.el.classList.remove('hungry', 'aimed');
+  if (reason === 'fed') {
+    h.el.classList.add('fed');
+    setTimeout(() => h.el.classList.remove('fed'), 800);
+    h.bubble.remove();
+  } else {
+    // 超时:气泡飘走 + 食客暂时垂头(不惩罚,只是失落)
+    h.bubble.classList.add('timeout');
+    setTimeout(() => h.bubble.remove(), 400);
+  }
+  delete hungry[who];
+  if (aimTarget === who) resetAim();
+}
+
+// ============ 头姿 → 屏幕 ============
+function updateCursorFromHead() {
+  const rel = relAngle();
+  if (DEBUG) {
+    dbgYaw.textContent = rel.yaw.toFixed(1);
+    dbgPitch.textContent = rel.pitch.toFixed(1);
+    dbgRoll.textContent = rel.roll.toFixed(1);
+  }
+  const yawN = Math.max(-1, Math.min(1, rel.yaw / MAP_YAW_RANGE));
+  const pitchN = rel.pitch < 0
+    ? Math.max(-1, rel.pitch / MAP_PITCH_UP)
+    : Math.min(1,  rel.pitch / MAP_PITCH_DOWN);
+
+  // yaw 映射:头向右 → 勺子向右;头向左 → 勺子向左
+  // pitch 映射:抬头 → 勺子向上(接近顶部食客);
+  //            低头 → 勺子向下(6 只食客全在上半区,低头会离开所有目标)
+  const targetX = 50 + yawN * 42;   // 8% ~ 92%
+  const targetY = 40 + pitchN * 30; // 抬头 10%,平视 40%,低头 70%(会离开食客)
+
+  cursorX += (targetX - cursorX) * 0.35;
+  cursorY += (targetY - cursorY) * 0.35;
+  cursorEl.style.left = cursorX + '%';
+  cursorEl.style.top  = cursorY + '%';
+}
+
+// ============ 碰撞检测 + 瞄准 ============
+function checkAim(now) {
+  const rect = stage.getBoundingClientRect();
+  const cxPx = (cursorX / 100) * rect.width;
+  const cyPx = (cursorY / 100) * rect.height;
+
+  let closestWho = null;
+  let closestDist = Infinity;
+  for (const who of Object.keys(hungry)) {
+    const p = DINER_POS[who];
+    const pxPx = (p.x / 100) * rect.width;
+    const pyPx = (p.y / 100) * rect.height;
+    const dist = Math.hypot(pxPx - cxPx, pyPx - cyPx);
+    if (dist < HIT_RADIUS_PX && dist < closestDist) {
+      closestWho = who;
+      closestDist = dist;
+    }
+  }
+
+  if (closestWho) {
+    if (aimTarget !== closestWho) {
+      // 换新目标
+      if (aimTarget && hungry[aimTarget]) hungry[aimTarget].el.classList.remove('aimed');
+      aimTarget = closestWho;
+      aimStartTime = now;
+      hungry[closestWho].el.classList.add('aimed');
+      cursorEl.classList.add('aiming');
+      cursorTimer.style.transition = 'none';
+      cursorTimer.style.strokeDashoffset = '226';
+      cursorTimer.getBoundingClientRect();
+      cursorTimer.style.transition = `stroke-dashoffset ${AIM_HOLD_MS}ms linear`;
+      cursorTimer.style.strokeDashoffset = '0';
+    } else {
+      // 持续瞄准
+      const held = now - aimStartTime;
+      if (held >= AIM_HOLD_MS) {
+        feed(closestWho);
+      }
+    }
+  } else {
+    if (aimTarget) resetAim();
+  }
+}
+
+function resetAim() {
+  if (aimTarget && hungry[aimTarget]) hungry[aimTarget].el.classList.remove('aimed');
+  aimTarget = null;
+  cursorEl.classList.remove('aiming');
+  cursorTimer.style.transition = 'stroke-dashoffset 0.15s ease';
+  cursorTimer.style.strokeDashoffset = '226';
+}
+
+// ============ 喂食成功 ============
+function feed(who) {
+  const cfg = DINER[who];
+  const pos = DINER_POS[who];
+  // 食物飞散效果
+  const burst = document.createElement('div');
+  burst.className = 'feed-burst';
+  burst.style.left = pos.x + '%';
+  burst.style.top = pos.y + '%';
+  const ring = document.createElement('div');
+  ring.className = 'ring';
+  burst.appendChild(ring);
+  for (let i = 0; i < 6; i++) {
+    const f = document.createElement('div');
+    f.className = 'food-fly';
+    f.textContent = cfg.food;
+    f.style.setProperty('--rot', (i * 60) + 'deg');
+    burst.appendChild(f);
+  }
+  stage.appendChild(burst);
+  setTimeout(() => burst.remove(), 1000);
+
+  // 得分弹出
+  const pop = document.createElement('div');
+  pop.className = 'score-pop';
+  pop.textContent = '+5 ✦';
+  pop.style.left = pos.x + '%';
+  pop.style.top = pos.y + '%';
+  stage.appendChild(pop);
+  setTimeout(() => pop.remove(), 1200);
+
+  score.fed += 1;
+  score.dust += 5;
+  scoreFedEl.textContent = score.fed;
+  scoreDustEl.textContent = score.dust;
+
+  removeHungry(who, 'fed');
+  updateWaveUI();
+
+  hintText.textContent = '喂到了!';
+  clearTimeout(feed._t);
+  feed._t = setTimeout(() => {
+    if (running) hintText.textContent = '转头对准饿了的 Doga · 稳住 1 秒';
+  }, 1000);
+
+  if (score.fed >= TARGET_FED) endGame();
+}
+
+// ============ 结算 ============
+function endGame() {
+  running = false;
+  stopCamera();
+  rStars.textContent = score.dust;
+  rFed.textContent = score.fed;
+  rMiss.textContent = score.missed;
+  resultEl.classList.add('show');
+}
+
+// ============ 主循环 ============
+let fpsFrames = 0, fpsLast = performance.now();
+
+function loop(now) {
+  if (!running) return;
+  requestAnimationFrame(loop);
+
+  fpsFrames++;
+  if (now - fpsLast >= 500) {
+    if (DEBUG) dbgFps.textContent = Math.round(fpsFrames * 1000 / (now - fpsLast));
+    fpsFrames = 0; fpsLast = now;
+  }
+
+  // 头姿检测
+  if (faceLandmarker && camEl.readyState >= 2 && camEl.currentTime !== lastVideoTime) {
+    lastVideoTime = camEl.currentTime;
+    let res = null;
+    try { res = faceLandmarker.detectForVideo(camEl, now); } catch(e) {}
+    if (res && res.faceLandmarks && res.faceLandmarks.length > 0) {
+      faceDot.style.background = '#6bff9d';
+      faceDot.style.boxShadow = '0 0 8px #6bff9d';
+      const mtx = res.facialTransformationMatrixes;
+      if (mtx && mtx.length > 0 && mtx[0].data) {
+        rawAngle = matrixToEuler(mtx[0].data);
+      }
+    } else {
+      faceDot.style.background = '#ff5757';
+      faceDot.style.boxShadow = '0 0 8px #ff5757';
+    }
+  }
+
+  // 平滑
+  smoothAngle.yaw   += (rawAngle.yaw   - smoothAngle.yaw)   * SMOOTH;
+  smoothAngle.pitch += (rawAngle.pitch - smoothAngle.pitch) * SMOOTH;
+  smoothAngle.roll  += (rawAngle.roll  - smoothAngle.roll)  * SMOOTH;
+
+  // 前 30 帧校准
+  if (!baseInit) {
+    if (baseFrames < 30) {
+      angleBase.yaw   = (angleBase.yaw   * baseFrames + smoothAngle.yaw)   / (baseFrames + 1);
+      angleBase.pitch = (angleBase.pitch * baseFrames + smoothAngle.pitch) / (baseFrames + 1);
+      angleBase.roll  = (angleBase.roll  * baseFrames + smoothAngle.roll)  / (baseFrames + 1);
+      baseFrames++;
+      hintText.textContent = '请正视屏幕 · 校准中…';
+    } else {
+      baseInit = true;
+      hintEl.classList.add('show');
+      hintText.textContent = '开饭!转头对准饿了的 Doga · 稳住 1 秒';
+      lastSpawnAt = now;
+    }
+    updateCursorFromHead();
+    cursorEl.style.left = cursorX + '%';
+    cursorEl.style.top  = cursorY + '%';
+    return;
+  }
+
+  updateCursorFromHead();
+
+  // 生成饥饿气泡
+  const w = currentWave();
+  const activeCount = Object.keys(hungry).length;
+  if (activeCount < w.maxHungry && now - lastSpawnAt > w.gapMs) {
+    spawnHungry(now);
+    lastSpawnAt = now;
+  }
+
+  // 更新气泡剩余时间(填色环 + 超时判定)
+  for (const who of Object.keys(hungry)) {
+    const h = hungry[who];
+    const elapsed = now - h.startTime;
+    const remain = 1 - elapsed / h.timerMs;
+    if (remain <= 0) {
+      score.missed += 1;
+      removeHungry(who, 'missed');
+      continue;
+    }
+    // 圆环 dasharray = 2πr ≈ 50.27,填充剩余比例
+    h.timerFill.style.strokeDashoffset = (1 - remain) * 50.27;
+    // 时间紧迫改颜色
+    if (remain < 0.35) h.timerFill.style.stroke = '#ff2f2f';
+    else if (remain < 0.6) h.timerFill.style.stroke = '#ff8a3d';
+    else h.timerFill.style.stroke = '#ff5757';
+  }
+
+  checkAim(now);
+}
+
+// ============ 启动流程 ============
+async function start() {
+  startBtn.disabled = true;
+  try {
+    await loadModel();
+    await startCamera();
+    overlay.classList.add('hidden');
+    // 复位
+    running = true;
+    baseInit = false;
+    baseFrames = 0;
+    angleBase = { yaw:0, pitch:0, roll:0 };
+    hungry = {};
+    aimTarget = null;
+    score = { fed: 0, missed: 0, dust: 0 };
+    scoreFedEl.textContent = 0;
+    scoreDustEl.textContent = 0;
+    waveEl.textContent = WAVES[0].name;
+    // 清理残留气泡
+    document.querySelectorAll('.hunger-bubble').forEach(b => b.remove());
+    document.querySelectorAll('.diner').forEach(d => d.classList.remove('hungry','aimed','fed'));
+    requestAnimationFrame(loop);
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = '出错了:' + (e.message || e);
+    startBtn.disabled = false;
+  }
+}
+
+startBtn.addEventListener('click', start);
+restartBtn.addEventListener('click', () => {
+  resultEl.classList.remove('show');
+  startBtn.disabled = false;
+  overlay.classList.remove('hidden');
+  statusEl.textContent = '准备好再来一场';
+});
+
+window.addEventListener('beforeunload', stopCamera);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && running) {
+    running = false;
+    stopCamera();
+    overlay.classList.remove('hidden');
+    startBtn.disabled = false;
+    statusEl.textContent = '已停止。可重新开始';
+  }
+});
+</script>
+</body>
+</html>

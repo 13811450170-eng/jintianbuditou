@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>今天不低头 · 关注你的颈椎健康</title>
+<style>
+:root {
+  --bg-ink:      #0a0510;
+  --bg-ink-2:    #1a0a1a;
+  --red-hot:     #ff2244;
+  --red-glow:    #ff6688;
+  --red-deep:    #8a0020;
+  --gold:        #ffcc00;
+  --gold-glow:   #ffe066;
+  --ink-hard:    #ffffff;
+  --ink-soft:    rgba(255,255,255,.65);
+  --ink-mute:    rgba(255,255,255,.35);
+  --perfect:     #00ff88;
+  --good:        #ffcc00;
+  --miss:        #ff2244;
+  --panel-bg:    rgba(10,5,16,.85);
+  --panel-brd:   rgba(255,204,0,.35);
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+html, body { height: 100%; overflow: hidden; font-family: var(--font); color: var(--ink-hard); background: var(--bg-ink); }
+
+.screen { position: fixed; inset: 0; }
+.hidden { display: none !important; }
+
+/* ============ 黑红热血赛博背景 ============ */
+.bg-cyber {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 30%, rgba(255,34,68,.25) 0%, rgba(0,0,0,0) 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(138,0,32,.35) 0%, rgba(0,0,0,0) 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(255,102,136,.15) 0%, rgba(0,0,0,0) 60%),
+    linear-gradient(180deg, var(--bg-ink-2) 0%, var(--bg-ink) 60%, #000 100%);
+}
+/* 六角光墙(纯 CSS 装饰) */
+.bg-hex {
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(60deg, rgba(255,34,68,.06) 0 2px, transparent 2px 60px),
+    repeating-linear-gradient(-60deg, rgba(255,204,0,.05) 0 2px, transparent 2px 60px);
+  pointer-events: none;
+  animation: hexShift 12s linear infinite;
+}
+@keyframes hexShift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(60px, 34px); }
+}
+/* 律动脉冲 */
+.bg-pulse {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgba(255,34,68,.1) 0%, transparent 40%);
+  animation: pulse 500ms ease-in-out infinite alternate;
+}
+@keyframes pulse { from { opacity: .4; } to { opacity: 1; } }
+
+/* ============ Home 屏 ============ */
+#homeScreen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px; gap: 20px; z-index: 100;
+  background: radial-gradient(circle at 50% 35%, rgba(255,34,68,.25), rgba(0,0,0,.9));
+}
+#homeScreen .brand {
+  font-size: 14px; letter-spacing: 6px; color: var(--gold);
+  padding: 6px 16px; border: 1px solid var(--gold); border-radius: 20px;
+}
+#homeScreen .title {
+  font-size: 60px; font-weight: 900; letter-spacing: 2px;
+  background: linear-gradient(135deg, #fff 0%, var(--red-hot) 50%, var(--gold) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; color: transparent;
+  filter: drop-shadow(0 4px 20px rgba(255,34,68,.5));
+}
+#homeScreen .sub { color: var(--ink-soft); font-size: 16px; max-width: 520px; line-height: 1.8; }
+#homeScreen .how {
+  display: flex; gap: 24px; margin-top: 16px; flex-wrap: wrap; justify-content: center;
+}
+#homeScreen .how-item {
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,204,0,.2);
+  padding: 12px 18px; border-radius: 12px; min-width: 140px;
+}
+#homeScreen .how-item .icon { font-size: 28px; margin-bottom: 4px; }
+#homeScreen .how-item .lbl { font-size: 13px; color: var(--gold); font-weight: 700; }
+#homeScreen .how-item .desc { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--red-hot), var(--red-deep));
+  color: #fff; font-weight: 900; font-size: 18px; letter-spacing: 2px;
+  padding: 16px 36px; border: none; border-radius: 32px;
+  box-shadow: 0 6px 24px rgba(255,34,68,.45), inset 0 1px 0 rgba(255,255,255,.3);
+  cursor: pointer; transition: transform .18s ease;
+}
+.btn-primary:hover { transform: translateY(-2px) scale(1.04); }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-ghost {
+  background: transparent; color: var(--ink-soft);
+  padding: 8px 20px; border: 1px solid var(--ink-mute); border-radius: 20px;
+  cursor: pointer; font-size: 13px; letter-spacing: 1px;
+}
+.btn-ghost:hover { color: var(--gold); border-color: var(--gold); }
+
+/* ============ 校准屏 ============ */
+#calScreen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 24px; z-index: 90;
+  background: radial-gradient(circle at 50% 40%, rgba(255,34,68,.35), rgba(0,0,0,.95));
+}
+#calRing {
+  width: 160px; height: 160px; border-radius: 50%;
+  border: 4px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px; font-weight: 900; color: var(--gold);
+  box-shadow: 0 0 40px rgba(255,204,0,.5), inset 0 0 30px rgba(255,204,0,.2);
+  animation: calPulse 800ms ease-in-out infinite alternate;
+}
+@keyframes calPulse {
+  from { transform: scale(1); box-shadow: 0 0 40px rgba(255,204,0,.5); }
+  to { transform: scale(1.08); box-shadow: 0 0 60px rgba(255,204,0,.9); }
+}
+#calScreen .cal-tip { color: var(--ink-soft); font-size: 16px; max-width: 500px; }
+#calScreen .cal-tip b { color: var(--gold); }
+
+/* ============ 主舞台 ============ */
+#stage { position: fixed; inset: 0; overflow: hidden; }
+
+/* 进度条(9 个方块 = 7 solo + combo 拆 2 = 9) */
+#progressRow {
+  position: absolute; top: 1.5vh; left: 4vw; right: 4vw; height: 2.4vh; min-height: 22px;
+  display: flex; gap: 6px; justify-content: center;
+  z-index: 4;
+}
+.prog-slot {
+  flex: 1; max-width: 72px; min-width: 28px; height: 100%;
+  border: 2px solid rgba(255,255,255,.18);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 900; color: rgba(255,255,255,.35);
+  background: rgba(0,0,0,.4);
+  font-family: 'DIN Alternate', monospace;
+  transition: all .2s ease;
+}
+.prog-slot.active {
+  border-color: var(--gold); color: var(--gold);
+  background: rgba(255,204,0,.18);
+  animation: slotPulse .6s ease-in-out infinite alternate;
+}
+@keyframes slotPulse {
+  0% { box-shadow: 0 0 6px rgba(255,204,0,.4); transform: scale(1); }
+  100% { box-shadow: 0 0 18px rgba(255,204,0,.9); transform: scale(1.08); }
+}
+.prog-slot.perfect { background: rgba(0,255,136,.4); border-color: var(--perfect); color: #fff; box-shadow: 0 0 12px rgba(0,255,136,.6); }
+.prog-slot.good    { background: rgba(255,204,0,.35); border-color: var(--gold);    color: #fff; box-shadow: 0 0 12px rgba(255,204,0,.5); }
+.prog-slot.miss    { background: rgba(255,34,68,.3);  border-color: var(--miss);    color: #fff; opacity: .7; }
+
+/* 节拍轴(屏幕上部) */
+#beatAxis {
+  position: absolute; top: 5vh; left: 4vw; right: 4vw; height: 11vh;
+  background: rgba(0,0,0,.45); border-top: 2px solid var(--red-hot); border-bottom: 2px solid var(--red-hot);
+  overflow: hidden;
+  box-shadow: inset 0 0 30px rgba(255,34,68,.15);
+}
+.beat-lane {
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 60px, rgba(255,255,255,.03) 60px 61px);
+}
+.judge-line {
+  position: absolute; left: 50%; top: -6px; bottom: -6px; width: 4px;
+  background: var(--gold); box-shadow: 0 0 20px var(--gold-glow);
+  z-index: 3;
+  transition: none;
+}
+.judge-line.flash-perfect { background: var(--perfect); box-shadow: 0 0 40px var(--perfect); animation: judgeLineFlash .6s ease-out; }
+.judge-line.flash-good { background: var(--good); box-shadow: 0 0 40px var(--good); animation: judgeLineFlash .6s ease-out; }
+.judge-line.flash-miss { background: var(--miss); box-shadow: 0 0 40px var(--miss); animation: judgeLineFlash .6s ease-out; }
+@keyframes judgeLineFlash {
+  0% { width: 20px; opacity: 1; }
+  100% { width: 4px; opacity: 1; }
+}
+/* 判定线两侧的"命中窗"半透明矩形,配合视觉提示 */
+.judge-window {
+  position: absolute; top: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,204,0,.08) 45%, rgba(255,204,0,.15) 50%, rgba(255,204,0,.08) 55%, transparent 100%);
+  z-index: 1; pointer-events: none;
+}
+.judge-window.perfect { width: 40px; left: calc(50% - 20px); }
+.judge-window.good    { width: 100px; left: calc(50% - 50px); background: linear-gradient(90deg, transparent 0%, rgba(255,204,0,.05) 100%); }
+.judge-line::before, .judge-line::after {
+  content: ''; position: absolute; left: 50%; transform: translateX(-50%);
+  border: 8px solid transparent;
+}
+.judge-line::before { top: -14px; border-bottom-color: var(--gold); }
+.judge-line::after  { bottom: -14px; border-top-color: var(--gold); }
+
+#beatContainer { position: absolute; inset: 0; }
+.beat-block {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 76px; height: 82%;
+  background: linear-gradient(180deg, rgba(255,34,68,.9), rgba(138,0,32,.8));
+  border: 2px solid var(--red-glow); border-radius: 10px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: #fff; font-weight: 900;
+  box-shadow: 0 0 20px rgba(255,34,68,.4);
+  transition: opacity .2s ease, box-shadow .2s ease, transform .2s ease;
+  will-change: left, transform;
+}
+.beat-block .b-icon { font-size: 24px; margin-bottom: 3px; line-height: 1; }
+.beat-block .b-label { font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,.85); text-align: center; line-height: 1.2; }
+/* 下一个即将进入判定线的拳:金色警戒 + 放大 */
+.beat-block.next {
+  box-shadow: 0 0 30px var(--gold-glow), 0 0 60px rgba(255,204,0,.5);
+  border-color: var(--gold);
+  animation: nextBreath .5s ease-in-out infinite alternate;
+}
+@keyframes nextBreath {
+  from { transform: translate(-50%, -50%) scale(1); }
+  to   { transform: translate(-50%, -50%) scale(1.15); }
+}
+.beat-block.demo { opacity: .5; background: linear-gradient(180deg, rgba(150,150,150,.5), rgba(80,80,80,.5)); border-color: rgba(255,255,255,.2); }
+.beat-block.upper-cut { background: linear-gradient(180deg, rgba(255,204,0,.9), rgba(200,140,0,.8)); border-color: var(--gold); color: #000; }
+.beat-block.upper-cut .b-label { color: rgba(0,0,0,.7); }
+.beat-block.down-hook { background: linear-gradient(180deg, rgba(0,180,255,.9), rgba(0,80,150,.8)); border-color: #66ddff; }
+/* 判定后的状态戳记 */
+.beat-block.hit-perfect { background: linear-gradient(180deg, rgba(0,255,136,.95), rgba(0,180,100,.85)); border-color: var(--perfect); box-shadow: 0 0 30px var(--perfect); animation: hitBounce .5s ease-out; }
+.beat-block.hit-good    { background: linear-gradient(180deg, rgba(255,204,0,.9), rgba(200,140,0,.8)); border-color: var(--gold); box-shadow: 0 0 24px var(--gold); animation: hitBounce .5s ease-out; }
+.beat-block.hit-miss    { opacity: .5; background: linear-gradient(180deg, rgba(80,80,80,.6), rgba(40,40,40,.5)); border-color: rgba(255,34,68,.6); animation: hitMissShake .35s ease-in-out; }
+.beat-block.hit-perfect, .beat-block.hit-good, .beat-block.hit-miss {
+  animation-fill-mode: both;
+}
+@keyframes hitBounce {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  40% { transform: translate(-50%, -50%) scale(1.35); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes hitMissShake {
+  0%,100% { transform: translate(-50%, -50%); }
+  25% { transform: translate(calc(-50% - 4px), -50%); }
+  75% { transform: translate(calc(-50% + 4px), -50%); }
+}
+/* 大戳记(盖在 beat-block 上,判定后叠加显示) */
+.beat-block .stamp {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+  font-size: 14px; font-weight: 900; letter-spacing: 1px;
+  padding: 3px 6px; border-radius: 4px;
+  white-space: nowrap; opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+}
+.beat-block.hit-perfect .stamp { display: block; opacity: 1; background: rgba(0,0,0,.8); color: var(--perfect); animation: stampPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+.beat-block.hit-good    .stamp { display: block; opacity: 1; background: rgba(0,0,0,.8); color: var(--good);    animation: stampPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+.beat-block.hit-miss    .stamp { display: block; opacity: 1; background: rgba(0,0,0,.8); color: var(--miss);    animation: stampPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes stampPop {
+  0% { transform: translate(-50%, -50%) scale(0) rotate(-20deg); }
+  60% { transform: translate(-50%, -50%) scale(1.3) rotate(6deg); }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); }
+}
+.beat-block.combo { width: 130px; }
+.beat-block.combo::after {
+  content: 'x2'; position: absolute; top: 2px; right: 4px;
+  font-size: 12px; color: var(--gold); font-weight: 900;
+}
+/* 命中环冲击波 —— 判定线扩散 */
+.hit-shockwave {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 20px; height: 20px; border-radius: 50%; border: 3px solid;
+  pointer-events: none; z-index: 4;
+  animation: shockwaveExpand .5s ease-out both;
+}
+.hit-shockwave.perfect { border-color: var(--perfect); }
+.hit-shockwave.good    { border-color: var(--good); }
+.hit-shockwave.miss    { border-color: var(--miss); }
+@keyframes shockwaveExpand {
+  0% { width: 20px; height: 20px; opacity: 1; }
+  100% { width: 220px; height: 220px; opacity: 0; }
+}
+
+/* HUD 数字条 */
+#hud {
+  position: absolute; top: 17.5vh; left: 4vw; right: 4vw; height: 5vh;
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: 'DIN Alternate', 'DIN', monospace; letter-spacing: 2px;
+  color: var(--ink-hard); font-size: 14px;
+  border-bottom: 1px solid rgba(255,204,0,.15);
+}
+#hud .hud-item { display: flex; align-items: baseline; gap: 6px; }
+#hud .hud-item .lbl { color: var(--gold); font-size: 11px; letter-spacing: 3px; font-weight: 700; }
+#hud .hud-item .val { font-size: 20px; font-weight: 900; color: var(--ink-hard); }
+#hud #hudCombo .val { color: var(--red-glow); }
+#hud #hudStreak .val { color: var(--perfect); }
+#hud .bpm-lock {
+  display: inline-flex; align-items: center; gap: 4px;
+  color: var(--ink-mute); font-size: 10px;
+}
+#hud .bpm-lock::before { content: '🔒'; }
+
+/* 战斗区(Joy + 判定弹字) */
+#ring {
+  position: absolute; top: 24vh; left: 0; right: 0; bottom: 8vh;
+}
+
+#joyContainer {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: 420px; height: 420px;
+  transform-origin: center center;
+}
+#joyContainer.punching { animation: joyLunge 500ms ease-out; }
+#joyContainer.dizzy { animation: joyShake 350ms ease-in-out; }
+@keyframes joyLunge {
+  0% { transform: translate(-50%, -50%); }
+  40% { transform: translate(-50%, calc(-50% + 12px)) scale(1.06); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes joyShake {
+  0%,100% { transform: translate(-50%, -50%); }
+  25% { transform: translate(calc(-50% + 10px), -50%) rotate(-2deg); }
+  75% { transform: translate(calc(-50% - 10px), -50%) rotate(2deg); }
+}
+#joyHead {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; pointer-events: none;
+}
+
+/* Joy 的红拳套(挂在头两侧下方) */
+.glove {
+  position: absolute; width: 78px; height: 78px; border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 30%, #ff6688 0%, #ff2244 40%, #8a0020 100%);
+  box-shadow: 0 0 30px rgba(255,34,68,.7), inset 0 -8px 14px rgba(0,0,0,.4), inset 0 5px 10px rgba(255,255,255,.25);
+  z-index: 2;
+}
+.glove::after {
+  content: ''; position: absolute; left: 6px; top: 6px; width: 24px; height: 14px;
+  background: rgba(255,255,255,.4); border-radius: 50%; filter: blur(2px);
+}
+.glove-left  { bottom: 40px; left: 20px; }
+.glove-right { bottom: 40px; right: 20px; }
+.glove.punch-right-hook { animation: punchRight 500ms cubic-bezier(.4,0,.6,1); }
+.glove.punch-left-hook { animation: punchLeft 500ms cubic-bezier(.4,0,.6,1); }
+.glove.punch-upper-cut { animation: punchUpper 500ms cubic-bezier(.4,0,.6,1); }
+.glove.punch-down-hook { animation: punchDown 500ms cubic-bezier(.4,0,.6,1); }
+@keyframes punchRight {
+  0% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(60px, -20px) scale(1.35); box-shadow: 0 0 40px rgba(255,68,102,.9); }
+  70% { transform: translate(60px, -20px) scale(1.35); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes punchLeft {
+  0% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-60px, -20px) scale(1.35); box-shadow: 0 0 40px rgba(255,68,102,.9); }
+  70% { transform: translate(-60px, -20px) scale(1.35); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes punchUpper {
+  0% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-15px, -100px) scale(1.5); box-shadow: 0 0 50px rgba(255,204,0,.9); background: radial-gradient(circle at 30% 30%, #ffe066, #ffcc00 40%, #ff6600 100%); }
+  70% { transform: translate(-15px, -100px) scale(1.5); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes punchDown {
+  0% { transform: translate(0, 0) scale(1); }
+  40% { transform: translate(-15px, 80px) scale(1.5); box-shadow: 0 0 50px rgba(0,200,255,.9); background: radial-gradient(circle at 30% 30%, #66ddff, #0088cc 40%, #003366 100%); }
+  70% { transform: translate(-15px, 80px) scale(1.5); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+/* 判定弹字(中央偏上) */
+#judgePopup {
+  position: absolute; top: 30%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.5);
+  font-size: 80px; font-weight: 900; letter-spacing: 4px;
+  text-shadow: 0 0 40px currentColor, 0 4px 8px rgba(0,0,0,.8);
+  opacity: 0; pointer-events: none; z-index: 20;
+  transition: none;
+}
+#judgePopup.show { animation: judgeShow 800ms ease-out; }
+#judgePopup.perfect { color: var(--perfect); }
+#judgePopup.good { color: var(--good); }
+#judgePopup.miss { color: var(--miss); }
+@keyframes judgeShow {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+#judgePopup.miss.show { animation: judgeShowMiss 800ms ease-out; }
+@keyframes judgeShowMiss {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4); }
+  15% { opacity: 1; transform: translate(-50%, -50%) scale(1.3) translateX(-4px); }
+  20% { transform: translate(-50%, -50%) scale(1.2) translateX(6px); }
+  25% { transform: translate(-50%, -50%) scale(1.2) translateX(-4px); }
+  30% { transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+}
+
+/* 教练台词条 */
+#coachBar {
+  position: absolute; bottom: 3vh; left: 4vw; right: 200px; height: 5vh; min-height: 44px;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--panel-bg); border: 1px solid var(--panel-brd);
+  border-radius: 6px; padding: 0 16px;
+  z-index: 5;
+}
+#coachBar .coach-tag {
+  color: var(--red-hot); font-weight: 900; font-size: 13px; letter-spacing: 3px;
+  padding: 4px 10px; background: rgba(255,34,68,.15);
+  border: 1px solid var(--red-hot); border-radius: 4px;
+}
+#coachBar #coachText {
+  color: var(--ink-hard); font-size: 15px; font-weight: 600;
+  flex: 1;
+}
+
+/* 摄像头小窗(办公模式 ~15%) */
+#faceCam {
+  position: absolute; bottom: 11vh; right: 2vw;
+  width: 160px; height: 120px;
+  border: 3px solid var(--gold); border-radius: 8px;
+  overflow: hidden; background: #000;
+  box-shadow: 0 0 20px rgba(255,204,0,.35), 0 4px 20px rgba(0,0,0,.6);
+  transition: all .35s cubic-bezier(.4,0,.2,1);
+  z-index: 6;
+}
+#faceCam.folded {
+  width: 48px !important; height: 48px !important; border-radius: 50%;
+}
+#faceCam.folded #video, #faceCam.folded .cam-label { display: none; }
+#faceCam.folded::after {
+  content: '📹'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+#faceCam #video {
+  width: 100%; height: 100%; object-fit: cover;
+  transform: scaleX(-1);
+}
+#faceCam .cam-label {
+  position: absolute; top: 4px; right: 4px;
+  color: var(--red-hot); font-size: 9px; font-weight: 900; letter-spacing: 2px;
+  padding: 2px 6px; background: rgba(0,0,0,.6); border-radius: 3px;
+}
+#faceCam .cam-label::before {
+  content: '●'; margin-right: 3px; color: var(--red-hot);
+  animation: blink 1.2s infinite;
+}
+@keyframes blink { 50% { opacity: .3; } }
+
+/* Overlay 四屏 */
+.overlay {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 24px; text-align: center; z-index: 30;
+  pointer-events: none;
+}
+.overlay.show { display: flex; }
+.overlay-bg {
+  position: absolute; inset: 0; background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+}
+.overlay-content { position: relative; z-index: 1; }
+
+#ovIntro .big-text {
+  font-size: 100px; font-weight: 900; letter-spacing: 8px;
+  color: var(--red-hot); text-shadow: 0 0 40px var(--red-hot), 0 6px 12px rgba(0,0,0,.8);
+  animation: introPop 1.8s ease-out;
+}
+#ovIntro .sub-text {
+  font-size: 24px; letter-spacing: 6px; color: var(--gold);
+  margin-top: 8px;
+}
+@keyframes introPop {
+  0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+  40% { transform: scale(1.1) rotate(2deg); opacity: 1; }
+  60% { transform: scale(1) rotate(0); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.95); }
+}
+
+#ovDemo .demo-title {
+  font-size: 42px; font-weight: 900; letter-spacing: 4px; color: var(--gold);
+  text-shadow: 0 0 20px var(--gold-glow);
+}
+#ovDemo .demo-tip {
+  font-size: 18px; color: var(--ink-hard); margin-top: 8px;
+}
+
+#ovSignal .big-text {
+  font-size: 120px; font-weight: 900; letter-spacing: 12px;
+  color: var(--red-hot);
+  text-shadow: 0 0 60px var(--red-hot), 0 0 100px var(--red-glow), 0 8px 20px rgba(0,0,0,.9);
+  animation: signalPop 1s ease-out;
+}
+@keyframes signalPop {
+  0% { transform: scale(0.4); opacity: 0; letter-spacing: 30px; }
+  30% { transform: scale(1.3); opacity: 1; letter-spacing: 15px; }
+  60% { transform: scale(1); letter-spacing: 12px; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+#koPoster {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; gap: 12px;
+  z-index: 40; pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.2) 0%, rgba(0,0,0,.85) 60%);
+}
+#koPoster.show { display: flex; animation: koFlash .3s ease-out; }
+@keyframes koFlash {
+  0% { background: rgba(255,255,255,.95); }
+  100% { background: radial-gradient(ellipse at center, rgba(255,255,255,.2) 0%, rgba(0,0,0,.85) 60%); }
+}
+#koPoster .ko-text {
+  font-size: 180px; font-weight: 900; letter-spacing: 20px;
+  color: var(--gold);
+  text-shadow: 0 0 60px var(--gold-glow), 0 8px 30px rgba(0,0,0,.95),
+               6px 6px 0 var(--red-hot), 12px 12px 0 var(--red-deep);
+  animation: koScale 500ms cubic-bezier(.34,1.56,.64,1);
+}
+#koPoster .up-text {
+  font-size: 32px; font-weight: 900; letter-spacing: 4px; color: var(--red-glow);
+  text-shadow: 0 0 20px var(--red-hot);
+  animation: upFloat 800ms ease-out 300ms both;
+}
+@keyframes koScale {
+  0% { transform: scale(0.3) rotate(-12deg); opacity: 0; }
+  40% { transform: scale(1.25) rotate(4deg); opacity: 1; }
+  70% { transform: scale(1) rotate(0); }
+  100% { transform: scale(1); }
+}
+@keyframes upFloat {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+#ovOutro {
+  background: rgba(10,5,16,.92); pointer-events: auto;
+}
+#ovOutro .outro-panel {
+  max-width: 520px; padding: 40px; text-align: center;
+  background: linear-gradient(180deg, rgba(255,34,68,.08), rgba(0,0,0,.6));
+  border: 2px solid var(--panel-brd); border-radius: 20px;
+  box-shadow: 0 0 60px rgba(255,34,68,.25);
+}
+#ovOutro .outro-rank {
+  font-size: 120px; font-weight: 900; letter-spacing: 4px;
+  background: linear-gradient(135deg, var(--gold), var(--red-hot));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px var(--gold-glow));
+}
+#ovOutro .outro-title { font-size: 24px; letter-spacing: 6px; color: var(--gold); margin-top: -12px; }
+#ovOutro .outro-quote {
+  color: var(--ink-hard); font-size: 16px; margin: 20px 0; font-weight: 600;
+  padding: 12px 16px; background: rgba(255,255,255,.05); border-radius: 8px;
+}
+#ovOutro .outro-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin: 20px 0;
+}
+#ovOutro .stat {
+  padding: 10px; background: rgba(255,255,255,.04); border-radius: 8px;
+}
+#ovOutro .stat .stat-val {
+  font-size: 24px; font-weight: 900;
+  font-family: 'DIN Alternate', monospace;
+}
+#ovOutro .stat.perfect .stat-val { color: var(--perfect); }
+#ovOutro .stat.good .stat-val { color: var(--good); }
+#ovOutro .stat.miss .stat-val { color: var(--miss); }
+#ovOutro .stat.score .stat-val { color: var(--gold); }
+#ovOutro .stat .stat-lbl { font-size: 10px; letter-spacing: 2px; color: var(--ink-soft); margin-top: 2px; }
+#ovOutro .btn-row { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+
+/* Devbar */
+#devbar {
+  position: fixed; top: 4px; left: 4px; z-index: 999;
+  display: flex; gap: 4px; padding: 6px; background: rgba(0,0,0,.85);
+  border-radius: 6px; font-family: monospace; font-size: 11px;
+  border: 1px solid rgba(255,204,0,.3);
+}
+#devbar button {
+  background: rgba(255,204,0,.15); color: var(--gold);
+  border: 1px solid rgba(255,204,0,.4); padding: 3px 8px;
+  border-radius: 3px; cursor: pointer; font-family: monospace; font-size: 11px;
+}
+#devbar button:hover { background: rgba(255,204,0,.3); }
+#devbar #dbgAngle {
+  color: var(--perfect); padding: 3px 8px; align-self: center;
+  border-left: 1px solid rgba(255,255,255,.15); margin-left: 4px;
+}
+
+/* Loading tip */
+#loadTip {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  color: var(--gold); font-size: 12px; letter-spacing: 3px;
+  padding: 6px 14px; background: rgba(0,0,0,.7); border-radius: 20px;
+  z-index: 200;
+}
+
+/* 错误屏 */
+#errScreen {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px; z-index: 200; gap: 16px;
+  background: rgba(10,5,16,.95);
+}
+#errScreen .err-title { font-size: 24px; color: var(--red-hot); font-weight: 900; }
+#errScreen #errMsg { color: var(--ink-soft); max-width: 500px; line-height: 1.8; }
+#errScreen .tiny { color: var(--ink-mute); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<!-- A. Home 屏 -->
+<div id="homeScreen" class="screen">
+  <div class="brand">今天不低头 · 关注你的颈椎健康</div>
+  <div class="title">拳击派对</div>
+  <div class="sub">
+    Joy 会挥拳过来,你用<b style="color:var(--gold);">头部动作</b>躲开。<br/>
+    30 秒的黑红热血,来一场真正的颈椎训练。
+  </div>
+  <div class="how">
+    <div class="how-item">
+      <div class="icon">◀</div>
+      <div class="lbl">头向左倾</div>
+      <div class="desc">躲 Joy 的左钩拳</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">▶</div>
+      <div class="lbl">头向右倾</div>
+      <div class="desc">躲 Joy 的右钩拳</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">▼</div>
+      <div class="lbl">收下巴</div>
+      <div class="desc">躲 Joy 的上勾拳</div>
+    </div>
+    <div class="how-item">
+      <div class="icon">▲</div>
+      <div class="lbl">抬起头</div>
+      <div class="desc">躲 Joy 的下勾拳</div>
+    </div>
+  </div>
+  <button id="startBtn" class="btn-primary">开启摄像头 · BOXING TIME!</button>
+  <div style="color:var(--ink-mute);font-size:12px;margin-top:8px;">
+    请用 Chrome / Edge · 需要摄像头权限 · 30 秒
+  </div>
+</div>
+
+<!-- B. 校准屏 -->
+<div id="calScreen" class="screen hidden">
+  <div class="cal-tip"><b>坐直,让我看到你的头。</b><br/>保持正对屏幕,记录你现在的中立位。</div>
+  <div id="calRing">3</div>
+  <div class="cal-tip" style="font-size:14px;color:var(--ink-mute);">校准倒数 · 请勿转头</div>
+</div>
+
+<!-- C. 主舞台 -->
+<div id="stage" class="screen hidden">
+  <div class="bg-cyber"></div>
+  <div class="bg-hex"></div>
+  <div class="bg-pulse"></div>
+
+  <!-- 进度条(9 拳一目了然) -->
+  <div id="progressRow"></div>
+
+  <!-- 节拍轴 -->
+  <div id="beatAxis">
+    <div class="beat-lane"></div>
+    <div class="judge-window good"></div>
+    <div class="judge-window perfect"></div>
+    <div id="beatContainer"></div>
+    <div class="judge-line"></div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-item" id="hudScore">
+      <span class="lbl">SCORE</span><span class="val">0</span>
+    </div>
+    <div class="hud-item" id="hudCombo">
+      <span class="lbl">COMBO</span><span class="val">×0</span>
+    </div>
+    <div class="hud-item" id="hudStreak">
+      <span class="lbl">PERFECT</span><span class="val">0/5</span>
+    </div>
+    <div class="hud-item">
+      <span class="lbl">BPM</span><span class="val">120</span>
+      <span class="bpm-lock">LOCKED</span>
+    </div>
+    <div class="hud-item" id="hudTime">
+      <span class="lbl">TIME</span><span class="val">0s</span>
+    </div>
+  </div>
+
+  <!-- 战斗区 -->
+  <div id="ring">
+    <div id="joyContainer">
+      <canvas id="joyHead" width="500" height="500"></canvas>
+      <div class="glove glove-left"></div>
+      <div class="glove glove-right"></div>
+    </div>
+    <div id="judgePopup"></div>
+  </div>
+
+  <!-- 教练台词 -->
+  <div id="coachBar">
+    <span class="coach-tag">🥊 JOY</span>
+    <span id="coachText">坐直,开始锻炼。</span>
+  </div>
+
+  <!-- 摄像头小窗 -->
+  <div id="faceCam">
+    <video id="video" autoplay playsinline muted></video>
+    <div class="cam-label">YOU</div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="ovIntro">
+    <div class="overlay-bg"></div>
+    <div class="overlay-content">
+      <div class="big-text">ROUND 1</div>
+      <div class="sub-text">READY?</div>
+    </div>
+  </div>
+  <div class="overlay" id="ovDemo">
+    <div class="overlay-bg" style="background:rgba(0,0,0,.3);"></div>
+    <div class="overlay-content">
+      <div class="demo-title">跟做示范</div>
+      <div class="demo-tip">看清 Joy 的拳路 · 头一歪,拳过去了</div>
+    </div>
+  </div>
+  <div class="overlay" id="ovSignal">
+    <div class="overlay-bg" style="background:rgba(0,0,0,.3);"></div>
+    <div class="overlay-content">
+      <div class="big-text">BOXING<br/>TIME!</div>
+    </div>
+  </div>
+  <div id="koPoster">
+    <div class="ko-text">K.O.!</div>
+    <div class="up-text">+1UP · 485C 星球 lv.up</div>
+  </div>
+  <div class="overlay" id="ovOutro">
+    <div class="overlay-bg"></div>
+    <div class="overlay-content">
+      <div class="outro-panel">
+        <div class="outro-rank" id="outroRank">A</div>
+        <div class="outro-title">Rank</div>
+        <div class="outro-quote" id="outroQuote">不错嘛地球人。</div>
+        <div class="outro-stats">
+          <div class="stat perfect"><div class="stat-val" id="outroPerfect">0</div><div class="stat-lbl">PERFECT</div></div>
+          <div class="stat good"><div class="stat-val" id="outroGood">0</div><div class="stat-lbl">GOOD</div></div>
+          <div class="stat miss"><div class="stat-val" id="outroMiss">0</div><div class="stat-lbl">MISS</div></div>
+          <div class="stat score"><div class="stat-val" id="outroScore">0</div><div class="stat-lbl">SCORE</div></div>
+        </div>
+        <div class="btn-row">
+          <button id="againBtn" class="btn-primary" style="font-size:15px;padding:12px 24px;">再来一局</button>
+          <button id="restBtn" class="btn-ghost">回主界面</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- D. Devbar -->
+<div id="devbar" class="hidden">
+  <button data-jump="skip-intro">Skip → Fight</button>
+  <button data-jump="force-ko">Force KO</button>
+  <button data-jump="force-outro">Force Outro</button>
+  <button data-jump="recalibrate">Recalibrate</button>
+  <span id="dbgAngle">roll: 0 pitch: 0 yaw: 0</span>
+</div>
+
+<!-- Error -->
+<div id="errScreen" class="screen hidden">
+  <div class="err-title">出错了</div>
+  <div id="errMsg"></div>
+  <button id="retryBtn" class="btn-primary" style="font-size:14px;padding:10px 22px;">重试</button>
+</div>
+
+<!-- Loading -->
+<div id="loadTip" style="display:none;">正在唤醒 Joy…</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+// ========================================================================
+// ==== 1. 常量与状态 ====================================================
+// ========================================================================
+
+const DEBUG = new URLSearchParams(location.search).has('debug');
+
+// 头姿轴向 —— 实测结论,勿改
+// AX.roll = +1(不是 -1!与 yaw 不同,勿想当然一起翻),详见 index.html L424-426
+// 应用 AX 后约定: yaw<0=向左转 / pitch<0=抬头 / pitch>0=收下巴 / roll<0=向左倾 / roll>0=向右倾
+const AX = { yaw: -1, pitch: 1, roll: 1 };
+
+// 判定阈值
+const JUDGE = {
+  windowPerfect: 150,   // ±150ms 内到位 = Perfect
+  windowGood: 350,      // ±350ms = Good;超时 = Miss
+  angleGood: 12,        // ≥12° = Good
+  anglePerfect: 18,     // ≥18° = Perfect
+  angleMax: 30,         // >30° = Miss(过头护栏)
+};
+const VEL_SPIKE = 12;   // 度/帧 = 甩头护栏
+const SMOOTH = 0.35;
+
+// 节拍常量
+const BEAT_DURATION = 3000;      // 每个 beat 从出现到过判定线的总时长
+const JUDGE_POS_PCT = 50;        // 判定线在节拍轴的水平百分比(中央)
+
+// 时间轴阶段(相对 sessionStart)
+const T = {
+  intro:  0,
+  dialog: 2000,
+  demo:   4000,
+  signal: 8000,
+  fight:  9000,
+  fightEnd: 25000,
+  outro:  27000,
+  end:    30000,
+};
+
+// 8 拳 + 组合拳数据(4 种拳:左钩/右钩/上勾/下勾)
+const BEAT_SCRIPT = [
+  { id:1, hitTime:  9000, type:'left-hook',  expect:'roll-', label:'左钩', icon:'◀', difficulty:1 },
+  { id:2, hitTime: 11000, type:'right-hook', expect:'roll+', label:'右钩', icon:'▶', difficulty:1 },
+  { id:3, hitTime: 13000, type:'upper-cut',  expect:'pitch+',label:'上勾', icon:'▼', difficulty:1 },
+  { id:4, hitTime: 15000, type:'down-hook',  expect:'pitch-',label:'下勾', icon:'▲', difficulty:1 },
+  { id:5, hitTime: 17000, type:'left-hook',  expect:'roll-', label:'左钩', icon:'◀', difficulty:2 },
+  { id:6, hitTime: 19000, type:'upper-cut',  expect:'pitch+',label:'上勾', icon:'▼', difficulty:2 },
+  { id:7, hitTime: 21000, type:'right-hook', expect:'roll+', label:'右钩', icon:'▶', difficulty:3 },
+  // 第 8 拳组合:上勾 + 下勾(pitch 全轴挑战)
+  { id:8, subId:'a', hitTime: 23000, type:'upper-cut', expect:'pitch+', label:'上勾', icon:'▼', difficulty:4, comboOf:8 },
+  { id:8, subId:'b', hitTime: 23700, type:'down-hook', expect:'pitch-', label:'下勾', icon:'▲', difficulty:4, comboOf:8 },
+];
+
+// 示范拳(4-8s):4 个方向各示范一次
+const DEMO_BEATS = [
+  { at: 4200, type:'left-hook',  expect:'roll-', label:'左钩→左倾' },
+  { at: 5200, type:'right-hook', expect:'roll+', label:'右钩→右倾' },
+  { at: 6200, type:'upper-cut',  expect:'pitch+',label:'上勾→收下巴' },
+  { at: 7200, type:'down-hook',  expect:'pitch-',label:'下勾→抬头' },
+];
+
+// Joy 台词库(来自 joy_boxing_party memory)
+const LINES = {
+  calibrate: '坐直,让我看到你的头。',
+  intro:     '485C 星球拳击 lesson 1 —— 别哭。',
+  dialog:    '坐直,开始锻炼。',
+  demo:      '看好 —— 头一歪,拳过去了。',
+  signal:    'BOXING TIME!',
+  incoming_right: '右拳来了,左倾!',
+  incoming_left:  '左拳来了,右倾!',
+  incoming_up:    '上勾拳,收下巴!',
+  perfect: ['Nice.', '行啊你!', '485C 水平!', '稳!', 'Combo!'],
+  good: ['凑合。', '还行。', '差点意思。'],
+  miss: ['你在装死?', '我一个外星狗都看不下去。', '你的头是装饰的?', '腰塌了,坐直。', '颈椎训练呢,别偷懒。'],
+  overRotate: ['轻点!要拧断脖子?', '别甩,是躲不是甩。'],
+  ko: '你要认真了? → K.O.!',
+  outroS: '不错嘛地球人,485C 星球欢迎你。再来一局?',
+  outroA: '还行,勉强能看。',
+  outroB: '勉强合格。下次我可不会手下留情。',
+  outroC: '你在椅子上是不是躺着躲的?',
+};
+
+// 状态
+let state = 'home';               // home | calibrating | playing | done
+let stagePhase = 'intro';         // intro | dialog | demo | signal | fight | ko | outro
+
+let faceLandmarker = null;
+let lastVideoTime = -1;
+let sessionStart = 0;             // fight 起点(所有 beat.hitTime 相对它)
+let phaseTimers = [];
+
+// 头姿状态
+let rawAngle = { yaw: 0, pitch: 0, roll: 0 };
+let smoothAngle = { yaw: 0, pitch: 0, roll: 0 };
+let angleBase = { yaw: 0, pitch: 0, roll: 0 };
+let prevRel = { yaw: 0, pitch: 0, roll: 0 };
+let angleVel = 0;
+let facePresent = false;
+let haveMatrix = false;
+
+// 战斗状态
+let beats = [];                   // 运行时 beat 状态(clone from BEAT_SCRIPT)
+let demoRuntime = [];             // 示范拳运行时
+let sessionStats = null;
+
+// 音频
+let audioCtx = null;
+let bgmIntervalId = null;
+
+// ========================================================================
+// ==== 2. DOM 引用 ======================================================
+// ========================================================================
+
+const $ = (id) => document.getElementById(id);
+const homeScreen = $('homeScreen');
+const calScreen = $('calScreen');
+const stage = $('stage');
+const errScreen = $('errScreen');
+const loadTip = $('loadTip');
+const video = $('video');
+const calRing = $('calRing');
+const coachText = $('coachText');
+const judgePopup = $('judgePopup');
+const beatContainer = $('beatContainer');
+const joyContainer = $('joyContainer');
+const joyHead = $('joyHead');
+const gloveLeft = document.querySelector('.glove-left');
+const gloveRight = document.querySelector('.glove-right');
+const faceCam = $('faceCam');
+const koPoster = $('koPoster');
+const ovIntro = $('ovIntro');
+const ovDemo = $('ovDemo');
+const ovSignal = $('ovSignal');
+const ovOutro = $('ovOutro');
+const devbar = $('devbar');
+const dbgAngle = $('dbgAngle');
+
+const ctx = joyHead.getContext('2d');
+
+// ========================================================================
+// ==== 3. Joy 素材 =====================================================
+// ========================================================================
+
+const JOY_SRC = {
+  base:   'assets/joy/face_01.png',
+  star:   'assets/joy/face_10.png',
+  laugh:  'assets/joy/face_02.png',
+  laugh2: 'assets/joy/face_09.png',
+  squint: 'assets/joy/face_08.png',
+  wink:   'assets/joy/face_07.png',
+  cry:    'assets/joy/face_12.png',
+  wow:    'assets/joy/face_13.png',
+};
+const joyImg = {};
+let joyReady = false;
+function preloadJoy() {
+  const keys = Object.keys(JOY_SRC);
+  let loaded = 0;
+  keys.forEach(k => {
+    const img = new Image();
+    img.onload = img.onerror = () => { if (++loaded >= keys.length) joyReady = true; };
+    img.src = JOY_SRC[k];
+    joyImg[k] = img;
+  });
+}
+preloadJoy();
+
+// 当前表情
+let currentFace = 'base';
+let lastJudgeAt = 0;
+function pickJoyFace() {
+  const now = performance.now();
+  const sinceJudge = now - lastJudgeAt;
+  if (stagePhase === 'ko') return 'wow';
+  if (stagePhase === 'intro' || stagePhase === 'signal') return 'laugh';
+  if (stagePhase === 'outro') {
+    const rank = getRank();
+    return (rank === 'S' || rank === 'A') ? 'base' : (rank === 'B' ? 'squint' : 'cry');
+  }
+  if (sinceJudge < 700) return currentFace;
+  return 'base';
+}
+
+// ========================================================================
+// ==== 4. Web Audio ======================================================
+// ========================================================================
+
+function initAudio() {
+  if (audioCtx) return;
+  try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch {}
+}
+function beep(freq, dur = 0.12, type = 'sine', vol = 0.15, when = 0) {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime + when;
+  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+function playHit(kind) {
+  if (kind === 'perfect') { beep(880, .10, 'square', .20); beep(1320, .14, 'sine', .14, .04); }
+  else if (kind === 'good') { beep(660, .12, 'sine', .18); }
+  else if (kind === 'miss') { beep(180, .20, 'sawtooth', .18); }
+}
+function playPunch() { beep(220, .08, 'triangle', .22); }
+function playSignal() { beep(440, .12, 'sine', .16); beep(660, .14, 'sine', .12, .1); }
+function playKO() {
+  [440, 660, 880, 1320].forEach((f, i) => beep(f, .28, 'square', .16, i * .10));
+}
+function startBGMHeartbeat() {
+  stopBGMHeartbeat();
+  bgmIntervalId = setInterval(() => beep(80, 0.05, 'sine', 0.05), 500);
+}
+function stopBGMHeartbeat() {
+  if (bgmIntervalId) { clearInterval(bgmIntervalId); bgmIntervalId = null; }
+}
+
+// ========================================================================
+// ==== 5. MediaPipe 引擎 =================================================
+// ========================================================================
+
+async function loadModel() {
+  loadTip.style.display = 'block';
+  loadTip.textContent = '正在唤醒 Joy…(首次约需几秒)';
+  const resolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  faceLandmarker = await FaceLandmarker.createFromOptions(resolver, {
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      delegate: "GPU"
+    },
+    runningMode: "VIDEO", numFaces: 1,
+    outputFacialTransformationMatrixes: true,
+  });
+  loadTip.style.display = 'none';
+}
+async function startCamera() {
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { width: { ideal: 960 }, height: { ideal: 720 }, facingMode: 'user' },
+    audio: false
+  });
+  video.srcObject = stream;
+  await video.play();
+  await new Promise(res => { if (video.readyState >= 2) res(); else video.onloadeddata = () => res(); });
+}
+
+function matrixToEuler(m) {
+  const r00 = m[0], r10 = m[1], r20 = m[2], r21 = m[6], r22 = m[10];
+  const yaw = Math.asin(clamp(-r20, -1, 1));
+  const pitch = Math.atan2(r21, r22);
+  const roll = Math.atan2(r10, r00);
+  const D = 180 / Math.PI;
+  return { yaw: yaw * D, pitch: pitch * D, roll: roll * D };
+}
+function relAngle() {
+  return {
+    yaw:   AX.yaw   * (smoothAngle.yaw   - angleBase.yaw),
+    pitch: AX.pitch * (smoothAngle.pitch - angleBase.pitch),
+    roll:  AX.roll  * (smoothAngle.roll  - angleBase.roll),
+  };
+}
+function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
+function avg(a) { return a.reduce((s, v) => s + v, 0) / a.length; }
+
+// ========================================================================
+// ==== 6. 校准 ==========================================================
+// ========================================================================
+
+function calibrate() {
+  state = 'calibrating';
+  stage.classList.add('hidden');
+  calScreen.classList.remove('hidden');
+  coachText.textContent = LINES.calibrate;
+
+  let samples = [], count = 3;
+  calRing.textContent = count;
+  const collect = setInterval(() => {
+    if (facePresent) samples.push({ yaw: rawAngle.yaw, pitch: rawAngle.pitch, roll: rawAngle.roll });
+  }, 30);
+  const tick = setInterval(() => {
+    count--;
+    if (count > 0) calRing.textContent = count;
+    else {
+      clearInterval(tick); clearInterval(collect);
+      if (samples.length > 5) {
+        angleBase.yaw   = avg(samples.map(s => s.yaw));
+        angleBase.pitch = avg(samples.map(s => s.pitch));
+        angleBase.roll  = avg(samples.map(s => s.roll));
+      }
+      smoothAngle = { ...rawAngle };
+      prevRel = { yaw: 0, pitch: 0, roll: 0 };
+      calScreen.classList.add('hidden');
+      beginSession();
+    }
+  }, 800);
+}
+
+// ========================================================================
+// ==== 7. 判定核心 ======================================================
+// ========================================================================
+
+function axisValue(rel, expect) {
+  if (expect === 'roll+')  return  rel.roll;
+  if (expect === 'roll-')  return -rel.roll;
+  if (expect === 'pitch+') return  rel.pitch;
+  if (expect === 'pitch-') return -rel.pitch;
+  return 0;
+}
+
+function tickJudge(now) {
+  const t = now - sessionStart;
+  const rel = relAngle();
+
+  for (const beat of beats) {
+    if (beat._judged) continue;
+
+    const dt = t - beat.hitTime;
+    const inGood = Math.abs(dt) <= JUDGE.windowGood;
+
+    // 未进窗
+    if (dt < -JUDGE.windowGood) continue;
+
+    // 超时
+    if (dt > JUDGE.windowGood) {
+      resolve(beat, 'miss', 'timeout', null);
+      continue;
+    }
+
+    const signedAngle = axisValue(rel, beat.expect);
+    beat._maxAngleSeen = Math.max(beat._maxAngleSeen || 0, signedAngle);
+    beat._peakVel = Math.max(beat._peakVel || 0, angleVel);
+
+    // 护栏一:过头
+    if (signedAngle > JUDGE.angleMax) {
+      resolve(beat, 'miss', 'over-rotation', signedAngle);
+      continue;
+    }
+    // 护栏二:甩头(在窗口内检测)
+    if (beat._peakVel > VEL_SPIKE && signedAngle > JUDGE.angleGood * 0.7) {
+      resolve(beat, 'miss', 'whiplash', signedAngle);
+      continue;
+    }
+
+    // 达标
+    if (signedAngle >= JUDGE.angleGood) {
+      const inPerfectWin = Math.abs(dt) <= JUDGE.windowPerfect;
+      const isPerfectAngle = signedAngle >= JUDGE.anglePerfect && signedAngle <= JUDGE.angleMax;
+      if (inPerfectWin && isPerfectAngle) resolve(beat, 'perfect', 'hit', signedAngle);
+      else resolve(beat, 'good', 'hit', signedAngle);
+    }
+  }
+}
+
+function resolve(beat, kind, reason, angle) {
+  beat._judged = kind;
+  beat._reason = reason;
+
+  showJudge(kind);
+  updateScore(kind, beat);
+  playHit(kind);
+  triggerJoyReaction(kind);
+  updateHUD();
+  flashJudgeLine(kind);
+  spawnShockwave(kind);
+  if (kind === 'perfect') checkKO();
+  if (kind === 'miss' && reason === 'over-rotation') {
+    sayCoach(pickRandom(LINES.overRotate));
+  } else if (kind === 'miss') {
+    sayCoach(pickRandom(LINES.miss));
+  } else if (kind === 'perfect') {
+    sayCoach(pickRandom(LINES.perfect));
+  }
+
+  // 更新节拍块视觉 + stamp
+  if (beat._domEl) {
+    beat._domEl.classList.remove('next');
+    beat._domEl.classList.add(`hit-${kind}`);
+    const stamp = beat._domEl.querySelector('.stamp');
+    if (stamp) stamp.textContent = { perfect: 'PERFECT', good: 'GOOD', miss: 'MISS' }[kind];
+  }
+  // 更新进度条槽位
+  if (beat._slotEl) {
+    beat._slotEl.classList.remove('active');
+    beat._slotEl.classList.add(kind);
+  }
+
+  if (DEBUG) console.log(`[JUDGE] beat #${beat.id}${beat.subId||''} ${kind} (${reason}, ${angle?.toFixed?.(1)}°)`);
+}
+
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function showJudge(kind) {
+  const text = { perfect: 'PERFECT!', good: 'GOOD', miss: 'MISS' }[kind];
+  judgePopup.textContent = text;
+  judgePopup.className = '';
+  // 强制 reflow
+  void judgePopup.offsetWidth;
+  judgePopup.classList.add('show', kind);
+  setTimeout(() => { judgePopup.classList.remove('show', kind); judgePopup.textContent = ''; }, 800);
+}
+
+function updateScore(kind, beat) {
+  if (kind === 'perfect') {
+    sessionStats.perfectCount++;
+    sessionStats.currentCombo++;
+    const bonus = Math.floor(1000 * (1 + sessionStats.currentCombo * 0.1));
+    sessionStats.score += bonus;
+    if (sessionStats.currentCombo > sessionStats.maxCombo) sessionStats.maxCombo = sessionStats.currentCombo;
+  } else if (kind === 'good') {
+    sessionStats.goodCount++;
+    sessionStats.currentCombo++;
+    sessionStats.score += 400;
+  } else {
+    sessionStats.missCount++;
+    sessionStats.currentCombo = 0;
+  }
+  // 组合拳 combo-clear
+  if (beat.comboOf && beat.subId === 'b') {
+    const partnerA = beats.find(b => b.id === beat.id && b.subId === 'a');
+    if (partnerA && partnerA._judged && partnerA._judged !== 'miss' && kind !== 'miss') {
+      sessionStats.score += 200;
+    }
+  }
+}
+
+function checkKO() {
+  if (sessionStats.koTriggered) return;
+  if (sessionStats.perfectCount >= 5) {
+    sessionStats.koTriggered = true;
+    triggerKO();
+  }
+}
+
+function triggerJoyReaction(kind) {
+  currentFace = { perfect: 'laugh2', good: 'wink', miss: 'squint' }[kind] || 'base';
+  lastJudgeAt = performance.now();
+  if (kind === 'miss') {
+    joyContainer.classList.add('dizzy');
+    setTimeout(() => joyContainer.classList.remove('dizzy'), 400);
+  }
+}
+
+// ========================================================================
+// ==== 8. 节拍引擎 ======================================================
+// ========================================================================
+
+function spawnBeat(beat, isDemo = false) {
+  const el = document.createElement('div');
+  const typeClass = { 'upper-cut': ' upper-cut', 'down-hook': ' down-hook' }[beat.type] || '';
+  el.className = 'beat-block' + (isDemo ? ' demo' : '') + typeClass;
+  if (beat.comboOf && beat.subId === 'a') el.classList.add('combo');
+  el.innerHTML = `<div class="b-icon">${beat.icon}</div><div class="b-label">${beat.label}</div><div class="stamp"></div>`;
+  beatContainer.appendChild(el);
+  beat._domEl = el;
+  beat._spawnAt = performance.now();
+}
+
+// 建 9 个进度条槽位
+function buildProgressRow() {
+  const row = $('progressRow');
+  row.innerHTML = '';
+  beats.forEach((b, i) => {
+    const slot = document.createElement('div');
+    slot.className = 'prog-slot';
+    slot.textContent = i + 1;
+    slot.dataset.idx = i;
+    row.appendChild(slot);
+    b._slotEl = slot;
+  });
+}
+
+// 判定线闪一下
+function flashJudgeLine(kind) {
+  const line = document.querySelector('.judge-line');
+  if (!line) return;
+  line.classList.remove('flash-perfect', 'flash-good', 'flash-miss');
+  void line.offsetWidth;
+  line.classList.add('flash-' + kind);
+  setTimeout(() => line.classList.remove('flash-' + kind), 600);
+}
+
+// 冲击波
+function spawnShockwave(kind) {
+  const axis = $('beatAxis');
+  if (!axis) return;
+  const wave = document.createElement('div');
+  wave.className = 'hit-shockwave ' + kind;
+  axis.appendChild(wave);
+  setTimeout(() => wave.remove(), 550);
+}
+
+function updateBeatPositions(now) {
+  const t = now - sessionStart;
+  const list = state === 'playing' ? beats : [];
+  const demoList = stagePhase === 'demo' ? demoRuntime : [];
+
+  // 找"即将到达判定线"的那一拳:未判定 且 hitTime 最接近现在(在 next 窗口内)
+  let nextIdx = -1;
+  const NEXT_WINDOW_AHEAD = 1500;   // 拳到位前 1.5s 开始高亮
+  for (let i = 0; i < list.length; i++) {
+    const b = list[i];
+    if (b._judged) continue;
+    const dt = b.hitTime - t;
+    if (dt >= -100 && dt <= NEXT_WINDOW_AHEAD) { nextIdx = i; break; }
+  }
+
+  const process = (b, i, isMain) => {
+    if (!b._domEl) return;
+    const leadTime = BEAT_DURATION * (1 - JUDGE_POS_PCT / 100);
+    const trailTime = BEAT_DURATION * (JUDGE_POS_PCT / 100);
+    const enterAt = b.hitTime - leadTime;
+    const leaveAt = b.hitTime + trailTime;
+    if (t < enterAt - 100 || t > leaveAt + 200) {
+      b._domEl.style.opacity = '0';
+      if (t > leaveAt + 200) b._domEl.style.display = 'none';
+      return;
+    }
+    const progress = (t - enterAt) / (leaveAt - enterAt);
+    const leftPct = 100 - progress * 100;
+    b._domEl.style.left = leftPct + '%';
+    b._domEl.style.opacity = '1';
+    b._domEl.style.display = '';
+
+    // 主 beat 才做 next 高亮
+    if (isMain) {
+      const isNext = (i === nextIdx) && !b._judged;
+      b._domEl.classList.toggle('next', isNext);
+    }
+  };
+
+  list.forEach((b, i) => process(b, i, true));
+  demoList.forEach((b, i) => process(b, i, false));
+
+  // 同步进度条:当前 next 的 slot 亮起
+  if (state === 'playing' && list.length && list[0]._slotEl) {
+    list.forEach((b, i) => {
+      if (!b._slotEl) return;
+      const shouldActive = (i === nextIdx);
+      if (shouldActive && !b._slotEl.classList.contains('active') && !b._judged) {
+        b._slotEl.classList.add('active');
+      } else if (!shouldActive && b._slotEl.classList.contains('active')) {
+        b._slotEl.classList.remove('active');
+      }
+    });
+  }
+}
+
+// ========================================================================
+// ==== 9. Joy 出拳动画 ==================================================
+// ========================================================================
+
+function triggerPunch(type) {
+  playPunch();
+  joyContainer.classList.remove('punching');
+  void joyContainer.offsetWidth;
+  joyContainer.classList.add('punching');
+  setTimeout(() => joyContainer.classList.remove('punching'), 500);
+
+  // 决定哪只拳套 + 哪个动画
+  const map = {
+    'right-hook':  { g: gloveRight, cls: 'punch-right-hook' },
+    'left-hook':   { g: gloveLeft,  cls: 'punch-left-hook'  },
+    'upper-cut':   { g: gloveRight, cls: 'punch-upper-cut'  },
+    'down-hook':   { g: gloveLeft,  cls: 'punch-down-hook'  },
+  };
+  const m = map[type];
+  if (!m) return;
+  m.g.classList.remove(m.cls);
+  void m.g.offsetWidth;
+  m.g.classList.add(m.cls);
+  setTimeout(() => m.g.classList.remove(m.cls), 500);
+}
+
+// ========================================================================
+// ==== 10. Joy Canvas 渲染 ==============================================
+// ========================================================================
+
+let breathePhase = 0;
+function drawJoyHead(now) {
+  const w = joyHead.width, h = joyHead.height;
+  ctx.clearRect(0, 0, w, h);
+
+  const breathe = 1 + Math.sin(now / 600) * 0.05;
+  const rel = relAngle();
+  const tilt = clamp(rel.roll * 0.02, -0.35, 0.35);   // 头部跟随玩家的头轻微倾斜
+  const headW = 380 * breathe;
+
+  ctx.save();
+  ctx.translate(w / 2, h / 2);
+  ctx.rotate(tilt);
+
+  // 暖金光晕
+  const glowA = 0.3;
+  const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, headW * 0.75);
+  glow.addColorStop(0, `rgba(255,210,120,${glowA})`);
+  glow.addColorStop(0.5, `rgba(255,194,58,${glowA * 0.5})`);
+  glow.addColorStop(1, 'rgba(255,194,58,0)');
+  ctx.beginPath(); ctx.arc(0, 0, headW * 0.7, 0, Math.PI * 2); ctx.fillStyle = glow; ctx.fill();
+
+  // Joy 脸
+  const key = pickJoyFace();
+  const img = joyImg[key];
+  if (img && img.complete && img.naturalWidth > 0) {
+    const ratio = img.naturalHeight / img.naturalWidth;
+    const iw = headW, ih = headW * ratio;
+    ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
+  } else {
+    ctx.beginPath(); ctx.arc(0, 0, headW * 0.35, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'; ctx.fill();
+  }
+  ctx.restore();
+}
+
+// ========================================================================
+// ==== 11. 主循环 =======================================================
+// ========================================================================
+
+function loop(now) {
+  requestAnimationFrame(loop);
+  if (!faceLandmarker || video.readyState < 2) return;
+
+  now = now || performance.now();
+
+  if (video.currentTime !== lastVideoTime) {
+    lastVideoTime = video.currentTime;
+    let res = null;
+    try { res = faceLandmarker.detectForVideo(video, now); } catch {}
+    if (res && res.faceLandmarks && res.faceLandmarks.length > 0) {
+      facePresent = true;
+      const mtx = res.facialTransformationMatrixes;
+      if (mtx && mtx.length > 0 && mtx[0].data) {
+        rawAngle = matrixToEuler(mtx[0].data);
+        haveMatrix = true;
+      }
+    } else {
+      facePresent = false;
+    }
+  }
+
+  smoothAngle.yaw   += (rawAngle.yaw   - smoothAngle.yaw)   * SMOOTH;
+  smoothAngle.pitch += (rawAngle.pitch - smoothAngle.pitch) * SMOOTH;
+  smoothAngle.roll  += (rawAngle.roll  - smoothAngle.roll)  * SMOOTH;
+
+  const rel = relAngle();
+  angleVel = Math.max(
+    Math.abs(rel.yaw - prevRel.yaw),
+    Math.abs(rel.pitch - prevRel.pitch),
+    Math.abs(rel.roll - prevRel.roll)
+  );
+  prevRel = { ...rel };
+
+  // 判定只在 fight 时激活
+  if (state === 'playing' && stagePhase === 'fight') {
+    tickJudge(now);
+  }
+
+  // 更新节拍块位置
+  if (state === 'playing') updateBeatPositions(now);
+
+  // 更新 Joy
+  drawJoyHead(now);
+
+  // 更新 HUD 时间
+  if (state === 'playing') {
+    const secs = Math.max(0, Math.floor((now - sessionStart) / 1000));
+    const timeEl = document.querySelector('#hudTime .val');
+    if (timeEl) timeEl.textContent = secs + 's';
+  }
+
+  // Debug 读数
+  if (DEBUG && dbgAngle) {
+    dbgAngle.textContent = `roll:${rel.roll.toFixed(0)}° pitch:${rel.pitch.toFixed(0)}° yaw:${rel.yaw.toFixed(0)}° vel:${angleVel.toFixed(1)}`;
+  }
+}
+
+// ========================================================================
+// ==== 12. HUD & 台词 ==================================================
+// ========================================================================
+
+function updateHUD() {
+  const s = sessionStats;
+  if (!s) return;
+  document.querySelector('#hudScore .val').textContent = s.score;
+  document.querySelector('#hudCombo .val').textContent = '×' + s.currentCombo;
+  document.querySelector('#hudStreak .val').textContent = Math.min(s.perfectCount, 5) + '/5';
+}
+
+let coachTimer = null;
+function sayCoach(text) {
+  coachText.textContent = text;
+  if (coachTimer) clearTimeout(coachTimer);
+  coachTimer = setTimeout(() => {
+    if (stagePhase === 'fight') coachText.textContent = '专注 · 拳过来就闪';
+  }, 2500);
+}
+
+// ========================================================================
+// ==== 13. 时间轴阶段 ==================================================
+// ========================================================================
+
+function beginSession() {
+  state = 'playing';
+  stagePhase = 'intro';
+  stage.classList.remove('hidden');
+
+  // 初始化 stats
+  sessionStats = {
+    perfectCount: 0, goodCount: 0, missCount: 0,
+    score: 0, currentCombo: 0, maxCombo: 0,
+    koTriggered: false, koAtBeat: null,
+  };
+
+  // 克隆 beat 数据到 runtime
+  beats = BEAT_SCRIPT.map(b => ({ ...b, _judged: null, _reason: null, _maxAngleSeen: 0, _peakVel: 0, _domEl: null }));
+  demoRuntime = [];
+
+  // 清 DOM
+  beatContainer.innerHTML = '';
+  koPoster.classList.remove('show');
+  [ovIntro, ovDemo, ovSignal, ovOutro].forEach(o => o.classList.remove('show'));
+
+  updateHUD();
+  sessionStart = performance.now();
+
+  // 5 秒后折叠摄像头
+  faceCam.classList.remove('folded');
+  setTimeout(() => { if (state === 'playing') faceCam.classList.add('folded'); }, 12000);
+
+  scheduleTimeline();
+}
+
+function scheduleTimeline() {
+  clearPhaseTimers();
+  addTimer(() => runIntro(),  T.intro);
+  addTimer(() => runDialog(), T.dialog);
+  addTimer(() => runDemo(),   T.demo);
+  addTimer(() => runSignal(), T.signal);
+  addTimer(() => runFight(),  T.fight);
+  addTimer(() => finishFight(), T.fightEnd);
+  addTimer(() => runOutro(), T.outro);
+}
+function addTimer(fn, ms) { phaseTimers.push(setTimeout(fn, ms)); }
+function clearPhaseTimers() { phaseTimers.forEach(t => clearTimeout(t)); phaseTimers = []; }
+
+function runIntro() {
+  stagePhase = 'intro';
+  ovIntro.classList.add('show');
+  sayCoach(LINES.intro);
+  setTimeout(() => ovIntro.classList.remove('show'), 1800);
+}
+
+function runDialog() {
+  stagePhase = 'dialog';
+  sayCoach(LINES.dialog);
+}
+
+function runDemo() {
+  stagePhase = 'demo';
+  ovDemo.classList.add('show');
+  sayCoach(LINES.demo);
+  setTimeout(() => ovDemo.classList.remove('show'), 1400);
+
+  // spawn 3 个 demo beat + 触发 Joy 慢示范拳
+  DEMO_BEATS.forEach(db => {
+    const dbBeat = { id: 'demo-' + db.at, hitTime: db.at, type: db.type, expect: db.expect, label: db.label, icon: iconFor(db.expect) };
+    demoRuntime.push(dbBeat);
+    spawnBeat(dbBeat, true);
+    // 提前 500ms 触发 Joy 出拳(拳到位时机 = db.at)
+    const delay = db.at - 500 - (performance.now() - sessionStart);
+    addTimer(() => triggerPunch(db.type), Math.max(0, delay));
+  });
+}
+
+function iconFor(expect) {
+  return { 'roll-': '◀', 'roll+': '▶', 'pitch+': '▼', 'pitch-': '▲' }[expect] || '·';
+}
+
+function runSignal() {
+  stagePhase = 'signal';
+  ovSignal.classList.add('show');
+  sayCoach(LINES.signal);
+  playSignal();
+  setTimeout(() => ovSignal.classList.remove('show'), 900);
+
+  // spawn 主体 8 拳(在 signal 阶段就 spawn,DOM 里 opacity=0 等到时间到)
+  beats.forEach(b => spawnBeat(b, false));
+  // 建进度条(9 槽位对应 9 个 beat)
+  buildProgressRow();
+  // 提前 500ms 触发 Joy 出拳(delay = b.hitTime - 500 - 已过时间)
+  beats.forEach(b => {
+    const delay = b.hitTime - 500 - (performance.now() - sessionStart);
+    addTimer(() => triggerPunch(b.type), Math.max(0, delay));
+  });
+  startBGMHeartbeat();
+}
+
+function runFight() {
+  stagePhase = 'fight';
+  sayCoach('专注 · 拳过来就闪');
+}
+
+function finishFight() {
+  stagePhase = 'fight-end';
+  stopBGMHeartbeat();
+  // 若已触发 KO 但未播过场,这里补;若尚未触发但达到 5 次 Perfect,已经在 checkKO 触发过
+}
+
+function triggerKO() {
+  koPoster.classList.add('show');
+  playKO();
+  currentFace = 'wow';
+  const prev = stagePhase;
+  stagePhase = 'ko';
+  sayCoach(LINES.ko);
+  setTimeout(() => {
+    koPoster.classList.remove('show');
+    stagePhase = prev;
+  }, 2000);
+}
+
+function runOutro() {
+  stagePhase = 'outro';
+  state = 'done';
+  stopBGMHeartbeat();
+  faceCam.classList.remove('folded');
+  const rank = getRank();
+  const s = sessionStats;
+  $('outroRank').textContent = rank;
+  $('outroPerfect').textContent = s.perfectCount;
+  $('outroGood').textContent = s.goodCount;
+  $('outroMiss').textContent = s.missCount;
+  $('outroScore').textContent = s.score + (s.koTriggered ? ' +KO' : '');
+  const quote = { S: LINES.outroS, A: LINES.outroA, B: LINES.outroB, C: LINES.outroC }[rank];
+  $('outroQuote').textContent = quote;
+  ovOutro.classList.add('show');
+  sayCoach(quote);
+}
+
+function getRank() {
+  const p = sessionStats.perfectCount, m = sessionStats.missCount;
+  if (p >= 7 && m === 0) return 'S';
+  if (p >= 5 && m <= 1)  return 'A';
+  if (p >= 3 && m <= 3)  return 'B';
+  return 'C';
+}
+
+// ========================================================================
+// ==== 14. 启动 & 事件 =================================================
+// ========================================================================
+
+async function boot() {
+  initAudio();
+  try {
+    $('startBtn').disabled = true;
+    await Promise.all([loadModel(), startCamera()]);
+    homeScreen.classList.add('hidden');
+    requestAnimationFrame(loop);
+    calibrate();
+  } catch (e) {
+    showError(e);
+  } finally {
+    $('startBtn').disabled = false;
+  }
+}
+function showError(e) {
+  const msg = (e && e.name === 'NotAllowedError')
+    ? '你(或浏览器)拒绝了摄像头权限。请点击地址栏的摄像头图标允许,然后重试。'
+    : '请确认:① 用 Chrome / Edge 打开;② 允许摄像头权限;③ 没有其他软件占用摄像头。<br/><span class="tiny">' + (e?.message || e) + '</span>';
+  $('errMsg').innerHTML = msg;
+  errScreen.classList.remove('hidden');
+}
+function goHome() {
+  state = 'home';
+  clearPhaseTimers();
+  stopBGMHeartbeat();
+  ovOutro.classList.remove('show');
+  stage.classList.add('hidden');
+  homeScreen.classList.remove('hidden');
+}
+function replay() {
+  ovOutro.classList.remove('show');
+  clearPhaseTimers();
+  beginSession();
+}
+
+$('startBtn').addEventListener('click', boot);
+$('againBtn').addEventListener('click', replay);
+$('restBtn').addEventListener('click', goHome);
+$('retryBtn').addEventListener('click', () => { errScreen.classList.add('hidden'); boot(); });
+
+// 摄像头小窗点击展开/折叠
+faceCam.addEventListener('click', () => faceCam.classList.toggle('folded'));
+
+// Devbar
+if (DEBUG) {
+  devbar.classList.remove('hidden');
+  devbar.querySelectorAll('button[data-jump]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const j = btn.dataset.jump;
+      if (j === 'skip-intro') {
+        clearPhaseTimers();
+        sessionStart = performance.now() - T.fight;
+        beats.forEach(b => { if (!b._domEl) spawnBeat(b, false); });
+        beats.forEach(b => addTimer(() => triggerPunch(b.type), Math.max(0, b.hitTime - 500 - (performance.now() - sessionStart))));
+        addTimer(() => finishFight(), T.fightEnd - T.fight);
+        addTimer(() => runOutro(), T.outro - T.fight);
+        stagePhase = 'fight';
+        startBGMHeartbeat();
+        sayCoach('debug: 跳到 fight');
+      } else if (j === 'force-ko') {
+        sessionStats.perfectCount = 5;
+        triggerKO();
+      } else if (j === 'force-outro') {
+        clearPhaseTimers();
+        runOutro();
+      } else if (j === 'recalibrate') {
+        clearPhaseTimers();
+        stopBGMHeartbeat();
+        calibrate();
+      }
+    });
+  });
+}
+</script>
+</body>
+</html>
