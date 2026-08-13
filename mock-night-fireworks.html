@@ -540,6 +540,47 @@
     display: none;
   }
   #debug.show { display: block; }
+  /* ==================== 结算过场:1.8s Rank + Joy quote ==================== */
+  .result {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    z-index: 200;
+    background: rgba(8, 10, 30, .94);
+    backdrop-filter: blur(8px);
+  }
+  .result.show { display: flex; }
+  .result .rank {
+    font-size: 180px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #C8B8FF 0%, #7C5AFF 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(124, 90, 255, .5));
+    animation: rankPop 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  .result .rank-lbl {
+    font-size: 14px; letter-spacing: 8px; color: #C8B8FF;
+    font-weight: 700; margin-top: 8px;
+    opacity: 0; animation: fadeUp 0.5s .3s forwards;
+  }
+  .result .quote {
+    color: #E7E4FF; font-size: 17px;
+    margin-top: 28px; font-weight: 500;
+    max-width: 480px; line-height: 1.5;
+    opacity: 0; animation: fadeUp 0.5s .6s forwards;
+  }
+  @keyframes rankPop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    60%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
 </style>
 </head>
 <body>
@@ -686,6 +727,17 @@ let aimStartTime = 0;
 
 let score = { fireworks: 0, stardust: 0 };
 let stars = [];  // 收集的小星星(0-12,连成星座)
+let sessionStats = { hits: 0, misses: 0, maxCombo: 0, currentCombo: 0 };
+let gameStart = 0;
+let ended = false;   // 结算只触发一次
+
+// 4 档吐槽话 · 夜晚关(Joy 教练口吻,与 mock-report.html BRANCH_CONFIG 同步)
+const QUOTES = {
+  S: '满天星屑都是你接的。',
+  A: '大流星你没错过几颗。',
+  B: '流星飞过去了你还在发呆。',
+  C: '你抬头了吗?流星以为你睡了。',
+};
 
 const STAR_POSITIONS = [
   [10,45],[22,30],[35,20],[48,15],[62,18],[74,28],
@@ -860,6 +912,9 @@ function updateMeteors(now) {
     if (t >= 1) {
       m.el.remove();
       if (m === aimTarget) resetAim();
+      // 流星过期未被接住 = miss,打断连击
+      sessionStats.misses += 1;
+      sessionStats.currentCombo = 0;
       return false;
     }
     // 一旦被瞄准,流星就"悬停"在当前位置(暂停飞行),
@@ -954,6 +1009,9 @@ function catchMeteor(m) {
   // 得分
   score.fireworks += 1;
   score.stardust += 5;
+  sessionStats.hits += 1;
+  sessionStats.currentCombo += 1;
+  if (sessionStats.currentCombo > sessionStats.maxCombo) sessionStats.maxCombo = sessionStats.currentCombo;
   scoreFwEl.textContent = score.fireworks;
   scoreDustEl.textContent = score.stardust;
 
@@ -978,6 +1036,54 @@ function catchMeteor(m) {
   setTimeout(() => {
     if (running) hintText.textContent = '转头对准下一颗流星';
   }, 1500);
+
+  // 星座集齐 12 颗 → 触发结算
+  if (stars.length >= 12 && !ended) endGame();
+}
+
+// ============ 结算:computeRank + sessionStorage + 跳报告页 ============
+function computeRank() {
+  const attempts = sessionStats.hits + sessionStats.misses;
+  const rate = attempts ? sessionStats.hits / attempts : 0;
+  if (rate >= 0.95 && sessionStats.hits >= 12) return 'S';
+  if (rate >= 0.85) return 'A';
+  if (rate >= 0.60) return 'B';
+  return 'C';
+}
+
+function endGame() {
+  if (ended) return;
+  ended = true;
+  running = false;
+  stopCamera();
+
+  const rank = computeRank();
+  const quote = QUOTES[rank];
+  document.getElementById('resultRank').textContent = rank;
+  document.getElementById('resultQuote').textContent = quote;
+  document.getElementById('result').classList.add('show');
+
+  const timeSec = Math.max(1, Math.round((performance.now() - gameStart) / 1000));
+  const attempts = sessionStats.hits + sessionStats.misses;
+  const completion = attempts ? Math.round(sessionStats.hits / attempts * 100) : 0;
+  const lastRun = {
+    branch: 'night',
+    rank,
+    stats: {
+      time: timeSec,
+      completion,
+      maxCombo: sessionStats.maxCombo,
+      special: sessionStats.hits,
+    },
+    streak: { prev: 12, now: 13 },
+    accumulate: {
+      badge: '颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
+      joy:   '你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦',
+      total: '累计训练 <strong>23 次 · 12 小时 30 分</strong>',
+    },
+  };
+  try { sessionStorage.setItem('lastRun', JSON.stringify(lastRun)); } catch (e) {}
+  setTimeout(() => { location.href = 'mock-report.html'; }, 1800);
 }
 
 function spawnFirework(x, y) {
@@ -1123,6 +1229,12 @@ async function start() {
     // 隐藏 overlay
     overlay.classList.add('hidden');
     running = true;
+    ended = false;
+    gameStart = performance.now();
+    sessionStats = { hits: 0, misses: 0, maxCombo: 0, currentCombo: 0 };
+    stars = [];
+    renderConstellation();
+    starCountEl.textContent = 0;
     baseInit = false;
     baseFrames = 0;
     angleBase = { yaw: 0, pitch: 0, roll: 0 };
@@ -1151,5 +1263,12 @@ document.addEventListener('keydown', e => {
   }
 });
 </script>
+<!-- 结算过场:1.8s 后跳统一报告页 -->
+<div class="result" id="result">
+  <div class="rank" id="resultRank">A</div>
+  <div class="rank-lbl">RANK</div>
+  <div class="quote" id="resultQuote">大流星你没错过几颗。</div>
+</div>
+
 </body>
 </html>

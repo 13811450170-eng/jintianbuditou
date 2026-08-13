@@ -537,7 +537,7 @@
     margin-top: 4px;
   }
 
-  /* ==================== 结算浮层 ==================== */
+  /* ==================== 结算过场:1.8s Rank + Joy quote ==================== */
   .result {
     position: fixed; inset: 0;
     display: none;
@@ -545,33 +545,37 @@
     align-items: center; justify-content: center;
     text-align: center;
     padding: 40px 20px;
-    gap: 20px;
+    gap: 12px;
     z-index: 90;
     background: #1a1410;
   }
   .result.show { display: flex; }
-  .result .badge {
-    font-size: 12px; letter-spacing: 4px;
-    color: var(--gold-glow);
-    padding: 5px 14px;
-    border: 1px solid var(--gold-glow);
-    border-radius: 20px;
-  }
-  .result .big {
-    font-size: 44px; font-weight: 900;
-    background: linear-gradient(135deg, #fff, var(--gold-glow));
+  .result .rank {
+    font-size: 180px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #ffe89b 0%, #ffb800 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(255, 200, 90, .5));
+    animation: rankPop 0.6s cubic-bezier(.34,1.56,.64,1);
   }
-  .result .stats {
-    display: flex; gap: 30px; margin: 10px 0;
-    color: var(--cream);
+  .result .rank-lbl {
+    font-size: 14px; letter-spacing: 8px; color: var(--gold-glow);
+    font-weight: 700;
+    opacity: 0; animation: fadeUp 0.5s .3s forwards;
   }
-  .result .stats .num {
-    font-size: 32px; font-weight: 900; color: var(--gold-glow);
-    display: block;
+  .result .quote {
+    color: var(--cream); font-size: 17px;
+    margin-top: 24px; font-weight: 500;
+    max-width: 480px; line-height: 1.5;
+    opacity: 0; animation: fadeUp 0.5s .6s forwards;
   }
-  .result .stats .lbl {
-    font-size: 11px; letter-spacing: 2px; color: #a4835a;
+  @keyframes rankPop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    60%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
   .result .btn {
     background: linear-gradient(135deg, #ffe89b 0%, #ffd66b 100%);
@@ -708,19 +712,11 @@
   <div class="status" id="status">请用 Chrome / Edge · 需要摄像头权限 · 15 次喂食一场</div>
 </div>
 
-<!-- 结算浮层 -->
+<!-- 结算过场:1.8s 后跳统一报告页 -->
 <div class="result" id="result">
-  <div class="badge">今日午餐结算</div>
-  <div class="big" id="resultTitle">吃饱啦!</div>
-  <div class="stats">
-    <div><span class="num" id="rStars">0</span><span class="lbl">✦ 星屑</span></div>
-    <div><span class="num" id="rFed">0</span><span class="lbl">🐾 喂食</span></div>
-    <div><span class="num" id="rMiss">0</span><span class="lbl">💤 错过</span></div>
-  </div>
-  <div class="sub" style="color:#cfa476; font-size:13px; max-width:400px; line-height:1.7;">
-    整场没低过头 —— 颈椎训练不知不觉完成了。
-  </div>
-  <button class="btn" id="restartBtn">再来一场</button>
+  <div class="rank" id="resultRank">A</div>
+  <div class="rank-lbl">RANK</div>
+  <div class="quote" id="resultQuote">大部分都喂到嘴里了。</div>
 </div>
 
 <script type="module">
@@ -793,6 +789,16 @@ let aimStartTime = 0;
 let lastSpawnAt = 0;
 
 let score = { fed: 0, missed: 0, dust: 0 };
+let gameStart = 0;                       // 计时起点 -> 结算 stats.time
+let maxCombo = 0, currentCombo = 0;      // 连续未 miss 的喂食串
+
+// 4 档吐槽话 · 午餐关(Joy 教练口吻,与 mock-report.html BRANCH_CONFIG 同步)
+const QUOTES = {
+  S: '全场吃饱,饭店给你颁星了。',
+  A: '大部分都喂到嘴里了,不错。',
+  B: '有几只饿着走的,下次快点。',
+  C: '你把餐厅端了么?人都跑了。',
+};
 
 // ============ DOM ============
 const $ = id => document.getElementById(id);
@@ -810,8 +816,8 @@ const waveEl = $('wave');
 const scoreFedEl = $('scoreFed');
 const scoreDustEl = $('scoreDust');
 const resultEl = $('result');
-const rStars = $('rStars'), rFed = $('rFed'), rMiss = $('rMiss');
-const restartBtn = $('restartBtn');
+const resultRank = $('resultRank');
+const resultQuote = $('resultQuote');
 const debugEl = $('debug');
 const dbgYaw = $('dbgYaw'), dbgPitch = $('dbgPitch'), dbgRoll = $('dbgRoll'), dbgFps = $('dbgFps');
 
@@ -1061,6 +1067,8 @@ function feed(who) {
 
   score.fed += 1;
   score.dust += 5;
+  currentCombo += 1;
+  if (currentCombo > maxCombo) maxCombo = currentCombo;
   scoreFedEl.textContent = score.fed;
   scoreDustEl.textContent = score.dust;
 
@@ -1077,13 +1085,46 @@ function feed(who) {
 }
 
 // ============ 结算 ============
+function computeRank() {
+  const attempts = score.fed + score.missed;
+  const rate = attempts ? score.fed / attempts : 0;
+  if (rate >= 0.95 && score.fed >= TARGET_FED) return 'S';
+  if (rate >= 0.85) return 'A';
+  if (rate >= 0.60) return 'B';
+  return 'C';
+}
+
 function endGame() {
   running = false;
   stopCamera();
-  rStars.textContent = score.dust;
-  rFed.textContent = score.fed;
-  rMiss.textContent = score.missed;
+  const rank = computeRank();
+  const quote = QUOTES[rank];
+  resultRank.textContent = rank;
+  resultQuote.textContent = quote;
   resultEl.classList.add('show');
+
+  // 打包本次训练数据 → sessionStorage,1.8s 后跳统一结算页
+  const timeSec = Math.max(1, Math.round((performance.now() - gameStart) / 1000));
+  const attempts = score.fed + score.missed;
+  const completion = attempts ? Math.round(score.fed / attempts * 100) : 0;
+  const lastRun = {
+    branch: 'lunch',
+    rank,
+    stats: {
+      time: timeSec,
+      completion,
+      maxCombo,
+      special: score.fed,
+    },
+    streak: { prev: 12, now: 13 },
+    accumulate: {
+      badge: '颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
+      joy:   '你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦',
+      total: '累计训练 <strong>23 次 · 12 小时 30 分</strong>',
+    },
+  };
+  try { sessionStorage.setItem('lastRun', JSON.stringify(lastRun)); } catch (e) {}
+  setTimeout(() => { location.href = 'mock-report.html'; }, 1800);
 }
 
 // ============ 主循环 ============
@@ -1159,6 +1200,7 @@ function loop(now) {
     const remain = 1 - elapsed / h.timerMs;
     if (remain <= 0) {
       score.missed += 1;
+      currentCombo = 0;
       removeHungry(who, 'missed');
       continue;
     }
@@ -1182,6 +1224,8 @@ async function start() {
     overlay.classList.add('hidden');
     // 复位
     running = true;
+    gameStart = performance.now();
+    maxCombo = 0; currentCombo = 0;
     baseInit = false;
     baseFrames = 0;
     angleBase = { yaw:0, pitch:0, roll:0 };
@@ -1203,12 +1247,7 @@ async function start() {
 }
 
 startBtn.addEventListener('click', start);
-restartBtn.addEventListener('click', () => {
-  resultEl.classList.remove('show');
-  startBtn.disabled = false;
-  overlay.classList.remove('hidden');
-  statusEl.textContent = '准备好再来一场';
-});
+// result overlay 不再有再来一场按钮 —— 结算跳转到 mock-report.html 统一承接
 
 window.addEventListener('beforeunload', stopCamera);
 document.addEventListener('keydown', e => {

@@ -335,6 +335,41 @@
   .how-item b { display: block; font-size: 13px; color: var(--party-gold-bright); font-weight: 700; letter-spacing: 1px; }
   .how-item .how-desc { font-size: 12px; color: #a4a7c8; margin-top: 3px; }
   .how-hint { font-size: 12px; color: #7a7a9e; text-align: center; margin-top: 4px; letter-spacing: 1px; }
+  /* ==================== 结算过场:1.8s Rank + Joy quote ==================== */
+  #doneScreen {
+    background: rgba(20, 30, 20, .94);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    gap: 0;
+  }
+  #doneScreen .done-rank {
+    font-size: 180px; font-weight: 900; line-height: 1;
+    background: linear-gradient(135deg, #C8F0D9 0%, #4CAF88 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 40px rgba(76, 175, 136, .5));
+    animation: rankPopMorning 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  #doneScreen .done-rank-lbl {
+    font-size: 14px; letter-spacing: 8px; color: #C8F0D9;
+    font-weight: 700; margin-top: 8px;
+    opacity: 0; animation: fadeUpMorning 0.5s .3s forwards;
+  }
+  #doneScreen .done-quote {
+    color: #E7F5E9; font-size: 17px;
+    margin-top: 28px; font-weight: 500;
+    max-width: 480px; line-height: 1.5;
+    opacity: 0; animation: fadeUpMorning 0.5s .6s forwards;
+  }
+  @keyframes rankPopMorning {
+    0%   { transform: scale(0.3); opacity: 0; }
+    60%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes fadeUpMorning {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
 </style>
 </head>
 <body>
@@ -445,21 +480,11 @@
     <div class="tiny">正在记住你端正坐姿时的中立位置</div>
   </div>
 
-  <!-- 结算页 -->
+  <!-- 结算过场:1.8s 后跳统一报告页 -->
   <div class="overlay hidden" id="doneScreen">
-    <div id="doneStarWrap" style="width:150px;height:120px;"><canvas id="doneStar" style="width:100%;height:100%;"></canvas></div>
-    <div class="title" style="font-size:26px;">散步结束啦 <span class="em">🌿</span></div>
-    <div class="stat-row">
-      <div><div class="stat-big" id="doneCount">0</div><div class="stat-lbl">个礼物收到</div></div>
-      <div><div class="stat-big" id="doneTime">0s</div><div class="stat-lbl">陪 Joy 走了</div></div>
-    </div>
-    <div class="dust-pop" id="dustPop">+0 星屑</div>
-    <div class="codex-wrap" id="doneCodex"></div>
-    <div class="subtitle" id="doneMsg">脖子是不是轻松了一点?</div>
-    <div class="row">
-      <button class="btn" id="againBtn">再走一段 ↻</button>
-      <button class="btn ghost" id="restBtn">先去休息</button>
-    </div>
+    <div class="done-rank" id="doneRank">A</div>
+    <div class="done-rank-lbl">RANK</div>
+    <div class="done-quote" id="doneQuote">走得挺舒服嘛。</div>
   </div>
 
   <!-- 升级提示 -->
@@ -1787,30 +1812,42 @@ function finish() {
   persist();
   const newStage = stageIndex(save.starDust);
 
-  document.getElementById('doneCount').textContent = totalPicked;
-  document.getElementById('doneTime').textContent = secs + 's';
-  document.getElementById('dustPop').textContent = `🦴 ${bones} · 🌸 ${petals} · 图鉴 ${codexCount}　+${dust} 星屑`;
-  // 图鉴解锁列表(本次发现的条目)
-  const codexEl = document.getElementById('doneCodex');
-  if (codexEl) {
-    const items = [...pickupLog].map(id => {
-      const entry = CODEX.find(c => c.id === id);
-      return entry ? `<span class="codex-chip">✨ ${entry.name}</span>` : '';
-    }).join('');
-    codexEl.innerHTML = codexCount > 0 ? `<div class="codex-title">今日发现</div>${items}` : '';
-  }
-  const msgs = [
-    '一路走下来,脖子是不是松开了一点?🌿',
-    'Joy 收到你的心意啦,今天很满足 🌟',
-    '陪它散步的这一分钟,颈椎会记得的',
-    'Joy 把你捡的骨头都收好啦 ✨',
-  ];
-  document.getElementById('doneMsg').textContent = msgs[totalPicked % msgs.length];
-  drawStaticStar('doneStar', currentStage(), 0.95);
+  // 评级:按本次收集 dust 分档 · S≥50 / A≥30 / B≥15 / C 兜底
+  const rank = dust >= 50 ? 'S' : dust >= 30 ? 'A' : dust >= 15 ? 'B' : 'C';
+  const QUOTES_WALK = {
+    S: 'Joy 说下次还想跟你走。',
+    A: '走得挺舒服嘛。',
+    B: 'Joy 一直在等你追上来。',
+    C: 'Joy 走完一圈你还没出门。',
+  };
+  const quote = QUOTES_WALK[rank];
+
+  document.getElementById('doneRank').textContent = rank;
+  document.getElementById('doneQuote').textContent = quote;
   doneScreen.classList.remove('hidden');
   playFinish();
 
-  if (newStage > prevStage) setTimeout(() => showLevelUp(newStage), 1400);
+  // 完成度:本次拾取 vs 场上可拾取总数(secs / 场景刷新节奏近似)—— 简化为 pickup 数 vs 场时长秒数
+  const completion = Math.min(100, Math.round((totalPicked / Math.max(1, secs / 5)) * 100));
+
+  const lastRun = {
+    branch: 'walk',
+    rank,
+    stats: {
+      time: secs,
+      completion,
+      maxCombo: totalPicked,   // 散步关无 miss 概念,combo = 全部拾取数
+      special: totalPicked,    // "收到礼物"
+    },
+    streak: { prev: Math.max(0, save.streak - 1), now: save.streak },
+    accumulate: {
+      badge: '颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
+      joy:   '你和 <strong>Joy</strong> 已经见了 <strong>' + save.totalSessions + ' 次</strong>面啦',
+      total: '累计训练 <strong>' + save.totalSessions + ' 次 · ' + Math.round(save.totalSessions * 1.2) + ' 分钟</strong>',
+    },
+  };
+  try { sessionStorage.setItem('lastRun', JSON.stringify(lastRun)); } catch (e) {}
+  setTimeout(() => { location.href = 'mock-report.html'; }, 1800);
 }
 
 function showLevelUp(idx) {
@@ -2000,8 +2037,7 @@ function goHome() {
 
 // ================= 事件 =================
 document.getElementById('startBtn').addEventListener('click', boot);
-document.getElementById('againBtn').addEventListener('click', () => { doneScreen.classList.add('hidden'); beginSession(); });
-document.getElementById('restBtn').addEventListener('click', goHome);
+// doneScreen 是 1.8s Rank 过场,不再有再走一段/先去休息按钮 —— 结算跳转到 mock-report.html
 document.getElementById('lvNextBtn').addEventListener('click', () => { levelScreen.classList.add('hidden'); goHome(); });
 document.getElementById('retryBtn').addEventListener('click', () => { errScreen.classList.add('hidden'); boot(); });
 document.getElementById('recalibrate').addEventListener('click', () => { if (state === 'playing' || state === 'done') { doneScreen.classList.add('hidden'); calibrate(); } });

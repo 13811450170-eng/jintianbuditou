@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>星动Joy · 单次报告</title>
+<style>
+:root {
+  --bg:          #EDEDF0;
+  --card:        #FFFFFF;
+  --card-alt:    #F5F5F7;
+  --line:        rgba(10, 10, 15, 0.06);
+  --line-hard:   rgba(10, 10, 15, 0.1);
+
+  --ink:         #0A0A0F;
+  --ink-2:       #3A3A45;
+  --ink-3:       #6B6B7A;
+  --ink-4:       #A8A8B3;
+
+  --neck:        #00A3FF;
+  --neck-bg:     #E1F2FF;
+  --shoulder:    #7C5AFF;
+  --shoulder-bg: #EBE5FF;
+  --eye:         #4CAF88;
+  --eye-bg:      #E1F5EC;
+
+  --gold:        #FFB800;
+  --gold-bg:     #FFF6DA;
+  --fire:        #FF6B4A;
+  --success:     #4CAF88;
+  --star:        #FFC94D;
+
+  --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
+  --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
+  --shadow-3:    0 12px 32px rgba(10, 10, 15, 0.1);
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+
+  /* 分支色变量 —— 默认拳击,applyBranch 会覆盖 */
+  --accent:      #00A3FF;
+  --accent-2:    #FF6B4A;
+  --accent-bg:   #E1F2FF;
+  --accent-bg-2: #FFF0EB;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+.page {
+  max-width: 1440px;
+  height: 100vh;
+  margin: 0 auto;
+  padding: 22px 40px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ========== 顶栏 ========== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-3);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color .2s;
+}
+.topbar-left:hover { color: var(--ink); }
+.topbar-left svg { width: 16px; height: 16px; }
+
+.topbar-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.topbar-right {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--card);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+  box-shadow: var(--shadow-1);
+  cursor: pointer;
+  transition: color .2s;
+}
+.topbar-right:hover { color: var(--ink); }
+.topbar-right svg { width: 18px; height: 18px; }
+
+/* ========== 主体两栏 ========== */
+.main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 20px;
+}
+
+/* --- 左侧:成就 Hero(浅色分支渐变) --- */
+.hero {
+  background: var(--card);
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-2);
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 25%, var(--accent-bg) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 75%, var(--accent-bg-2) 0%, transparent 55%),
+    #FFFFFF;
+}
+.hero-bg::after {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 45%, rgba(10,10,15,0.02) 100%);
+}
+
+/* 撒花粒子背景装饰 */
+.confetti {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  opacity: 0.85;
+  animation: confettiFall linear infinite;
+  z-index: 1;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-40px) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.85; }
+  90% { opacity: 0.85; }
+  100% { transform: translateY(600px) rotate(720deg); opacity: 0; }
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 2;
+  padding: 30px 34px;
+  color: var(--ink);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 10px;
+  background: var(--card-alt);
+  border: 1px solid var(--line);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--ink-2);
+}
+.hero-badge-dot {
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent);
+}
+
+.hero-branch {
+  font-size: 11px;
+  color: var(--ink-4);
+  letter-spacing: 1.5px;
+  font-weight: 600;
+}
+
+.hero-middle {
+  text-align: center;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.stars {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  filter: drop-shadow(0 4px 12px rgba(255, 201, 77, 0.3));
+}
+.stars svg {
+  width: 42px; height: 42px;
+  transition: opacity .3s, transform .3s;
+}
+.stars svg.filled {
+  animation: starPop 0.6s ease-out backwards;
+}
+.stars svg.dim {
+  opacity: 0.22;
+}
+.stars svg.filled:nth-child(1) { animation-delay: 0.1s; }
+.stars svg.filled:nth-child(2) { animation-delay: 0.25s; }
+.stars svg.filled:nth-child(3) { animation-delay: 0.4s; }
+@keyframes starPop {
+  0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(15deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.hero-rating {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.rating-grade {
+  font-size: 96px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.rating-lbl {
+  font-size: 13px;
+  color: var(--ink-3);
+  letter-spacing: 2px;
+  font-weight: 700;
+}
+
+.hero-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.streak-change {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.streak-icon-round {
+  width: 36px; height: 36px;
+  background: linear-gradient(180deg, #FFB74D, var(--fire));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  filter: drop-shadow(0 4px 8px rgba(255, 107, 74, 0.35));
+}
+.streak-info { display: flex; flex-direction: column; }
+.streak-info-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+.streak-info-num .arrow { color: var(--fire); margin: 0 4px; }
+.streak-info-num .u { font-size: 11px; color: var(--ink-3); font-weight: 500; margin-left: 3px; }
+.streak-info-lbl {
+  font-size: 11px;
+  color: var(--ink-4);
+}
+
+.joy-quote {
+  padding: 8px 16px;
+  background: var(--card-alt);
+  border-radius: 100px;
+  font-size: 12px;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  max-width: 320px;
+  line-height: 1.5;
+}
+.joy-quote strong { color: var(--ink); font-weight: 700; margin-right: 4px; }
+
+/* --- 右侧:数据+感受+累计+医学 --- */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px 20px;
+  box-shadow: var(--shadow-1);
+}
+.card-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px;
+}
+.card-head-icon {
+  width: 22px; height: 22px;
+  border-radius: 7px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.card-head-icon svg { width: 13px; height: 13px; }
+.card-head-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+/* 客观数据 - 4 项网格 */
+.data-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px;
+}
+.data-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.data-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.data-num .unit { font-size: 12px; font-weight: 700; color: var(--ink-3); margin-left: 2px; }
+.data-num .sub  { font-size: 11px; color: var(--ink-4); font-weight: 500; }
+.data-label {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+
+/* 主观感受 - 5 emoji */
+.feeling-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.feel-btn {
+  flex: 1;
+  padding: 10px 4px;
+  background: var(--card-alt);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-family: inherit;
+}
+.feel-btn:hover { background: var(--bg); }
+.feel-btn.selected {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+}
+.feel-emoji { font-size: 22px; line-height: 1; }
+.feel-lbl {
+  font-size: 10px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.feel-btn.selected .feel-lbl { color: var(--accent); font-weight: 700; }
+
+/* 累计动态 - 3 条轻量文案 */
+.accumulate-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.acc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--ink-2);
+  padding: 3px 0;
+}
+.acc-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.acc-dot.d1 { background: var(--gold); }
+.acc-dot.d2 { background: var(--accent); }
+.acc-dot.d3 { background: var(--success); }
+.acc-item strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* 医学小卡 */
+.med-card {
+  padding: 12px 14px;
+  background: var(--card-alt);
+  border-radius: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.med-icon {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.med-icon svg { width: 16px; height: 16px; }
+.med-body { flex: 1; }
+.med-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.med-desc {
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.55;
+}
+.med-link {
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* ========== 底部 CTA ========== */
+.actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.btn-primary {
+  background: var(--ink);
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(10,10,15,0.2); }
+.btn-primary svg { width: 15px; height: 15px; }
+.btn-ghost {
+  background: var(--card);
+  color: var(--ink-2);
+  border: 1px solid var(--line-hard);
+  padding: 13px 24px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="topbar-left" onclick="location.href='mock-home-v2.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </div>
+    <div class="topbar-title">训练报告</div>
+    <div class="topbar-right" title="分享">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+      </svg>
+    </div>
+  </header>
+
+  <!-- 主体两栏 -->
+  <main class="main">
+
+    <!-- 左:成就 Hero -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+
+      <!-- 撒花粒子 -->
+      <div class="confetti" style="left: 8%;  top: -10px; background: #FFC94D; animation-duration: 4s; animation-delay: 0s;"></div>
+      <div class="confetti" style="left: 22%; top: -10px; background: #FF6B4A; animation-duration: 5s; animation-delay: 0.3s;"></div>
+      <div class="confetti" style="left: 38%; top: -10px; background: #00A3FF; animation-duration: 4.5s; animation-delay: 0.8s;"></div>
+      <div class="confetti" style="left: 55%; top: -10px; background: #FFC94D; animation-duration: 6s; animation-delay: 1.2s;"></div>
+      <div class="confetti" style="left: 68%; top: -10px; background: #7C5AFF; animation-duration: 4.2s; animation-delay: 0.5s;"></div>
+      <div class="confetti" style="left: 82%; top: -10px; background: #4CAF88; animation-duration: 5.5s; animation-delay: 1.5s;"></div>
+      <div class="confetti" style="left: 92%; top: -10px; background: #FF6B4A; animation-duration: 4.8s; animation-delay: 0.9s;"></div>
+      <div class="confetti" style="left: 15%; top: -10px; background: #FFC94D; animation-duration: 5.2s; animation-delay: 2s;"></div>
+      <div class="confetti" style="left: 45%; top: -10px; background: #00A3FF; animation-duration: 4.6s; animation-delay: 2.5s;"></div>
+      <div class="confetti" style="left: 75%; top: -10px; background: #7C5AFF; animation-duration: 5s; animation-delay: 1.8s;"></div>
+
+      <div class="hero-inner">
+        <div class="hero-top">
+          <span class="hero-badge">
+            <span class="hero-badge-dot"></span>
+            训练完成
+          </span>
+          <span class="hero-branch" id="heroBreadcrumb">颈椎训练营 · 下午拳击</span>
+        </div>
+
+        <div class="hero-middle">
+          <div class="stars" id="stars">
+            <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round">
+              <path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round">
+              <path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/>
+            </svg>
+            <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round">
+              <path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/>
+            </svg>
+          </div>
+
+          <div class="hero-rating">
+            <span class="rating-grade" id="rankGrade">A</span>
+            <span class="rating-lbl">RANK</span>
+          </div>
+        </div>
+
+        <div class="hero-bottom">
+          <div class="streak-change">
+            <div class="streak-icon-round">🔥</div>
+            <div class="streak-info">
+              <span class="streak-info-num"><span id="streakPrev">12</span> <span class="arrow">→</span> <span id="streakNow">13</span><span class="u">天</span></span>
+              <span class="streak-info-lbl">连续训练</span>
+            </div>
+          </div>
+          <div class="joy-quote">
+            <strong>Joy:</strong><span id="joyQuote">还行,勉强能看。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右:数据+感受+累计+医学 -->
+    <section class="details">
+
+      <!-- 客观数据 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/>
+            </svg>
+          </div>
+          <span class="card-head-title">本次训练</span>
+        </div>
+        <div class="data-grid">
+          <div class="data-item">
+            <span class="data-num"><span id="statTime">30</span><span class="unit">秒</span></span>
+            <span class="data-label">训练时长</span>
+          </div>
+          <div class="data-item">
+            <span class="data-num"><span id="statCompletion">87</span><span class="unit">%</span></span>
+            <span class="data-label">完成度</span>
+          </div>
+          <div class="data-item">
+            <span class="data-num"><span id="statCombo">x8</span></span>
+            <span class="data-label">最长连击</span>
+          </div>
+          <div class="data-item">
+            <span class="data-num" id="statSpecial">12</span>
+            <span class="data-label" id="statSpecialLbl">命中拳</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主观感受 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-icon" style="background: var(--gold-bg); color: var(--gold);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+          <span class="card-head-title">练完感觉怎么样?</span>
+        </div>
+        <div class="feeling-row">
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😩</span><span class="feel-lbl">紧</span></button>
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😐</span><span class="feel-lbl">一般</span></button>
+          <button class="feel-btn selected" onclick="pickFeel(this)"><span class="feel-emoji">🙂</span><span class="feel-lbl">舒展</span></button>
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😊</span><span class="feel-lbl">舒服</span></button>
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">🥰</span><span class="feel-lbl">通透</span></button>
+        </div>
+      </div>
+
+      <!-- 累计动态 -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-icon" style="background: var(--shoulder-bg); color: var(--shoulder);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l3 6 6 1-4.5 4 1 6.5L12 16l-5.5 3.5 1-6.5L3 9l6-1z"/>
+            </svg>
+          </div>
+          <span class="card-head-title">你的进展</span>
+        </div>
+        <div class="accumulate-list">
+          <div class="acc-item">
+            <span class="acc-dot d1"></span>
+            <span id="accBadge">颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章</span>
+          </div>
+          <div class="acc-item">
+            <span class="acc-dot d2"></span>
+            <span id="accJoy">你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦</span>
+          </div>
+          <div class="acc-item">
+            <span class="acc-dot d3"></span>
+            <span id="accTotal">累计训练 <strong>23 次 · 12 小时 30 分</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 医学小卡 -->
+      <div class="med-card">
+        <div class="med-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="med-body">
+          <div class="med-title" id="medTitle">今天练的是「颈椎综合灵活性」</div>
+          <div class="med-desc">
+            <span id="medDesc">拳击动作能有效缓解颈椎僵硬,配合心率提升还能带走疲劳。建议每天 1-2 次,不要空腹练。</span>
+            <span class="med-link">了解更多 →</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 底部 CTA -->
+  <footer class="actions">
+    <button class="btn-ghost" onclick="location.href='mock-home-v2.html'">返回首页</button>
+    <button class="btn-primary" onclick="replayLastLevel()">
+      再来一次
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
+  </footer>
+
+</div>
+
+<script>
+// ========================================================================
+// BRANCH_CONFIG · 4 关分支色 + 关卡文案库
+// 分档吐槽话 = Joy 教练口吻;分支色遵循首页三入口(颈椎蓝),4 关靠辅助色区分
+// ========================================================================
+const BRANCH_CONFIG = {
+  boxing: {
+    breadcrumb: '颈椎训练营 · 下午拳击',
+    levelUrl:   'mock-joy-boxing.html',
+    accent:     '#00A3FF',
+    accent2:    '#FF6B4A',
+    accentBg:   '#E1F2FF',
+    accentBg2:  '#FFF0EB',
+    specialLbl: '命中拳',
+    medTitle:   '今天练的是「颈椎综合灵活性」',
+    medDesc:    '拳击动作能有效缓解颈椎僵硬,配合心率提升还能带走疲劳。建议每天 1-2 次,不要空腹练。',
+    lines: {
+      S: '485C 星球欢迎你,再来一局?',
+      A: '还行,勉强能看。',
+      B: '勉强合格,下次别手下留情。',
+      C: '你在椅子上是不是躺着躲的?',
+    },
+  },
+  lunch: {
+    breadcrumb: '颈椎训练营 · 中午餐厅',
+    levelUrl:   'mock-lunch-restaurant.html',
+    accent:     '#00A3FF',
+    accent2:    '#FFB800',
+    accentBg:   '#E1F2FF',
+    accentBg2:  '#FFF6DA',
+    specialLbl: '喂食数',
+    medTitle:   '今天练的是「颈部持稳与追踪」',
+    medDesc:    '眼手协调 + 头部持稳 30 秒以上,能改善低头族的颈部支撑力。建议吃完饭后 20 分钟再练。',
+    lines: {
+      S: '全场吃饱,饭店给你颁星了。',
+      A: '大部分都喂到嘴里了,不错。',
+      B: '有几只饿着走的,下次快点。',
+      C: '你把餐厅端了么?人都跑了。',
+    },
+  },
+  night: {
+    breadcrumb: '颈椎训练营 · 夜晚派对',
+    levelUrl:   'mock-night-fireworks.html',
+    accent:     '#00A3FF',
+    accent2:    '#7C5AFF',
+    accentBg:   '#E1F2FF',
+    accentBg2:  '#EBE5FF',
+    specialLbl: '接住流星',
+    medTitle:   '今天练的是「颈部大范围转动」',
+    medDesc:    '仰头 + 转头组合动作,舒缓一天低头造成的颈后紧张。睡前 1 小时练完,不要练太激烈。',
+    lines: {
+      S: '满天星屑都是你接的。',
+      A: '大流星你没错过几颗。',
+      B: '流星飞过去了你还在发呆。',
+      C: '你抬头了吗?流星以为你睡了。',
+    },
+  },
+  walk: {
+    breadcrumb: '颈椎训练营 · 森林散步',
+    levelUrl:   'index.html',
+    accent:     '#00A3FF',
+    accent2:    '#4CAF88',
+    accentBg:   '#E1F2FF',
+    accentBg2:  '#E1F5EC',
+    specialLbl: '收到礼物',
+    medTitle:   '今天练的是「颈部动态活动度」',
+    medDesc:    '低强度多方向转头,是晨间唤醒颈椎最温和的方式。空腹或饭后 30 分钟内都能练。',
+    lines: {
+      S: 'Joy 说下次还想跟你走。',
+      A: '走得挺舒服嘛。',
+      B: 'Joy 一直在等你追上来。',
+      C: 'Joy 走完一圈你还没出门。',
+    },
+  },
+};
+
+// 兜底默认值 —— 直接访问 mock-report.html 或 sessionStorage 缺失时展示
+const DEFAULT_RUN = {
+  branch: 'boxing',
+  rank:   'A',
+  stats:  { time: 30, completion: 87, maxCombo: 8, special: 12 },
+  streak: { prev: 12, now: 13 },
+  accumulate: {
+    badge: '颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
+    joy:   '你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦',
+    total: '累计训练 <strong>23 次 · 12 小时 30 分</strong>',
+  },
+};
+
+const STAR_COUNT_BY_RANK = { S: 3, A: 3, B: 2, C: 1 };
+
+function readRun() {
+  // 优先 URL ?branch=xxx(演示 + 视觉预览用),其次 sessionStorage,最后兜底
+  const urlBranch = new URLSearchParams(location.search).get('branch');
+  const raw = sessionStorage.getItem('lastRun');
+  let run;
+  try { run = raw ? JSON.parse(raw) : null; } catch (e) { run = null; }
+  if (!run) run = { ...DEFAULT_RUN };
+  if (urlBranch && BRANCH_CONFIG[urlBranch]) run.branch = urlBranch;
+  return run;
+}
+
+function applyBranch() {
+  const run = readRun();
+  const cfg = BRANCH_CONFIG[run.branch] || BRANCH_CONFIG.boxing;
+
+  // 分支色注入
+  const root = document.documentElement;
+  root.style.setProperty('--accent',      cfg.accent);
+  root.style.setProperty('--accent-2',    cfg.accent2);
+  root.style.setProperty('--accent-bg',   cfg.accentBg);
+  root.style.setProperty('--accent-bg-2', cfg.accentBg2);
+
+  // 面包屑 / Rank / quote
+  document.getElementById('heroBreadcrumb').textContent = cfg.breadcrumb;
+  document.getElementById('rankGrade').textContent = run.rank || 'A';
+  const quote = cfg.lines[run.rank] || cfg.lines.A;
+  document.getElementById('joyQuote').textContent = quote;
+
+  // 星星按评级动态显示
+  const starCount = STAR_COUNT_BY_RANK[run.rank] || 3;
+  const stars = document.querySelectorAll('#stars svg');
+  stars.forEach((s, i) => {
+    s.classList.remove('filled', 'dim');
+    s.classList.add(i < starCount ? 'filled' : 'dim');
+  });
+
+  // 4 数据
+  const st = run.stats || DEFAULT_RUN.stats;
+  document.getElementById('statTime').textContent = st.time ?? 30;
+  document.getElementById('statCompletion').textContent = st.completion ?? 87;
+  document.getElementById('statCombo').textContent = 'x' + (st.maxCombo ?? 8);
+  document.getElementById('statSpecial').textContent = st.special ?? 12;
+  document.getElementById('statSpecialLbl').textContent = cfg.specialLbl;
+
+  // Streak
+  const streak = run.streak || DEFAULT_RUN.streak;
+  document.getElementById('streakPrev').textContent = streak.prev;
+  document.getElementById('streakNow').textContent = streak.now;
+
+  // 累计动态
+  const acc = run.accumulate || DEFAULT_RUN.accumulate;
+  document.getElementById('accBadge').innerHTML = acc.badge;
+  document.getElementById('accJoy').innerHTML = acc.joy;
+  document.getElementById('accTotal').innerHTML = acc.total;
+
+  // 医学卡文案
+  document.getElementById('medTitle').textContent = cfg.medTitle;
+  document.getElementById('medDesc').textContent = cfg.medDesc;
+}
+
+function pickFeel(el) {
+  document.querySelectorAll('.feel-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function replayLastLevel() {
+  const run = readRun();
+  const cfg = BRANCH_CONFIG[run.branch] || BRANCH_CONFIG.boxing;
+  location.href = cfg.levelUrl;
+}
+
+applyBranch();
+</script>
+
+</body>
+</html>

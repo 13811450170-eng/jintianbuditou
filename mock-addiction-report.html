@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>星动Joy · 上瘾机制分析报告</title>
+<style>
+:root {
+  --bg:          #F6F5F1;
+  --card:        #FFFFFF;
+  --ink:         #0A0A0F;
+  --ink-2:       #3A3A45;
+  --ink-3:       #6B6B7A;
+  --ink-4:       #A8A8B3;
+  --line:        rgba(10, 10, 15, 0.06);
+  --line-hard:   rgba(10, 10, 15, 0.12);
+
+  --neck:        #00A3FF;
+  --neck-bg:     #E1F2FF;
+  --shoulder:    #7C5AFF;
+  --shoulder-bg: #EBE5FF;
+  --eye:         #4CAF88;
+  --eye-bg:      #E1F5EC;
+
+  --fire:        #FF6B4A;
+  --fire-2:      #FFB74D;
+  --duo:         #58CC02;
+  --ice:         #64B5F6;
+  --gold:        #FFB800;
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  padding: 60px 20px 120px;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.005em;
+  line-height: 1.55;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+/* ========== Header ========== */
+.report-header {
+  padding: 0 0 44px;
+  margin-bottom: 44px;
+  border-bottom: 1px solid var(--line-hard);
+}
+.report-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--fire);
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+h1.report-title {
+  font-size: 52px;
+  font-weight: 900;
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+.report-title em {
+  font-style: normal;
+  background: linear-gradient(120deg, var(--fire) 0%, var(--fire-2) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.report-lead {
+  font-size: 18px;
+  color: var(--ink-3);
+  max-width: 720px;
+  line-height: 1.65;
+}
+.report-meta {
+  display: flex; gap: 24px;
+  margin-top: 28px;
+  font-size: 13px;
+  color: var(--ink-4);
+}
+.report-meta span::before {
+  content: "";
+  display: inline-block;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--ink-4);
+  margin-right: 8px;
+  margin-bottom: 2px;
+  vertical-align: middle;
+}
+
+/* ========== Section ========== */
+section { margin-bottom: 72px; }
+
+.section-num {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--ink-4);
+  margin-bottom: 12px;
+}
+h2 {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 20px;
+}
+h2 .highlight {
+  background: linear-gradient(120deg, transparent 62%, #FFF3B0 62%, #FFF3B0 92%, transparent 92%);
+  padding: 0 4px;
+}
+.section-lead {
+  font-size: 16px;
+  color: var(--ink-3);
+  max-width: 780px;
+  line-height: 1.65;
+  margin-bottom: 32px;
+}
+
+/* ========== 内容块 ========== */
+h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 32px 0 14px;
+  letter-spacing: -0.01em;
+}
+p {
+  font-size: 15px;
+  color: var(--ink-2);
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+strong { color: var(--ink); font-weight: 700; }
+em.hilite {
+  font-style: normal;
+  background: #FFF3B0;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* 8 驱动力表 */
+.drivers-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+.driver {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+}
+.driver-score {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 800;
+  flex-shrink: 0;
+}
+.driver-score.s1 { background: #FEE2E2; color: #DC2626; }
+.driver-score.s2 { background: #FED7AA; color: #EA580C; }
+.driver-score.s3 { background: #FEF3C7; color: #CA8A04; }
+.driver-score.s4 { background: #D9F99D; color: #65A30D; }
+.driver-score.s5 { background: #BBF7D0; color: #16A34A; }
+.driver-info { flex: 1; min-width: 0; }
+.driver-name {
+  font-size: 14px; font-weight: 700; color: var(--ink);
+  margin-bottom: 2px;
+}
+.driver-gap {
+  font-size: 12px; color: var(--ink-3);
+  line-height: 1.4;
+}
+
+/* Hook 4 环 */
+.hook-flow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 20px 0;
+}
+.hook-step {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  position: relative;
+}
+.hook-step-num {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--ink-4);
+  margin-bottom: 8px;
+}
+.hook-step-name {
+  font-size: 15px; font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.hook-step-status {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  display: inline-block;
+  font-weight: 600;
+}
+.hook-step-status.ok { background: #D9F99D; color: #4D7C0F; }
+.hook-step-status.bad { background: #FEE2E2; color: #DC2626; }
+.hook-step-status.mid { background: #FEF3C7; color: #CA8A04; }
+.hook-step-note {
+  font-size: 12px;
+  color: var(--ink-3);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* Duolingo 武器表 */
+.weapons-table {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.weapon-row {
+  display: grid;
+  grid-template-columns: 44px 200px 88px 1fr;
+  padding: 14px 22px;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  align-items: center;
+  font-size: 14px;
+}
+.weapon-row:last-child { border-bottom: none; }
+.weapon-row.head {
+  background: #FAF9F5;
+  font-size: 11px;
+  color: var(--ink-4);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.weapon-num { color: var(--ink-4); font-weight: 700; }
+.weapon-name { font-weight: 700; color: var(--ink); }
+.weapon-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px; height: 22px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.weapon-check.yes { background: #BBF7D0; color: #16A34A; }
+.weapon-check.mod { background: #FEF3C7; color: #CA8A04; }
+.weapon-check.no  { background: #FEE2E2; color: #DC2626; }
+.weapon-why { color: var(--ink-3); font-size: 13px; }
+
+/* Streak 5 态可视化 */
+.streak-showcase {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin: 24px 0 16px;
+}
+.streak-state {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+}
+.streak-state-num {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+.streak-state-flame {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 12px;
+  position: relative;
+}
+.streak-state-flame.ignition {
+  background: linear-gradient(180deg, #FFB74D, #FF8A3D);
+  filter: drop-shadow(0 4px 10px rgba(255, 138, 61, 0.35));
+}
+.streak-state-flame.stable {
+  background: linear-gradient(180deg, var(--fire-2), var(--fire));
+  filter: drop-shadow(0 4px 10px rgba(255, 107, 74, 0.4));
+}
+.streak-state-flame.achieve {
+  background: linear-gradient(180deg, #FFD54F, #FF5722);
+  filter: drop-shadow(0 4px 12px rgba(255, 87, 34, 0.5));
+}
+.streak-state-flame.achieve::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,183,77,0.5), transparent 70%);
+  z-index: -1;
+}
+.streak-state-flame.frozen {
+  background: linear-gradient(180deg, #A8D3FA, #64B5F6);
+  filter: drop-shadow(0 4px 10px rgba(100, 181, 246, 0.4));
+}
+.streak-state-flame.zero {
+  background: linear-gradient(180deg, #C7C7CC, #8E8E93);
+}
+.streak-state-name {
+  font-size: 15px; font-weight: 800; color: var(--ink);
+  margin-bottom: 4px;
+}
+.streak-state-trigger {
+  font-size: 11px; color: var(--ink-4);
+  margin-bottom: 10px;
+}
+.streak-state-caption {
+  font-size: 12px; color: var(--ink-2);
+  line-height: 1.5;
+  padding: 8px 10px;
+  background: #FAF9F5;
+  border-radius: 8px;
+  min-height: 60px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 彩蛋卡片 */
+.eggs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+.egg-group {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 22px 24px;
+}
+.egg-group-title {
+  font-size: 14px; font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: 8px;
+}
+.egg-group-title-num {
+  display: inline-flex;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.egg-item {
+  font-size: 13px;
+  color: var(--ink-2);
+  margin-bottom: 10px;
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.55;
+}
+.egg-item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 8px;
+  width: 5px; height: 5px;
+  background: var(--fire);
+  border-radius: 50%;
+}
+.egg-item strong { color: var(--ink); }
+
+/* Joy 熟人化 */
+.relationship-flow {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  margin: 20px 0;
+}
+.rel-stage {
+  display: grid;
+  grid-template-columns: 100px 130px 1fr;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px dashed var(--line);
+  align-items: center;
+}
+.rel-stage:last-child { border-bottom: none; }
+.rel-stage-tag {
+  font-size: 12px; font-weight: 700;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 100px;
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+.rel-stage-tag.s1 { background: #A8A8B3; }
+.rel-stage-tag.s2 { background: var(--fire-2); }
+.rel-stage-tag.s3 { background: var(--fire); }
+.rel-stage-tag.s4 { background: #C53030; }
+.rel-stage-tag.s5 { background: #64B5F6; }
+.rel-stage-cond {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.rel-stage-line {
+  font-size: 14px;
+  font-family: "SF Mono", Menlo, monospace;
+  color: var(--ink);
+  background: #FAF9F5;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border-left: 3px solid var(--fire);
+}
+
+/* 优先级列表 */
+.phase-block {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px 28px;
+  margin-bottom: 14px;
+  position: relative;
+}
+.phase-header {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 14px;
+}
+.phase-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1px;
+}
+.phase-badge.p1 { background: #DCF5DC; color: #2F7A2F; }
+.phase-badge.p2 { background: #FEF3C7; color: #92400E; }
+.phase-badge.p3 { background: #E0E7FF; color: #4338CA; }
+.phase-title {
+  font-size: 17px; font-weight: 800; color: var(--ink);
+}
+.phase-cost {
+  font-size: 12px; color: var(--ink-4);
+  margin-left: auto;
+}
+.phase-item {
+  font-size: 14px;
+  color: var(--ink-2);
+  padding: 8px 0 8px 30px;
+  position: relative;
+  border-top: 1px solid var(--line);
+  line-height: 1.6;
+}
+.phase-item:first-of-type { border-top: none; }
+.phase-item-num {
+  position: absolute;
+  left: 0; top: 8px;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800;
+}
+.phase-item strong { color: var(--ink); }
+.phase-item code {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  background: #FAF9F5;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--ink);
+}
+
+/* 独家武器 */
+.unique-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+.unique-card {
+  background: linear-gradient(135deg, #FFFBF0 0%, #FFFFFF 100%);
+  border: 1px solid rgba(255, 183, 77, 0.3);
+  border-radius: 16px;
+  padding: 22px 24px;
+  position: relative;
+}
+.unique-card-tag {
+  font-size: 10px; font-weight: 700;
+  color: var(--fire);
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+}
+.unique-card-title {
+  font-size: 17px; font-weight: 800; color: var(--ink);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.unique-card-desc {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.6;
+}
+
+/* footer */
+.report-footer {
+  border-top: 1px solid var(--line-hard);
+  padding-top: 32px;
+  margin-top: 60px;
+  color: var(--ink-4);
+  font-size: 13px;
+  display: flex; justify-content: space-between;
+  align-items: center;
+}
+
+/* 卡片间的暖引文 */
+.callout {
+  background: #FFFBF0;
+  border-left: 4px solid var(--fire-2);
+  padding: 20px 24px;
+  border-radius: 0 12px 12px 0;
+  margin: 24px 0;
+  font-size: 15px;
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.callout strong { color: var(--ink); }
+.callout-title {
+  font-size: 12px; font-weight: 700;
+  color: var(--fire);
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+/* 图例辅助 */
+.legend-row {
+  display: flex; gap: 16px;
+  font-size: 12px;
+  color: var(--ink-3);
+  margin: 8px 0 24px;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 3px;
+}
+.legend-dot.yes { background: #BBF7D0; }
+.legend-dot.mod { background: #FEF3C7; }
+.legend-dot.no  { background: #FEE2E2; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ============ Header ============ -->
+  <header class="report-header">
+    <div class="report-tag">Addiction Design Report · v1</div>
+    <h1 class="report-title">
+      如何让白领<em>持续</em>回来<br>练颈椎?
+    </h1>
+    <p class="report-lead">
+      基于八角行为模型与 Hook Model,拆解多邻国的上瘾武器,分析星动Joy 拳击派对的当前分布,并给出可直接落地到 mock 的 3 阶段方案。<strong>核心结论:内驱>外驱。京豆和产品只做里程碑外挂,不做日常燃料。</strong>
+    </p>
+    <div class="report-meta">
+      <span>星动Joy · 京东黑马</span>
+      <span>作者:全设计师团队(2 人)</span>
+      <span>2026-08-12 修订</span>
+    </div>
+  </header>
+
+  <!-- ============ Section 1: 八角诊断 ============ -->
+  <section>
+    <div class="section-num">01 · 现状诊断</div>
+    <h2>Joy 拳击派对的<span class="highlight">八驱动分布</span></h2>
+    <p class="section-lead">
+      按 Yu-kai Chou 的八角行为模型评分(1-5)。<strong>右脑三驱动(3 创造/5 社交/7 未知)全线薄弱</strong>——这三个恰恰是内驱力的黄金三角。
+    </p>
+
+    <div class="drivers-grid">
+      <div class="driver">
+        <div class="driver-score s2">2</div>
+        <div class="driver-info">
+          <div class="driver-name">① 意义感 · Meaning</div>
+          <div class="driver-gap">训练意义只在台词里,没做成机制</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s3">3</div>
+        <div class="driver-info">
+          <div class="driver-name">② 成就 · Accomplishment</div>
+          <div class="driver-gap">每局独立,没有长期进度阶梯</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s1">1</div>
+        <div class="driver-info">
+          <div class="driver-name">③ 创造赋能 · Empowerment</div>
+          <div class="driver-gap">玩家无任何选择空间,只能跟做</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s2">2</div>
+        <div class="driver-info">
+          <div class="driver-name">④ 拥有感 · Ownership</div>
+          <div class="driver-gap">Joy 装扮固定,没有可解锁皮肤</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s1">1</div>
+        <div class="driver-info">
+          <div class="driver-name">⑤ 社交 · Social</div>
+          <div class="driver-gap">一人独玩,没归属感</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s3">3</div>
+        <div class="driver-info">
+          <div class="driver-name">⑥ 稀缺 · Scarcity</div>
+          <div class="driver-gap">时段锁 13:30–18:59,已很好,别再加</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s2">2</div>
+        <div class="driver-info">
+          <div class="driver-name">⑦ 未知/好奇 · Unpredictability</div>
+          <div class="driver-gap">8 拳序列固定,第 3 次就腻</div>
+        </div>
+      </div>
+      <div class="driver">
+        <div class="driver-score s1">1</div>
+        <div class="driver-info">
+          <div class="driver-name">⑧ 损失厌恶 · Loss</div>
+          <div class="driver-gap">Miss 掉 Combo 太轻,没有"不玩就失去"的钩子</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">核心诊断</div>
+      现在拳台是一个<strong>孤立的技能挑战</strong>——玩得爽但没记忆点、没日常、没社交。要让用户"上瘾",需要重点补 <strong>③创造 · ⑤社交 · ⑦未知 · ⑧损失厌恶</strong> 四个驱动。
+    </div>
+  </section>
+
+  <!-- ============ Section 2: Hook Model ============ -->
+  <section>
+    <div class="section-num">02 · Hook Model 四环节</div>
+    <h2>只有 Action 到位,<span class="highlight">其他三环全断</span></h2>
+    <p class="section-lead">
+      Nir Eyal 的 Hook = 触发 → 行动 → 变量奖励 → 投入。星动Joy 现状:入口很轻(30s 门槛低),但没变量奖励、没投入积累。
+    </p>
+
+    <div class="hook-flow">
+      <div class="hook-step">
+        <div class="hook-step-num">STEP 01</div>
+        <div class="hook-step-name">Trigger 触发</div>
+        <span class="hook-step-status mid">半通</span>
+        <div class="hook-step-note">只有内部触发(想训练时打开),缺外部触发:通知/streak 提醒</div>
+      </div>
+      <div class="hook-step">
+        <div class="hook-step-num">STEP 02</div>
+        <div class="hook-step-name">Action 行动</div>
+        <span class="hook-step-status ok">达标</span>
+        <div class="hook-step-note">30 秒门槛低,进入无摩擦</div>
+      </div>
+      <div class="hook-step">
+        <div class="hook-step-num">STEP 03</div>
+        <div class="hook-step-name">Variable Reward 变量奖励</div>
+        <span class="hook-step-status bad">最缺</span>
+        <div class="hook-step-note">结果固定,拳序不变,S/A/B/C 稳定,没惊喜</div>
+      </div>
+      <div class="hook-step">
+        <div class="hook-step-num">STEP 04</div>
+        <div class="hook-step-name">Investment 投入</div>
+        <span class="hook-step-status bad">断链</span>
+        <div class="hook-step-note">每次开局都是"新玩家",Joy 不记得你</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Section 3: 多邻国武器 ============ -->
+  <section>
+    <div class="section-num">03 · 抄谁不抄谁</div>
+    <h2>多邻国的 <span class="highlight">10 个上瘾武器</span></h2>
+    <p class="section-lead">
+      不是所有多邻国机制都要抄。<strong>真核 = Streak + 保护卡 + Duo 情感 + 变量视觉</strong>,XP/League/好友是配角。我们的场景决定了要选择性移植。
+    </p>
+
+    <div class="legend-row">
+      <div class="legend-item"><span class="legend-dot yes"></span>必抄</div>
+      <div class="legend-item"><span class="legend-dot mod"></span>改造抄</div>
+      <div class="legend-item"><span class="legend-dot no"></span>不抄</div>
+    </div>
+
+    <div class="weapons-table">
+      <div class="weapon-row head">
+        <div>#</div>
+        <div>机制</div>
+        <div>决策</div>
+        <div>理由</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">01</div>
+        <div class="weapon-name">Streak 连续天数</div>
+        <div><span class="weapon-check yes">必抄</span></div>
+        <div class="weapon-why">损失厌恶最强,用户已定</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">02</div>
+        <div class="weapon-name">Streak Freeze 保护卡</div>
+        <div><span class="weapon-check yes">必抄</span></div>
+        <div class="weapon-why">保护 streak 的心理契约,降低断线焦虑</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">03</div>
+        <div class="weapon-name">Duo 情感勒索</div>
+        <div><span class="weapon-check mod">改造</span></div>
+        <div class="weapon-why">Joy 有记忆,毒舌+熟人化,不做眼泪不做焦虑</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">04</div>
+        <div class="weapon-name">变量强化(宝箱)</div>
+        <div><span class="weapon-check mod">改造</span></div>
+        <div class="weapon-why">变成"彩蛋日历",发现>随机</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">05</div>
+        <div class="weapon-name">每日多路径任务</div>
+        <div><span class="weapon-check yes">必抄</span></div>
+        <div class="weapon-why">今日 3 目标,平衡分支覆盖</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">06</div>
+        <div class="weapon-name">每周挑战</div>
+        <div><span class="weapon-check yes">必抄</span></div>
+        <div class="weapon-why">Rainbow 三色徽章,拉长周维度</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">07</div>
+        <div class="weapon-name">XP / 等级</div>
+        <div><span class="weapon-check no">不抄</span></div>
+        <div class="weapon-why">已有 streak+图鉴+好感度,再加冗余</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">08</div>
+        <div class="weapon-name">League 联赛</div>
+        <div><span class="weapon-check no">不抄</span></div>
+        <div class="weapon-why">工位场景,同事竞技尴尬</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">09</div>
+        <div class="weapon-name">好友系统</div>
+        <div><span class="weapon-check no">不抄</span></div>
+        <div class="weapon-why">决策已明确不做真社交</div>
+      </div>
+      <div class="weapon-row">
+        <div class="weapon-num">10</div>
+        <div class="weapon-name">心形 / 付费墙</div>
+        <div><span class="weapon-check no">不抄</span></div>
+        <div class="weapon-why">免费办公工具,不能课金</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Section 4: 独家武器 ============ -->
+  <section>
+    <div class="section-num">04 · 我们的护城河</div>
+    <h2>比多邻国<span class="highlight">多一样</span>的东西</h2>
+    <p class="section-lead">
+      多邻国教英语切的是<strong>成长焦虑</strong>(想象性)。我们切的是<strong>颈椎疼痛</strong>(真实性)。真实疼痛的驱动强度高一档,这是我们的 4 张独家牌。
+    </p>
+
+    <div class="unique-grid">
+      <div class="unique-card">
+        <div class="unique-card-tag">独家 · 01</div>
+        <div class="unique-card-title">生理反馈闭环</div>
+        <div class="unique-card-desc">
+          打完真的会<strong>感觉到</strong>颈椎松了。这个感受是身体给的,无法伪造。多邻国永远给不了。
+        </div>
+      </div>
+      <div class="unique-card">
+        <div class="unique-card-tag">独家 · 02</div>
+        <div class="unique-card-title">时段生理钟</div>
+        <div class="unique-card-desc">
+          下午 3 点自动推送,和 Joy 拳击时段绑定。生理钟触发比闹钟触发更自然。
+        </div>
+      </div>
+      <div class="unique-card">
+        <div class="unique-card-tag">独家 · 03</div>
+        <div class="unique-card-title">身体自查 Baseline</div>
+        <div class="unique-card-desc">
+          60s 自查记录用户 ROM 作为长期锚点。<strong>"你当初 vs 现在"</strong>这句话只有我们能说。
+        </div>
+      </div>
+      <div class="unique-card">
+        <div class="unique-card-tag">独家 · 04</div>
+        <div class="unique-card-title">Joy 毒舌人格</div>
+        <div class="unique-card-desc">
+          外星狗 + 破第四面墙提醒白领。Duo 是可爱路线,Joy 是<strong>毒舌+觉察感</strong>,更符合中国办公语境。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Section 5: Streak 5 态设计 ============ -->
+  <section>
+    <div class="section-num">05 · Streak 落地</div>
+    <h2><span class="highlight">Streak 不是一个数字</span>,是 5 态状态机</h2>
+    <p class="section-lead">
+      现在 <code style="font-size:12px;background:#FAF9F5;padding:2px 6px;border-radius:4px;">mock-home-v2.html</code> 顶部 pill 已经改造为 5 态可切换(devbar 演示用)。每种状态对应不同视觉、文案、心理机制。
+    </p>
+
+    <div class="streak-showcase">
+      <div class="streak-state">
+        <div class="streak-state-num">状态 ①</div>
+        <div class="streak-state-flame ignition">🔥</div>
+        <div class="streak-state-name">点火期</div>
+        <div class="streak-state-trigger">1-2 天</div>
+        <div class="streak-state-caption">第 2 天,好势头!</div>
+      </div>
+      <div class="streak-state">
+        <div class="streak-state-num">状态 ②</div>
+        <div class="streak-state-flame stable">🔥</div>
+        <div class="streak-state-name">稳定期</div>
+        <div class="streak-state-trigger">3-6 天</div>
+        <div class="streak-state-caption">🔥 5 天 · ❄️ 保护卡 ×1</div>
+      </div>
+      <div class="streak-state">
+        <div class="streak-state-num">状态 ③</div>
+        <div class="streak-state-flame achieve">🔥</div>
+        <div class="streak-state-name">成就期</div>
+        <div class="streak-state-trigger">7+ 天</div>
+        <div class="streak-state-caption">🔥 12 天 · 你的最长记录!</div>
+      </div>
+      <div class="streak-state">
+        <div class="streak-state-num">状态 ④</div>
+        <div class="streak-state-flame frozen">🧊</div>
+        <div class="streak-state-name">冻结期</div>
+        <div class="streak-state-trigger">保护卡消耗</div>
+        <div class="streak-state-caption">Joy 帮你顶了一天,别再断了</div>
+      </div>
+      <div class="streak-state">
+        <div class="streak-state-num">状态 ⑤</div>
+        <div class="streak-state-flame zero">💤</div>
+        <div class="streak-state-name">归零期</div>
+        <div class="streak-state-trigger">断 &gt;保护卡数</div>
+        <div class="streak-state-caption">重新开始 · 🏆 历史最长 12 天</div>
+      </div>
+    </div>
+
+    <h3>保护卡机制(比多邻国宽松)</h3>
+    <p>
+      多邻国:免费用户要用宝石买 → <strong>我们不做付费墙</strong>。改成:<em class="hilite">周一 10:00 赠 1 张,自动兜底,最多囤 2 张</em>——避免"永远断不了"的免疫。消耗时的核心一幕:蓝冰火焰浮起 → 保护卡飞入火焰 → 重新点燃 → Joy 说"这次算我请客"。
+    </p>
+
+    <h3>里程碑设计(拉长上瘾曲线)</h3>
+    <p>
+      多邻国的里程碑不给外部奖励,只给<strong>符号资产</strong>。我们抄这个逻辑:
+    </p>
+    <p>
+      3 天 → 小火苗徽章 · Joy 说"有点东西啊"<br>
+      7 天 → 一周之星徽章 · Joy 说"比我妈坚持"<br>
+      14 天 → 半月徽章<br>
+      30 天 → 金火徽章 + <em class="hilite">Joy 开始叫你的名字</em><br>
+      100 天 → <em class="hilite">DD 机器人正式加入你的界面</em>(彩蛋触发)<br>
+      365 天 → 年度合影(Doga 家族全员出镜,可保存分享)
+    </p>
+
+    <div class="callout">
+      <div class="callout-title">红线</div>
+      <strong>绝对不做:</strong>"第 30 天送 100 京豆"这种。会摧毁 streak 的符号价值——一旦标价,用户就用"京豆时薪"衡量,内驱瞬间归零。
+    </div>
+  </section>
+
+  <!-- ============ Section 6: 彩蛋 ============ -->
+  <section>
+    <div class="section-num">06 · 彩蛋系统</div>
+    <h2>不是随机,是<span class="highlight">"发现"</span></h2>
+    <p class="section-lead">
+      多邻国宝箱是"随机"——用户很快摸清概率就腻。我们做<strong>彩蛋日历</strong>:有规律但要用户去发现。发现瞬间的爽感 &gt; 随机爽感。
+    </p>
+
+    <div class="eggs-grid">
+      <div class="egg-group">
+        <div class="egg-group-title">
+          <span class="egg-group-title-num">1</span>
+          时段彩蛋(生理钟)
+        </div>
+        <div class="egg-item"><strong>3:00 PM 整开拳击</strong>——"你踩点来的?加分" + 场景多一层"3PM"霓虹</div>
+        <div class="egg-item"><strong>周五 17:00 后</strong>——Joy 摘头盔说"打完就下班了地球人"</div>
+        <div class="egg-item"><strong>生日当天</strong>——"今天不打你,坐着聊聊?"+ 485C 星球笑话</div>
+        <div class="egg-item"><strong>618/双11 前一周</strong>——场景加京东购物袋道具</div>
+      </div>
+
+      <div class="egg-group">
+        <div class="egg-group-title">
+          <span class="egg-group-title-num">2</span>
+          状态彩蛋(streak/行为)
+        </div>
+        <div class="egg-item"><strong>连续 7 天首次开拳</strong>——"熟练工了" + 拳套变金色</div>
+        <div class="egg-item"><strong>断线回归首日</strong>——"你去哪了地球人,我等你等到发霉" + DD 递纸巾</div>
+        <div class="egg-item"><strong>累计 100 次训练</strong>——开局 KO 大字报直接出现</div>
+      </div>
+
+      <div class="egg-group">
+        <div class="egg-group-title">
+          <span class="egg-group-title-num">3</span>
+          序列彩蛋(连击)
+        </div>
+        <div class="egg-item"><strong>连续 3 拳 Perfect</strong>——下一拳镜像 180 度反转(视觉惊喜,不影响判定)</div>
+        <div class="egg-item"><strong>全 8 拳 Perfect</strong>——触发 Ultra KO + Doga 家族客串一秒</div>
+        <div class="egg-item"><strong>全场 Miss</strong>——Joy 说"这局咱俩都休息一下?"不算失败</div>
+      </div>
+
+      <div class="egg-group">
+        <div class="egg-group-title">
+          <span class="egg-group-title-num">4</span>
+          隐藏动作彩蛋
+        </div>
+        <div class="egg-item"><strong>intro 阶段预备下勾拳</strong>(抬头 3s)——"你已经会了?" 跳过示范阶段</div>
+        <div class="egg-item"><strong>结算画面保持不动 5s</strong>——Joy 说"再来?" 一键无 loading 再战</div>
+      </div>
+
+      <div class="egg-group">
+        <div class="egg-group-title">
+          <span class="egg-group-title-num">5</span>
+          跨关卡彩蛋
+        </div>
+        <div class="egg-item"><strong>同天 3 分支都练过</strong>——三色彩虹徽章 + "颈肩眼全套"</div>
+        <div class="egg-item"><strong>见过 6 只 Doga 后</strong>——下次任何关卡 Doga 家族背景一闪</div>
+        <div class="egg-item"><strong>训练时微提醒同时弹出</strong>——Joy 破规则说"我在场上你还提醒我?"</div>
+      </div>
+
+      <div class="egg-group" style="background:#FFFBF0; border-color: rgba(255, 183, 77, 0.35);">
+        <div class="egg-group-title">
+          <span class="egg-group-title-num" style="background:var(--fire);">?</span>
+          分布原则
+        </div>
+        <div class="egg-item"><strong>首月密度高</strong>——前 30 天 60% 概率触发,建立"这游戏有戏"的期待</div>
+        <div class="egg-item"><strong>稳定期低密度</strong>——30 天后每周 2-3 次,避免麻木</div>
+        <div class="egg-item"><strong>发现 &gt; 获得</strong>——不进图鉴,不显示"已发现 X/Y",保持"偶然撞到"的感觉</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Section 7: Joy 熟人化 ============ -->
+  <section>
+    <div class="section-num">07 · 情感勒索 v2</div>
+    <h2>Joy 熟人化<span class="highlight">5 阶段</span></h2>
+    <p class="section-lead">
+      Duo 的核心不是台词,是"关系记忆"—— Duo 记得你缺席了几天。我们做 Joy 的记忆:根据 <code style="font-size:12px;background:#FAF9F5;padding:2px 6px;border-radius:4px;">localStorage</code> 里的 <code style="font-size:12px;background:#FAF9F5;padding:2px 6px;border-radius:4px;">joyRelationship</code> 状态挑选开场白。
+    </p>
+
+    <div class="relationship-flow">
+      <div class="rel-stage">
+        <div class="rel-stage-tag s1">陌生人</div>
+        <div class="rel-stage-cond">≤ 3 次</div>
+        <div class="rel-stage-line">"485C 星球拳击 lesson 1 —— 别哭。"</div>
+      </div>
+      <div class="rel-stage">
+        <div class="rel-stage-tag s2">认识</div>
+        <div class="rel-stage-cond">4 - 10 次</div>
+        <div class="rel-stage-line">"又是你,进步一点了。"</div>
+      </div>
+      <div class="rel-stage">
+        <div class="rel-stage-tag s3">熟人</div>
+        <div class="rel-stage-cond">11 - 30 次</div>
+        <div class="rel-stage-line">"老朋友,今天想虐还是被虐?"</div>
+      </div>
+      <div class="rel-stage">
+        <div class="rel-stage-tag s4">好友</div>
+        <div class="rel-stage-cond">30+ 次</div>
+        <div class="rel-stage-line">"我给你留了 30 秒,准时。" · 30 天后开始叫名字</div>
+      </div>
+      <div class="rel-stage">
+        <div class="rel-stage-tag s5">断线归来</div>
+        <div class="rel-stage-cond">&gt; 3 天没来</div>
+        <div class="rel-stage-line">"地球人?你没死?"</div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-title">避免 Duo 陷阱</div>
+      不做 "You made Duo cry" 这种真情感勒索。京东白领<strong>不吃这套,会尴尬</strong>。做<strong>毒舌 + 记忆</strong>,不做<strong>眼泪 + 焦虑</strong>——温柔版损失厌恶。
+    </div>
+  </section>
+
+  <!-- ============ Section 8: 优先级 ============ -->
+  <section>
+    <div class="section-num">08 · 落地路线</div>
+    <h2>2 人团队<span class="highlight">按 ROI 排序</span></h2>
+    <p class="section-lead">
+      三个阶段:本周做直观可见的顶部 pill,下周补关卡内熟人化和彩蛋,复赛做体验闭环。
+    </p>
+
+    <div class="phase-block">
+      <div class="phase-header">
+        <span class="phase-badge p1">PHASE 1</span>
+        <span class="phase-title">本周做完(高 ROI 低成本)</span>
+        <span class="phase-cost">工时 ≈ 1-2 天</span>
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">1</span>
+        <strong>Streak 5 态首页落地</strong> · <code>mock-home-v2.html</code> · 顶部 pill 5 态视觉 + 保护卡 ⚡ icon + Joy 台词气泡 <em class="hilite">✅ 已完成</em>
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">2</span>
+        <strong>Joy 熟人化 5 阶段</strong> · <code>mock-joy-boxing.html</code> · 直接改 <code>LINES.intro</code>,加 <code>localStorage</code> 读取
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">3</span>
+        <strong>5 个基础彩蛋</strong> · 时段彩蛋 + 断线回归 + 全 Perfect Ultra KO,骨架就有
+      </div>
+    </div>
+
+    <div class="phase-block">
+      <div class="phase-header">
+        <span class="phase-badge p2">PHASE 2</span>
+        <span class="phase-title">下周做(中等成本)</span>
+        <span class="phase-cost">工时 ≈ 3-4 天</span>
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">4</span>
+        <strong>单次报告 Streak 动画</strong> · <code>mock-report.html</code> · 让 "+1" 这一秒变仪式
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">5</span>
+        <strong>今日 3 目标</strong> · 首页加小组件,进度条视觉
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">6</span>
+        <strong>周报里程碑徽章</strong> · <code>mock-weekly-report.html</code> · 3/7/14/30 天徽章 SVG 5 个
+      </div>
+    </div>
+
+    <div class="phase-block">
+      <div class="phase-header">
+        <span class="phase-badge p3">PHASE 3</span>
+        <span class="phase-title">复赛以后(体验闭环)</span>
+        <span class="phase-cost">工时 ≈ 1 周</span>
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">7</span>
+        <strong>每周 Rainbow 挑战</strong> · 三分支覆盖,周日结算彩虹徽章
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">8</span>
+        <strong>跨关卡彩蛋</strong> · 图鉴 + Doga 家族客串
+      </div>
+      <div class="phase-item">
+        <span class="phase-item-num">9</span>
+        <strong>京豆里程碑外挂</strong> · 只在 30 天/100 天里程碑触发,不做日常
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Footer ============ -->
+  <footer class="report-footer">
+    <div>星动Joy · 上瘾机制设计报告 v1</div>
+    <div>Powered by 京东黑马 · 全设计师团队(2 人)</div>
+  </footer>
+
+</div>
+
+</body>
+</html>

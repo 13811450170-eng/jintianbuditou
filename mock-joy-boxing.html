@@ -420,7 +420,8 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   position: absolute; bottom: 11vh; right: 2vw;
   width: 160px; height: 120px;
   border: 3px solid var(--gold); border-radius: 8px;
-  overflow: hidden; background: #000;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, #0a0510 0%, #000 100%);
   box-shadow: 0 0 20px rgba(255,204,0,.35), 0 4px 20px rgba(0,0,0,.6);
   transition: all .35s cubic-bezier(.4,0,.2,1);
   z-index: 6;
@@ -428,14 +429,17 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 #faceCam.folded {
   width: 48px !important; height: 48px !important; border-radius: 50%;
 }
-#faceCam.folded #video, #faceCam.folded .cam-label { display: none; }
+#faceCam.folded #video, #faceCam.folded #faceMesh, #faceCam.folded .cam-label { display: none; }
 #faceCam.folded::after {
   content: '📹'; position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center; font-size: 22px;
 }
 #faceCam #video {
-  width: 100%; height: 100%; object-fit: cover;
-  transform: scaleX(-1);
+  /* 保留 video 元素给 MediaPipe 采帧,视觉上隐藏 */
+  position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none;
+}
+#faceCam #faceMesh {
+  width: 100%; height: 100%; display: block;
 }
 #faceCam .cam-label {
   position: absolute; top: 4px; right: 4px;
@@ -535,43 +539,44 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   100% { transform: translateY(0); opacity: 1; }
 }
 
+/* Outro 极简过场:巨型 Rank + Joy quote,1.8s 后跳报告页 */
 #ovOutro {
-  background: rgba(10,5,16,.92); pointer-events: auto;
+  background: rgba(10,5,16,.94); pointer-events: auto;
 }
 #ovOutro .outro-panel {
-  max-width: 520px; padding: 40px; text-align: center;
-  background: linear-gradient(180deg, rgba(255,34,68,.08), rgba(0,0,0,.6));
-  border: 2px solid var(--panel-brd); border-radius: 20px;
-  box-shadow: 0 0 60px rgba(255,34,68,.25);
+  text-align: center;
+  background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: none;
 }
 #ovOutro .outro-rank {
-  font-size: 120px; font-weight: 900; letter-spacing: 4px;
+  font-size: 180px; font-weight: 900; letter-spacing: -2px;
+  line-height: 1;
   background: linear-gradient(135deg, var(--gold), var(--red-hot));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 30px var(--gold-glow));
+  filter: drop-shadow(0 0 40px var(--gold-glow));
+  animation: rankPop 0.6s cubic-bezier(.34,1.56,.64,1);
 }
-#ovOutro .outro-title { font-size: 24px; letter-spacing: 6px; color: var(--gold); margin-top: -12px; }
+@keyframes rankPop {
+  0%   { transform: scale(0.3); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+#ovOutro .outro-title {
+  font-size: 18px; letter-spacing: 8px; color: var(--gold);
+  margin-top: 4px; font-weight: 700;
+  opacity: 0; animation: fadeUp 0.5s .3s forwards;
+}
 #ovOutro .outro-quote {
-  color: var(--ink-hard); font-size: 16px; margin: 20px 0; font-weight: 600;
-  padding: 12px 16px; background: rgba(255,255,255,.05); border-radius: 8px;
+  color: var(--ink-hard); font-size: 17px; margin-top: 32px;
+  font-weight: 500; letter-spacing: .5px;
+  opacity: 0; animation: fadeUp 0.5s .6s forwards;
 }
-#ovOutro .outro-stats {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-  margin: 20px 0;
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
-#ovOutro .stat {
-  padding: 10px; background: rgba(255,255,255,.04); border-radius: 8px;
-}
-#ovOutro .stat .stat-val {
-  font-size: 24px; font-weight: 900;
-  font-family: 'DIN Alternate', monospace;
-}
-#ovOutro .stat.perfect .stat-val { color: var(--perfect); }
-#ovOutro .stat.good .stat-val { color: var(--good); }
-#ovOutro .stat.miss .stat-val { color: var(--miss); }
-#ovOutro .stat.score .stat-val { color: var(--gold); }
-#ovOutro .stat .stat-lbl { font-size: 10px; letter-spacing: 2px; color: var(--ink-soft); margin-top: 2px; }
-#ovOutro .btn-row { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
 
 /* Devbar */
 #devbar {
@@ -608,6 +613,44 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 #errScreen .err-title { font-size: 24px; color: var(--red-hot); font-weight: 900; }
 #errScreen #errMsg { color: var(--ink-soft); max-width: 500px; line-height: 1.8; }
 #errScreen .tiny { color: var(--ink-mute); font-size: 11px; }
+
+/* ============ 新视觉:拳击场背景图 + Joy 立绘 ============ */
+.bg-arena {
+  position: absolute; inset: 0;
+  background: url('img/bg/boxing-arena.png') center center / cover no-repeat;
+  z-index: 0;
+}
+.bg-arena-mask {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10,5,16,.55) 0%, rgba(10,5,16,.15) 40%, rgba(10,5,16,.15) 60%, rgba(10,5,16,.75) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+/* 老三层降为氛围叠色,不再是主背景 */
+#stage .bg-cyber { opacity: .35; mix-blend-mode: screen; }
+#stage .bg-hex   { opacity: .55; mix-blend-mode: screen; }
+#stage .bg-pulse { opacity: .55; mix-blend-mode: screen; }
+
+/* Joy 立绘:铺满 joyContainer,呼吸缩放 */
+#joyPortrait {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 1;
+  animation: joyBreathe 2.6s ease-in-out infinite;
+  transition: opacity 400ms ease;
+  filter: drop-shadow(0 6px 24px rgba(255,34,68,.35));
+}
+@keyframes joyBreathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+/* 老 canvas 保留兜底,视觉隐藏 —— 回退时把 opacity 恢复 1 即可 */
+.joy-canvas-fallback {
+  opacity: 0;
+}
 </style>
 </head>
 <body>
@@ -618,7 +661,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   <div class="title">拳击派对</div>
   <div class="sub">
     Joy 会挥拳过来,你用<b style="color:var(--gold);">头部动作</b>躲开。<br/>
-    30 秒的黑红热血,来一场真正的颈椎训练。
+    40 秒的舒缓颈椎训练,一场轻松的黑红热血。
   </div>
   <div class="how">
     <div class="how-item">
@@ -644,7 +687,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   </div>
   <button id="startBtn" class="btn-primary">开启摄像头 · BOXING TIME!</button>
   <div style="color:var(--ink-mute);font-size:12px;margin-top:8px;">
-    请用 Chrome / Edge · 需要摄像头权限 · 30 秒
+    请用 Chrome / Edge · 需要摄像头权限 · 40 秒
   </div>
 </div>
 
@@ -657,6 +700,8 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 
 <!-- C. 主舞台 -->
 <div id="stage" class="screen hidden">
+  <div class="bg-arena"></div>
+  <div class="bg-arena-mask"></div>
   <div class="bg-cyber"></div>
   <div class="bg-hex"></div>
   <div class="bg-pulse"></div>
@@ -696,9 +741,8 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
   <!-- 战斗区 -->
   <div id="ring">
     <div id="joyContainer">
-      <canvas id="joyHead" width="500" height="500"></canvas>
-      <div class="glove glove-left"></div>
-      <div class="glove glove-right"></div>
+      <canvas id="joyHead" class="joy-canvas-fallback" width="500" height="500"></canvas>
+      <img id="joyPortrait" src="img/joy/joy-coach-idle.png" alt="Joy" />
     </div>
     <div id="judgePopup"></div>
   </div>
@@ -709,9 +753,10 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
     <span id="coachText">坐直,开始锻炼。</span>
   </div>
 
-  <!-- 摄像头小窗 -->
+  <!-- 摄像头小窗:video 保留给 MediaPipe 采帧,视觉上隐藏,由 faceMesh canvas 展示点阵头 -->
   <div id="faceCam">
     <video id="video" autoplay playsinline muted></video>
+    <canvas id="faceMesh" width="320" height="240"></canvas>
     <div class="cam-label">YOU</div>
   </div>
 
@@ -745,18 +790,8 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
     <div class="overlay-content">
       <div class="outro-panel">
         <div class="outro-rank" id="outroRank">A</div>
-        <div class="outro-title">Rank</div>
+        <div class="outro-title">RANK</div>
         <div class="outro-quote" id="outroQuote">不错嘛地球人。</div>
-        <div class="outro-stats">
-          <div class="stat perfect"><div class="stat-val" id="outroPerfect">0</div><div class="stat-lbl">PERFECT</div></div>
-          <div class="stat good"><div class="stat-val" id="outroGood">0</div><div class="stat-lbl">GOOD</div></div>
-          <div class="stat miss"><div class="stat-val" id="outroMiss">0</div><div class="stat-lbl">MISS</div></div>
-          <div class="stat score"><div class="stat-val" id="outroScore">0</div><div class="stat-lbl">SCORE</div></div>
-        </div>
-        <div class="btn-row">
-          <button id="againBtn" class="btn-primary" style="font-size:15px;padding:12px 24px;">再来一局</button>
-          <button id="restBtn" class="btn-ghost">回主界面</button>
-        </div>
       </div>
     </div>
   </div>
@@ -797,8 +832,8 @@ const AX = { yaw: -1, pitch: 1, roll: 1 };
 
 // 判定阈值
 const JUDGE = {
-  windowPerfect: 150,   // ±150ms 内到位 = Perfect
-  windowGood: 350,      // ±350ms = Good;超时 = Miss
+  windowPerfect: 350,   // ±350ms 内到位 = Perfect(舒缓版:留出反应时间)
+  windowGood: 700,      // ±700ms = Good;超时 = Miss
   angleGood: 12,        // ≥12° = Good
   anglePerfect: 18,     // ≥18° = Perfect
   angleMax: 30,         // >30° = Miss(过头护栏)
@@ -807,41 +842,42 @@ const VEL_SPIKE = 12;   // 度/帧 = 甩头护栏
 const SMOOTH = 0.35;
 
 // 节拍常量
-const BEAT_DURATION = 3000;      // 每个 beat 从出现到过判定线的总时长
+const BEAT_DURATION = 4000;      // 每个 beat 从出现到过判定线的总时长(舒缓:3s→4s)
 const JUDGE_POS_PCT = 50;        // 判定线在节拍轴的水平百分比(中央)
 
-// 时间轴阶段(相对 sessionStart)
+// 时间轴阶段(相对 sessionStart,舒缓版:总时长 30s→42s,每拳间隔 2s→3s)
 const T = {
   intro:  0,
   dialog: 2000,
   demo:   4000,
-  signal: 8000,
-  fight:  9000,
-  fightEnd: 25000,
-  outro:  27000,
-  end:    30000,
+  signal: 10000,
+  fight:  11000,
+  fightEnd: 37000,
+  outro:  39000,
+  end:    42000,
 };
 
 // 8 拳 + 组合拳数据(4 种拳:左钩/右钩/上勾/下勾)
+// 每拳间隔 3s(舒缓版),从 fight 起点后 0s 开始
 const BEAT_SCRIPT = [
-  { id:1, hitTime:  9000, type:'left-hook',  expect:'roll-', label:'左钩', icon:'◀', difficulty:1 },
-  { id:2, hitTime: 11000, type:'right-hook', expect:'roll+', label:'右钩', icon:'▶', difficulty:1 },
-  { id:3, hitTime: 13000, type:'upper-cut',  expect:'pitch+',label:'上勾', icon:'▼', difficulty:1 },
-  { id:4, hitTime: 15000, type:'down-hook',  expect:'pitch-',label:'下勾', icon:'▲', difficulty:1 },
-  { id:5, hitTime: 17000, type:'left-hook',  expect:'roll-', label:'左钩', icon:'◀', difficulty:2 },
-  { id:6, hitTime: 19000, type:'upper-cut',  expect:'pitch+',label:'上勾', icon:'▼', difficulty:2 },
-  { id:7, hitTime: 21000, type:'right-hook', expect:'roll+', label:'右钩', icon:'▶', difficulty:3 },
-  // 第 8 拳组合:上勾 + 下勾(pitch 全轴挑战)
-  { id:8, subId:'a', hitTime: 23000, type:'upper-cut', expect:'pitch+', label:'上勾', icon:'▼', difficulty:4, comboOf:8 },
-  { id:8, subId:'b', hitTime: 23700, type:'down-hook', expect:'pitch-', label:'下勾', icon:'▲', difficulty:4, comboOf:8 },
+  { id:1, hitTime: 11000, type:'left-hook',  expect:'roll-', label:'左钩', icon:'◀', difficulty:1 },
+  { id:2, hitTime: 14000, type:'right-hook', expect:'roll+', label:'右钩', icon:'▶', difficulty:1 },
+  { id:3, hitTime: 17000, type:'upper-cut',  expect:'pitch+',label:'上勾', icon:'▼', difficulty:1 },
+  { id:4, hitTime: 20000, type:'down-hook',  expect:'pitch-',label:'下勾', icon:'▲', difficulty:1 },
+  { id:5, hitTime: 23000, type:'left-hook',  expect:'roll-', label:'左钩', icon:'◀', difficulty:2 },
+  { id:6, hitTime: 26000, type:'upper-cut',  expect:'pitch+',label:'上勾', icon:'▼', difficulty:2 },
+  { id:7, hitTime: 29000, type:'right-hook', expect:'roll+', label:'右钩', icon:'▶', difficulty:3 },
+  // 第 8 拳组合:上勾 + 下勾(拉开到 1.2s,给足反应)
+  { id:8, subId:'a', hitTime: 33000, type:'upper-cut', expect:'pitch+', label:'上勾', icon:'▼', difficulty:4, comboOf:8 },
+  { id:8, subId:'b', hitTime: 34200, type:'down-hook', expect:'pitch-', label:'下勾', icon:'▲', difficulty:4, comboOf:8 },
 ];
 
-// 示范拳(4-8s):4 个方向各示范一次
+// 示范拳(拉长到 6s 窗口,4 个方向各示范一次)
 const DEMO_BEATS = [
-  { at: 4200, type:'left-hook',  expect:'roll-', label:'左钩→左倾' },
-  { at: 5200, type:'right-hook', expect:'roll+', label:'右钩→右倾' },
-  { at: 6200, type:'upper-cut',  expect:'pitch+',label:'上勾→收下巴' },
-  { at: 7200, type:'down-hook',  expect:'pitch-',label:'下勾→抬头' },
+  { at: 4500, type:'left-hook',  expect:'roll-', label:'左钩→左倾' },
+  { at: 6000, type:'right-hook', expect:'roll+', label:'右钩→右倾' },
+  { at: 7500, type:'upper-cut',  expect:'pitch+',label:'上勾→收下巴' },
+  { at: 9000, type:'down-hook',  expect:'pitch-',label:'下勾→抬头' },
 ];
 
 // Joy 台词库(来自 joy_boxing_party memory)
@@ -882,6 +918,7 @@ let prevRel = { yaw: 0, pitch: 0, roll: 0 };
 let angleVel = 0;
 let facePresent = false;
 let haveMatrix = false;
+let latestLandmarks = null;   // 最新一帧 MediaPipe 478 landmarks(供点阵头绘制)
 
 // 战斗状态
 let beats = [];                   // 运行时 beat 状态(clone from BEAT_SCRIPT)
@@ -949,6 +986,151 @@ function preloadJoy() {
   });
 }
 preloadJoy();
+
+// ---- 新视觉:Joy 教练立绘(与老 canvas 并列,不改老逻辑) ----
+const JOY_COACH_SRC = {
+  idle:          'img/joy/joy-coach-idle.png',
+  idleSide:      'img/joy/joy-coach-idle-side.png',
+  jabLeft:       'img/joy/joy-coach-jab-left.png',
+  jabRight:      'img/joy/joy-coach-jab-right.png',
+  uppercut:      'img/joy/joy-coach-uppercut.png',
+  uppercutMirror:'img/joy/joy-coach-uppercut-mirror.png',
+  cheer:         'img/joy/joy-coach-cheer.png',
+  cheerSide:     'img/joy/joy-coach-cheer-side.png',
+  happy:         'img/joy/joy-coach-happy.png',
+  angry:         'img/joy/joy-coach-angry.png',
+  hit:           'img/joy/joy-coach-hit.png',
+  charge:        'img/joy/joy-coach-charge.png',
+};
+function preloadJoyCoach() {
+  Object.values(JOY_COACH_SRC).forEach(src => { const im = new Image(); im.src = src; });
+}
+preloadJoyCoach();
+
+const joyPortrait = $('joyPortrait');
+let joyPunchLock = { src: '', until: 0 };
+let joyIdleAlt = false;
+let joyIdleTimer = null;
+let lastJudgeKind = null;
+
+function pickJoyImgSrc() {
+  const now = performance.now();
+  const sinceJudge = now - lastJudgeAt;
+
+  // 出拳窗口(triggerPunch 拳前 500ms 触发时锁定)
+  if (joyPunchLock.until > now) return joyPunchLock.src;
+
+  // miss 反馈 500ms 内锁定 hit 表情
+  if (sinceJudge < 500 && lastJudgeKind === 'miss') return JOY_COACH_SRC.hit;
+
+  // 阶段图
+  if (stagePhase === 'ko')     return JOY_COACH_SRC.happy;
+  if (stagePhase === 'signal') return JOY_COACH_SRC.charge;
+  if (stagePhase === 'demo')   return JOY_COACH_SRC.cheer;
+  if (stagePhase === 'outro') {
+    const rank = getRank();
+    if (rank === 'S' || rank === 'A') return JOY_COACH_SRC.happy;
+    if (rank === 'B') return JOY_COACH_SRC.cheer;
+    return JOY_COACH_SRC.angry;
+  }
+
+  return joyIdleAlt ? JOY_COACH_SRC.idleSide : JOY_COACH_SRC.idle;
+}
+
+function setJoyPunch(type) {
+  const map = {
+    'left-hook':  JOY_COACH_SRC.jabLeft,
+    'right-hook': JOY_COACH_SRC.jabRight,
+    'upper-cut':  JOY_COACH_SRC.uppercut,
+    'down-hook':  JOY_COACH_SRC.uppercut, // 资产表无 down-hook 独立图,复用 uppercut
+  };
+  const src = map[type];
+  if (!src) return;
+  joyPunchLock = { src, until: performance.now() + 500 };
+}
+
+function updateJoyPortrait() {
+  if (!joyPortrait) return;
+  const next = pickJoyImgSrc();
+  // 用 endsWith 比较,避免相对/绝对 URL 差异导致每帧重置
+  const cur = joyPortrait.getAttribute('src') || '';
+  if (cur !== next) joyPortrait.setAttribute('src', next);
+}
+
+// ---- 点阵头 mesh:每帧把 MediaPipe 478 landmarks 画成金色点云 ----
+const faceMeshCanvas = $('faceMesh');
+const faceMeshCtx = faceMeshCanvas ? faceMeshCanvas.getContext('2d') : null;
+// 面部关键连线(六边形眉毛/眼/鼻/嘴/下颌),landmarks 官方索引子集
+const FACE_MESH_TRIS = [
+  // 脸轮廓(下颌 + 太阳穴 + 额头一圈,MediaPipe FACE_OVAL)
+  [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109,10],
+  // 左眉
+  [70,63,105,66,107],
+  // 右眉
+  [336,296,334,293,300],
+  // 左眼
+  [33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246,33],
+  // 右眼
+  [263,249,390,373,374,380,381,382,362,398,384,385,386,387,388,466,263],
+  // 鼻梁
+  [168,6,197,195,5,4],
+  // 外唇
+  [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185,61],
+];
+
+function drawFaceMesh() {
+  if (!faceMeshCtx || !faceMeshCanvas) return;
+  const w = faceMeshCanvas.width, h = faceMeshCanvas.height;
+  faceMeshCtx.clearRect(0, 0, w, h);
+  // 淡淡的底色 grid,给"数字扫描"感
+  faceMeshCtx.fillStyle = 'rgba(255,204,0,0.03)';
+  faceMeshCtx.fillRect(0, 0, w, h);
+
+  if (!facePresent || !latestLandmarks || latestLandmarks.length === 0) {
+    // 无脸提示
+    faceMeshCtx.fillStyle = 'rgba(255,204,0,0.35)';
+    faceMeshCtx.font = '10px -apple-system, sans-serif';
+    faceMeshCtx.textAlign = 'center';
+    faceMeshCtx.fillText('SEARCHING…', w / 2, h / 2);
+    return;
+  }
+
+  // 归一化坐标 → canvas 坐标(镜像 x 让点阵与用户视觉一致)
+  const project = p => ({ x: (1 - p.x) * w, y: p.y * h });
+
+  // 层 1:所有 landmark 点云(小暗金点)
+  faceMeshCtx.fillStyle = 'rgba(255,204,0,0.55)';
+  for (let i = 0; i < latestLandmarks.length; i++) {
+    const p = project(latestLandmarks[i]);
+    faceMeshCtx.fillRect(p.x - 0.5, p.y - 0.5, 1.4, 1.4);
+  }
+
+  // 层 2:结构连线(亮金,勾轮廓)
+  faceMeshCtx.strokeStyle = 'rgba(255,230,120,0.9)';
+  faceMeshCtx.lineWidth = 1;
+  for (const path of FACE_MESH_TRIS) {
+    faceMeshCtx.beginPath();
+    for (let i = 0; i < path.length; i++) {
+      const idx = path[i];
+      if (idx >= latestLandmarks.length) continue;
+      const p = project(latestLandmarks[idx]);
+      if (i === 0) faceMeshCtx.moveTo(p.x, p.y);
+      else faceMeshCtx.lineTo(p.x, p.y);
+    }
+    faceMeshCtx.stroke();
+  }
+
+  // 层 3:关键锚点(眼中心 + 鼻尖)加亮
+  const anchors = [1, 33, 263]; // 鼻尖、左眼、右眼
+  faceMeshCtx.fillStyle = 'rgba(255,255,255,0.95)';
+  for (const idx of anchors) {
+    if (idx >= latestLandmarks.length) continue;
+    const p = project(latestLandmarks[idx]);
+    faceMeshCtx.beginPath();
+    faceMeshCtx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
+    faceMeshCtx.fill();
+  }
+}
 
 // 当前表情
 let currentFace = 'base';
@@ -1221,6 +1403,7 @@ function checkKO() {
 function triggerJoyReaction(kind) {
   currentFace = { perfect: 'laugh2', good: 'wink', miss: 'squint' }[kind] || 'base';
   lastJudgeAt = performance.now();
+  lastJudgeKind = kind;
   if (kind === 'miss') {
     joyContainer.classList.add('dizzy');
     setTimeout(() => joyContainer.classList.remove('dizzy'), 400);
@@ -1338,24 +1521,11 @@ function updateBeatPositions(now) {
 
 function triggerPunch(type) {
   playPunch();
+  setJoyPunch(type);
   joyContainer.classList.remove('punching');
   void joyContainer.offsetWidth;
   joyContainer.classList.add('punching');
   setTimeout(() => joyContainer.classList.remove('punching'), 500);
-
-  // 决定哪只拳套 + 哪个动画
-  const map = {
-    'right-hook':  { g: gloveRight, cls: 'punch-right-hook' },
-    'left-hook':   { g: gloveLeft,  cls: 'punch-left-hook'  },
-    'upper-cut':   { g: gloveRight, cls: 'punch-upper-cut'  },
-    'down-hook':   { g: gloveLeft,  cls: 'punch-down-hook'  },
-  };
-  const m = map[type];
-  if (!m) return;
-  m.g.classList.remove(m.cls);
-  void m.g.offsetWidth;
-  m.g.classList.add(m.cls);
-  setTimeout(() => m.g.classList.remove(m.cls), 500);
 }
 
 // ========================================================================
@@ -1414,6 +1584,7 @@ function loop(now) {
     try { res = faceLandmarker.detectForVideo(video, now); } catch {}
     if (res && res.faceLandmarks && res.faceLandmarks.length > 0) {
       facePresent = true;
+      latestLandmarks = res.faceLandmarks[0];
       const mtx = res.facialTransformationMatrixes;
       if (mtx && mtx.length > 0 && mtx[0].data) {
         rawAngle = matrixToEuler(mtx[0].data);
@@ -1421,6 +1592,7 @@ function loop(now) {
       }
     } else {
       facePresent = false;
+      latestLandmarks = null;
     }
   }
 
@@ -1446,6 +1618,8 @@ function loop(now) {
 
   // 更新 Joy
   drawJoyHead(now);
+  updateJoyPortrait();
+  drawFaceMesh();
 
   // 更新 HUD 时间
   if (state === 'playing') {
@@ -1490,6 +1664,13 @@ function beginSession() {
   stagePhase = 'intro';
   stage.classList.remove('hidden');
 
+  // 重置 Joy 立绘状态
+  joyPunchLock = { src: '', until: 0 };
+  joyIdleAlt = false;
+  lastJudgeKind = null;
+  if (joyIdleTimer) clearInterval(joyIdleTimer);
+  joyIdleTimer = setInterval(() => { joyIdleAlt = !joyIdleAlt; }, 3000);
+
   // 初始化 stats
   sessionStats = {
     perfectCount: 0, goodCount: 0, missCount: 0,
@@ -1511,7 +1692,7 @@ function beginSession() {
 
   // 5 秒后折叠摄像头
   faceCam.classList.remove('folded');
-  setTimeout(() => { if (state === 'playing') faceCam.classList.add('folded'); }, 12000);
+  setTimeout(() => { if (state === 'playing') faceCam.classList.add('folded'); }, 15000);
 
   scheduleTimeline();
 }
@@ -1612,15 +1793,34 @@ function runOutro() {
   faceCam.classList.remove('folded');
   const rank = getRank();
   const s = sessionStats;
-  $('outroRank').textContent = rank;
-  $('outroPerfect').textContent = s.perfectCount;
-  $('outroGood').textContent = s.goodCount;
-  $('outroMiss').textContent = s.missCount;
-  $('outroScore').textContent = s.score + (s.koTriggered ? ' +KO' : '');
   const quote = { S: LINES.outroS, A: LINES.outroA, B: LINES.outroB, C: LINES.outroC }[rank];
+  $('outroRank').textContent = rank;
   $('outroQuote').textContent = quote;
   ovOutro.classList.add('show');
   sayCoach(quote);
+
+  // 打包本次训练数据 → sessionStorage,1.8s 后跳统一结算页
+  const totalBeats = 9;   // 8 拳 + 1 combo 组合(拳击关固定)
+  const hits = s.perfectCount + s.goodCount;
+  const completion = Math.round((hits / totalBeats) * 100);
+  const lastRun = {
+    branch: 'boxing',
+    rank,
+    stats: {
+      time: 30,             // 关卡固定 30s 战斗段
+      completion,
+      maxCombo: s.maxCombo,
+      special: hits,        // "命中拳" = perfect + good
+    },
+    streak: { prev: 12, now: 13 },   // demo 值,后续接真实历史再打通
+    accumulate: {
+      badge: '颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
+      joy:   '你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦',
+      total: '累计训练 <strong>23 次 · 12 小时 30 分</strong>',
+    },
+  };
+  try { sessionStorage.setItem('lastRun', JSON.stringify(lastRun)); } catch (e) {}
+  setTimeout(() => { location.href = 'mock-report.html'; }, 1800);
 }
 
 function getRank() {
@@ -1660,6 +1860,7 @@ function goHome() {
   state = 'home';
   clearPhaseTimers();
   stopBGMHeartbeat();
+  if (joyIdleTimer) { clearInterval(joyIdleTimer); joyIdleTimer = null; }
   ovOutro.classList.remove('show');
   stage.classList.add('hidden');
   homeScreen.classList.remove('hidden');
@@ -1671,8 +1872,7 @@ function replay() {
 }
 
 $('startBtn').addEventListener('click', boot);
-$('againBtn').addEventListener('click', replay);
-$('restBtn').addEventListener('click', goHome);
+// outro 面板不再有再来一局/回主界面按钮 —— 结算跳转到 mock-report.html 统一承接
 $('retryBtn').addEventListener('click', () => { errScreen.classList.add('hidden'); boot(); });
 
 // 摄像头小窗点击展开/折叠

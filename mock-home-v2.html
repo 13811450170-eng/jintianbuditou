@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>星动Joy · 首页 v2</title>
+<style>
+:root {
+  /* 底色系 */
+  --bg:          #EDEDF0;
+  --bg-hover:    #E4E4E9;
+  --card:        #FFFFFF;
+  --line:        rgba(10, 10, 15, 0.06);
+  --line-hard:   rgba(10, 10, 15, 0.1);
+
+  /* 字色 */
+  --ink:         #0A0A0F;
+  --ink-2:       #3A3A45;
+  --ink-3:       #6B6B7A;
+  --ink-4:       #A8A8B3;
+
+  /* 分支强调色 */
+  --neck:        #00A3FF;      /* 颈椎 · 明蓝 */
+  --neck-bg:     #E1F2FF;
+  --shoulder:    #7C5AFF;      /* 肩颈 · 紫 */
+  --shoulder-bg: #EBE5FF;
+  --eye:         #4CAF88;      /* 眼部 · 绿 */
+  --eye-bg:      #E1F5EC;
+
+  /* 功能色 */
+  --fire:        #FF6B4A;
+  --fire-2:      #FFB74D;
+  --ice:         #64B5F6;
+
+  /* 阴影 */
+  --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
+  --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
+  --shadow-3:    0 12px 32px rgba(10, 10, 15, 0.1);
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+
+.page {
+  max-width: 1440px;
+  height: 100vh;
+  margin: 0 auto;
+  padding: 22px 40px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.topbar { flex-shrink: 0; }
+
+/* ========== 顶部导航 ========== */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+  padding: 8px 0;
+  min-height: 60px;
+}
+
+.topbar-user {
+  display: flex; align-items: center; gap: 14px;
+}
+.avatar-user {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  color: var(--ink-3);
+  transition: box-shadow 0.2s;
+}
+.avatar-user:hover { box-shadow: var(--shadow-2); }
+.avatar-user svg { width: 26px; height: 26px; }
+
+.greeting {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.greeting .hello { color: var(--ink-3); font-weight: 500; }
+
+.topbar-spacer { flex: 1; }
+
+/* ========== Streak 5 态系统 (多邻国式) ========== */
+.streak-pill {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card);
+  padding: 10px 20px 10px 10px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  border: 1px solid transparent;
+}
+.streak-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
+
+/* 身体档案 pill */
+.body-pill {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card);
+  padding: 6px 14px 6px 8px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.body-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-2);
+  border-color: var(--line);
+}
+.body-pill-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E1F2FF, #EBE5FF);
+  display: flex; align-items: center; justify-content: center;
+  color: #00A3FF;
+  flex-shrink: 0;
+}
+.body-pill-icon svg { width: 16px; height: 16px; }
+.body-pill-info {
+  display: flex; flex-direction: column; gap: 2px;
+  line-height: 1.2;
+}
+.body-pill-label {
+  font-size: 10px;
+  color: var(--ink-4);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.body-pill-status {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.body-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.body-dot.neck { background: #00A3FF; }
+.body-dot.shoulder { background: #7C5AFF; }
+.body-dot.eye { background: #4CAF88; }
+.body-pill-arrow {
+  color: var(--ink-4);
+  transition: transform 0.2s;
+}
+.body-pill:hover .body-pill-arrow { transform: translateX(2px); color: var(--ink-2); }
+.body-pill-arrow svg { width: 14px; height: 14px; }
+
+/* 首次未测评态(演示切换用) */
+.body-pill.new {
+  background: linear-gradient(135deg, #FFF6DA, #FFE0B2);
+  border-color: rgba(255, 184, 0, 0.3);
+}
+.body-pill.new .body-pill-icon {
+  background: linear-gradient(135deg, #FFB800, #FF6B4A);
+  color: #fff;
+  animation: newPulse 1.8s infinite;
+}
+@keyframes newPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 184, 0, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(255, 184, 0, 0); }
+}
+.body-pill.new .body-pill-label { color: #A08000; }
+.body-pill.new .body-pill-status { color: #7A5C00; }
+.streak-flame {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  transition: all 0.3s;
+  position: relative;
+  z-index: 1;
+}
+.streak-text {
+  display: flex; flex-direction: column; gap: 1px;
+  line-height: 1.2;
+}
+.streak-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  transition: color 0.3s;
+  letter-spacing: -0.01em;
+}
+.streak-tip {
+  font-size: 10px;
+  color: var(--fire);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* 保护卡 icon */
+.streak-freeze {
+  display: inline-flex; align-items: center; gap: 2px;
+  padding: 3px 8px 3px 6px;
+  background: linear-gradient(180deg, #E1F2FF, #C7E6FF);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0072B3;
+  border: 1px solid rgba(0, 114, 179, 0.2);
+  margin-left: 2px;
+  transition: all 0.3s;
+}
+.streak-freeze-icon { font-size: 11px; }
+
+/* 归零态历史徽章 */
+.streak-badge {
+  display: none;
+  align-items: center; gap: 4px;
+  padding: 3px 9px;
+  background: linear-gradient(180deg, #FFF4C4, #FFE38A);
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #8A6300;
+  border: 1px solid rgba(138, 99, 0, 0.2);
+  margin-left: 2px;
+}
+
+/* --- ① 点火期 (1-2 天) --- */
+.streak-pill[data-state="ignition"] .streak-flame {
+  background: linear-gradient(180deg, #FFB74D, #FF8A3D);
+  filter: drop-shadow(0 3px 6px rgba(255, 138, 61, 0.35));
+}
+.streak-pill[data-state="ignition"] .streak-freeze { display: none; }
+
+/* --- ② 稳定期 (3-6 天) --- */
+.streak-pill[data-state="stable"] .streak-flame {
+  background: linear-gradient(180deg, var(--fire-2), var(--fire));
+  filter: drop-shadow(0 3px 6px rgba(255, 107, 74, 0.4));
+}
+
+/* --- ③ 成就期 (7+ 天,发光+脉冲) --- */
+.streak-pill[data-state="achieve"] {
+  border-color: rgba(255, 183, 77, 0.35);
+  background: linear-gradient(180deg, #FFFBF0, #FFFFFF);
+}
+.streak-pill[data-state="achieve"] .streak-flame {
+  background: linear-gradient(180deg, #FFD54F, #FF5722);
+  filter: drop-shadow(0 3px 8px rgba(255, 87, 34, 0.5));
+  animation: flamePulse 2s ease-in-out infinite;
+}
+@keyframes flamePulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+.streak-pill[data-state="achieve"] .streak-flame::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,183,77,0.55), transparent 70%);
+  animation: sparkGlow 2s ease-in-out infinite;
+  z-index: -1;
+}
+@keyframes sparkGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.35); }
+}
+
+/* --- ④ 冻结期 (蓝冰,保护卡消耗划线) --- */
+.streak-pill[data-state="frozen"] {
+  background: linear-gradient(180deg, #EAF4FF, #FFFFFF);
+  border-color: rgba(100, 181, 246, 0.25);
+}
+.streak-pill[data-state="frozen"] .streak-flame {
+  background: linear-gradient(180deg, #A8D3FA, #64B5F6);
+  filter: drop-shadow(0 3px 6px rgba(100, 181, 246, 0.4));
+}
+.streak-pill[data-state="frozen"] .streak-num { color: #3E6BA0; }
+.streak-pill[data-state="frozen"] .streak-freeze {
+  background: linear-gradient(180deg, #EAEAEA, #D0D0D0);
+  color: #666;
+  border-color: rgba(0,0,0,0.08);
+  opacity: 0.75;
+  text-decoration: line-through;
+}
+
+/* --- ⑤ 归零期 (灰,历史最长金徽章) --- */
+.streak-pill[data-state="zero"] {
+  background: linear-gradient(180deg, #F5F5F7, #FFFFFF);
+}
+.streak-pill[data-state="zero"] .streak-flame {
+  background: linear-gradient(180deg, #C7C7CC, #8E8E93);
+  filter: none;
+}
+.streak-pill[data-state="zero"] .streak-num { color: var(--ink-3); }
+.streak-pill[data-state="zero"] .streak-freeze { display: none; }
+.streak-pill[data-state="zero"] .streak-badge { display: inline-flex; }
+
+
+.icon-btn {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--card);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-2);
+  transition: all 0.2s;
+  position: relative;
+}
+.icon-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); color: var(--ink); }
+.icon-btn svg { width: 20px; height: 20px; }
+.icon-btn .badge {
+  position: absolute;
+  top: 8px; right: 10px;
+  width: 8px; height: 8px;
+  background: var(--fire);
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+/* ========== 主体区(左三个训练营 + 右今日推荐) ========== */
+.main {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 22px;
+}
+
+/* --- 左:训练营列表 --- */
+.camps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.camp {
+  flex: 1;
+  min-height: 0;
+  background: var(--card);
+  border-radius: 22px;
+  padding: 22px 24px;
+  cursor: pointer;
+  transition: all 0.25s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.camp:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-3);
+}
+
+.camp-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px;
+}
+
+.camp-head {
+  display: flex; align-items: center; gap: 14px;
+}
+.camp-icon-box {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.camp-neck     .camp-icon-box { background: var(--neck-bg); color: var(--neck); }
+.camp-shoulder .camp-icon-box { background: var(--shoulder-bg); color: var(--shoulder); }
+.camp-eye      .camp-icon-box { background: var(--eye-bg); color: var(--eye); }
+.camp-icon-box svg { width: 24px; height: 24px; }
+
+.camp-title-block { display: flex; flex-direction: column; gap: 3px; }
+.camp-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.camp-tag {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.camp-arrow-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-3);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.camp:hover .camp-arrow-btn {
+  background: var(--ink);
+  color: #fff;
+}
+.camp-arrow-btn svg { width: 15px; height: 15px; }
+
+.camp-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  gap: 12px;
+}
+.camp-count { display: flex; align-items: baseline; gap: 4px; }
+.camp-count .num {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.camp-count .lbl {
+  font-size: 11px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+
+.camp-progress {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1;
+  justify-content: flex-end;
+}
+.camp-progress-txt {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.bar {
+  width: 78px; height: 5px;
+  background: var(--bg);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.fill { height: 100%; border-radius: 100px; }
+.camp-neck     .fill { background: var(--neck); }
+.camp-shoulder .fill { background: var(--shoulder); }
+.camp-eye      .fill { background: var(--eye); }
+
+/* --- 右:今日推荐(大预览图+悬浮内容) --- */
+.today {
+  min-height: 0;
+  background: #2A0A18;
+  border-radius: 28px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: box-shadow 0.25s, transform 0.25s;
+}
+.today:hover {
+  box-shadow: var(--shadow-3);
+  transform: translateY(-2px);
+}
+
+/* 关卡预览图占位 —— 拳击关红色氛围 */
+.today-preview {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, #6B0B22 0%, #3A0714 60%, #1A0308 100%);
+}
+.today-preview::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(255, 34, 68, 0.35), transparent 55%),
+    radial-gradient(circle at 70% 60%, rgba(255, 100, 68, 0.25), transparent 55%);
+}
+.today-preview::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(10, 4, 10, 0.75) 100%);
+}
+
+/* --- 拳击场景 · 六角光墙(装饰层) --- */
+.today-hex {
+  position: absolute; inset: 0;
+  z-index: 1;
+  background-image:
+    repeating-linear-gradient(60deg, rgba(255,34,68,.09) 0 2px, transparent 2px 60px),
+    repeating-linear-gradient(-60deg, rgba(255,204,0,.06) 0 2px, transparent 2px 60px);
+  pointer-events: none;
+  animation: todayHexShift 12s linear infinite;
+  mix-blend-mode: screen;
+  opacity: .55;
+}
+@keyframes todayHexShift {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(60px, 34px); }
+}
+/* 律动脉冲 */
+.today-pulse {
+  position: absolute; inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 60%, rgba(255,34,68,.16) 0%, transparent 45%);
+  animation: todayPulse 500ms ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+@keyframes todayPulse { from { opacity: .35; } to { opacity: .85; } }
+
+/* --- Joy 打拳立绘(4 帧循环切换) --- */
+.today-joy {
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  bottom: 22%;
+  width: 42%;
+  transform: translateX(-50%);
+  z-index: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 30px rgba(255,34,68,.4));
+  animation: todayJoyBob 2.6s ease-in-out infinite;
+}
+@keyframes todayJoyBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-6px); }
+}
+.today-joy img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: 0;
+  transition: opacity 60ms linear;
+}
+.today-joy img.on { opacity: 1; }
+
+/* 上层内容层 */
+.today-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 32px 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #fff;
+}
+
+.today-header-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+}
+
+.today-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #fff;
+  padding: 6px 14px 6px 10px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.2);
+  text-transform: uppercase;
+}
+.tag-dot {
+  width: 6px; height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.today-actions-top {
+  display: flex; gap: 8px;
+}
+.btn-white-ghost {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.btn-white-ghost:hover { background: rgba(255,255,255,0.22); }
+
+/* 底部信息 + CTA */
+.today-info {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px;
+}
+
+.today-info-left {
+  display: flex; flex-direction: column; gap: 16px;
+  max-width: 60%;
+}
+
+.today-branch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFCED8;
+  letter-spacing: 1px;
+}
+.today-branch::before {
+  content: "";
+  width: 6px; height: 6px;
+  background: #FF4560;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.today-title {
+  font-size: 48px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.today-quote {
+  font-size: 14px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.6;
+  max-width: 420px;
+}
+.today-quote strong { color: #fff; font-weight: 600; }
+
+/* 右下角关卡信息卡 + 开始按钮 */
+.today-info-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 14px;
+}
+
+.today-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #fff;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.meta-chip svg { width: 13px; height: 13px; }
+
+.btn-primary {
+  background: #fff;
+  color: var(--ink);
+  border: none;
+  padding: 14px 28px;
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+.btn-primary svg { width: 16px; height: 16px; }
+
+/* ========== 模块 3:底部数据栏 ========== */
+.mydata {
+  flex-shrink: 0;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 29px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: box-shadow 0.2s;
+}
+.mydata:hover { box-shadow: var(--shadow-2); }
+.mydata-stats {
+  display: flex; gap: 56px; align-items: center;
+}
+.stat {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.stat-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.stat-num small { font-size: 15px; font-weight: 700; color: var(--ink-3); margin-left: 2px; }
+.stat-label {
+  font-size: 12px;
+  color: var(--ink-4);
+  font-weight: 500;
+}
+
+.mydata-right {
+  display: flex; align-items: center; gap: 20px;
+}
+.footer-links {
+  display: flex; gap: 16px;
+  font-size: 12px;
+}
+.footer-links a {
+  color: var(--ink-4);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footer-links a:hover { color: var(--ink-2); }
+
+.report-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.report-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(10,10,15,0.2); }
+.report-btn svg { width: 15px; height: 15px; }
+
+/* ========== 微提醒 Toast ========== */
+.toast {
+  position: fixed;
+  top: 84px; right: 40px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 14px 18px 14px 14px;
+  box-shadow: var(--shadow-3);
+  display: flex; align-items: flex-start; gap: 12px;
+  max-width: 340px;
+  animation: slideIn 0.4s ease;
+  z-index: 100;
+}
+@keyframes slideIn {
+  from { transform: translateX(120%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.toast-icon {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: #E1F2FF;
+  display: flex; align-items: center; justify-content: center;
+  color: #00A3FF;
+  flex-shrink: 0;
+}
+.toast-icon svg { width: 22px; height: 22px; }
+.toast-body { flex: 1; }
+.toast-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.toast-text  { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+.toast-actions { display: flex; gap: 8px; margin-top: 10px; }
+.toast-btn {
+  font-size: 12px; padding: 5px 12px;
+  border-radius: 100px; border: none; cursor: pointer;
+  font-family: inherit;
+}
+.toast-btn-primary { background: var(--ink); color: #fff; }
+.toast-btn-ghost   { background: transparent; color: var(--ink-3); border: 1px solid var(--line-hard); }
+.toast-close {
+  border: none; background: none;
+  color: var(--ink-4); cursor: pointer;
+  padding: 4px; align-self: flex-start;
+  margin-top: -4px; margin-right: -4px;
+}
+.toast-close svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 顶部:头像 + 问候语 + streak + icon 组 -->
+  <header class="topbar">
+    <div class="topbar-user">
+      <div class="avatar-user">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/>
+        </svg>
+      </div>
+      <div class="greeting">
+        <span class="hello">下午好,</span>小马宝莉
+      </div>
+    </div>
+
+    <div class="topbar-spacer"></div>
+
+    <!-- 身体档案入口(已测评态) -->
+    <div class="body-pill" id="bodyPill" onclick="location.href='mock-body-profile.html'" title="点击查看身体档案">
+      <div class="body-pill-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="3"/>
+          <path d="M12 8v13M8 12l4-2 4 2M6 21l6-9 6 9"/>
+        </svg>
+      </div>
+      <div class="body-pill-info">
+        <span class="body-pill-label">身体档案</span>
+        <div class="body-pill-status">
+          <span class="body-dot neck"></span>颈紧
+          <span class="body-dot shoulder"></span>肩灵活
+          <span class="body-dot eye"></span>眼累
+        </div>
+      </div>
+      <div class="body-pill-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <div class="streak-pill" id="streakPill" data-state="achieve">
+      <div class="streak-flame" id="streakFlame">🔥</div>
+      <div class="streak-text">
+        <div class="streak-num" id="streakNum">连续打卡 32 天</div>
+        <div class="streak-tip" id="streakTip">再接再厉!</div>
+      </div>
+      <div class="streak-badge" id="streakBadge">
+        <span>🏆</span><span>历史最长 32 天</span>
+      </div>
+    </div>
+
+    <button class="icon-btn" title="日历/训练记录">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+        <line x1="16" y1="2" x2="16" y2="6"/>
+        <line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+      </svg>
+    </button>
+
+    <button class="icon-btn" title="消息">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      <span class="badge"></span>
+    </button>
+
+    <button class="icon-btn" title="设置">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- 主体:左三卡 + 右预览 -->
+  <main class="main">
+
+    <!-- 左:训练营列表 -->
+    <div class="camps">
+
+      <div class="camp camp-neck">
+        <div class="camp-top">
+          <div class="camp-head">
+            <div class="camp-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+              </svg>
+            </div>
+            <div class="camp-title-block">
+              <div class="camp-name">颈椎训练营</div>
+              <div class="camp-tag">缓解僵硬 · 治愈系</div>
+            </div>
+          </div>
+          <div class="camp-arrow-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+        <div class="camp-bottom">
+          <div class="camp-count">
+            <span class="num">4</span><span class="lbl">个玩法</span>
+          </div>
+          <div class="camp-progress">
+            <span class="camp-progress-txt">已完成 3 次</span>
+            <div class="bar"><div class="fill" style="width: 50%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="camp camp-shoulder">
+        <div class="camp-top">
+          <div class="camp-head">
+            <div class="camp-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+              </svg>
+            </div>
+            <div class="camp-title-block">
+              <div class="camp-name">肩颈训练营</div>
+              <div class="camp-tag">舒展扩胸 · 释放紧张</div>
+            </div>
+          </div>
+          <div class="camp-arrow-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+        <div class="camp-bottom">
+          <div class="camp-count">
+            <span class="num">4</span><span class="lbl">个玩法</span>
+          </div>
+          <div class="camp-progress">
+            <span class="camp-progress-txt">已完成 3 次</span>
+            <div class="bar"><div class="fill" style="width: 25%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="camp camp-eye">
+        <div class="camp-top">
+          <div class="camp-head">
+            <div class="camp-icon-box">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </div>
+            <div class="camp-title-block">
+              <div class="camp-name">眼部训练营</div>
+              <div class="camp-tag">沉静专注 · 缓解疲劳</div>
+            </div>
+          </div>
+          <div class="camp-arrow-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+        <div class="camp-bottom">
+          <div class="camp-count">
+            <span class="num">2</span><span class="lbl">个玩法</span>
+          </div>
+          <div class="camp-progress">
+            <span class="camp-progress-txt">已完成 3 次</span>
+            <div class="bar"><div class="fill" style="width: 40%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 右:今日推荐(关卡预览背景 + 悬浮内容) -->
+    <section class="today">
+      <!-- 关卡预览图占位 —— 拳击关红色氛围 -->
+      <div class="today-preview"></div>
+      <div class="today-hex"></div>
+      <div class="today-pulse"></div>
+
+      <!-- Joy 打拳动画立绘(4 帧循环) -->
+      <div class="today-joy" id="todayJoy">
+        <img class="on" data-frame="idle"       src="img/joy/joy-coach-idle.png"     alt="Joy">
+        <img            data-frame="jab-left"   src="img/joy/joy-coach-jab-left.png"  alt="">
+        <img            data-frame="jab-right"  src="img/joy/joy-coach-jab-right.png" alt="">
+        <img            data-frame="uppercut"   src="img/joy/joy-coach-uppercut.png"  alt="">
+      </div>
+
+      <!-- 上层内容 -->
+      <div class="today-content">
+
+        <!-- 顶部:标签 + 换/自选按钮 -->
+        <div class="today-header-row">
+          <span class="today-tag">
+            <span class="tag-dot"></span>
+            今日为你推荐
+          </span>
+          <div class="today-actions-top">
+            <button class="btn-white-ghost">🔄 换一个</button>
+          </div>
+        </div>
+
+        <!-- 底部:关卡信息 + CTA -->
+        <div class="today-info">
+          <div class="today-info-left">
+            <span class="today-branch">颈椎训练营 · 下午拳击</span>
+            <h1 class="today-title">
+              释放你的<br>
+              工作烦恼
+            </h1>
+            <div class="today-quote">
+              <strong>下午三点最容易累~</strong> 挥挥拳把烦恼打飞,顺便活动一下颈椎。
+            </div>
+          </div>
+
+          <div class="today-info-right">
+            <div class="today-meta">
+              <div class="meta-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                40 秒
+              </div>
+              <div class="meta-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8h12M6 16h12M8 4v16M16 4v16"/></svg>
+                综合灵活度
+              </div>
+              <div class="meta-chip">🌱 中度</div>
+            </div>
+            <button class="btn-primary" onclick="location.href='mock-joy-boxing.html'">
+              开始训练
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 底部数据栏 -->
+  <footer class="mydata">
+    <div class="mydata-stats">
+      <div class="stat">
+        <span class="stat-num">23</span>
+        <span class="stat-label">累计训练</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">12<small>h</small> 30<small>m</small></span>
+        <span class="stat-label">总时长</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">6<small>/7</small></span>
+        <span class="stat-label">本周打卡</span>
+      </div>
+    </div>
+    <div class="mydata-right">
+      <div class="footer-links">
+        <a href="#">医学建议</a>
+        <a href="#">免责声明</a>
+        <a href="#">隐私</a>
+      </div>
+      <div class="report-btn" onclick="location.href='mock-weekly-report.html'">
+        本周报告
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<!-- 微提醒 Toast -->
+<div class="toast" id="toast">
+  <div class="toast-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2c-4 4-6 7-6 10a6 6 0 0 0 12 0c0-3-2-6-6-10z"/>
+    </svg>
+  </div>
+  <div class="toast-body">
+    <div class="toast-title">Joy 小提醒</div>
+    <div class="toast-text">已经 40 分钟没喝水啦,补一口吧~</div>
+    <div class="toast-actions">
+      <button class="toast-btn toast-btn-primary">好的</button>
+      <button class="toast-btn toast-btn-ghost">5 分钟后</button>
+    </div>
+  </div>
+  <button class="toast-close">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+</div>
+
+<script>
+const toast = document.getElementById('toast');
+document.querySelector('.toast-close').addEventListener('click', () => toast.style.display = 'none');
+document.querySelector('.toast-btn-primary').addEventListener('click', () => toast.style.display = 'none');
+document.querySelector('.toast-btn-ghost').addEventListener('click', () => toast.style.display = 'none');
+
+/* ========== Joy 打拳动画(首页 today 模块) ==========
+   4 帧循环:idle 落回 → 出拳 → 保持 → idle
+   BPM ~90(每拳 ~660ms),自然节奏,不显得机械 */
+(function boxJoy() {
+  const stage = document.getElementById('todayJoy');
+  if (!stage) return;
+  const frames = Array.from(stage.querySelectorAll('img'));
+  const byName = Object.fromEntries(frames.map(f => [f.dataset.frame, f]));
+  const punches = ['jab-left', 'jab-right', 'uppercut', 'jab-right', 'jab-left', 'uppercut'];
+  let i = 0;
+
+  function show(name) {
+    frames.forEach(f => f.classList.toggle('on', f.dataset.frame === name));
+  }
+
+  function loop() {
+    const punch = punches[i % punches.length];
+    i++;
+    // 出拳: 显示动作帧
+    show(punch);
+    // 保持 220ms → 回 idle 260ms → 下一拳
+    setTimeout(() => show('idle'), 220);
+    setTimeout(loop, 660);
+  }
+  // 页面稳定后再启动,避免图未加载时闪
+  setTimeout(loop, 500);
+})();
+</script>
+
+</body>
+</html>
