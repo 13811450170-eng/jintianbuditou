@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 河道划船</title>
+<style>
+  :root{
+    /* 碧蓝河道主色（呼应京东蓝 banner 波光粼粼） */
+    --sky-top:#4db8ff;
+    --sky-bot:#bfe9ff;
+    --river-near:#2aa8e8;
+    --river-far:#8fd9f5;
+    --river-deep:#1a86c9;
+    --bank-light:#7ed957;
+    --bank-mid:#4faf38;
+    --bank-dark:#2f7d28;
+    --rock:#caa06a;
+    --rock-dark:#9c7444;
+
+    /* 全局金色文字系统（跨关卡统一） */
+    --gold:#ffd66b;
+    --gold-bright:#ffe89b;
+    --ink:#0b3b52;
+
+    --joy-red:#ea3323;
+    --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+  html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--river-near);color:#fff;}
+
+  #app{position:fixed;inset:0;overflow:hidden;}
+
+  /* ===== 场景背景图槽位（纵深推进：缓慢放大+下移，模拟船往画面深处漂） ===== */
+  #scene-bg{
+    position:absolute;inset:0;z-index:5;
+    display:none;                     /* 检测到背景图后由 JS 打开 */
+    overflow:hidden;
+  }
+  #scene-bg .bg-track{
+    position:absolute;inset:-8% -5% 0 -5%;   /* 底部贴边(0)防露色，上/左右留推进余量 */
+    background-size:cover;background-position:center bottom;
+    background-repeat:no-repeat;
+    transform-origin:50% 34%;          /* 从河道消失点方向推近 */
+    animation:bgPush 9s ease-in-out infinite alternate;
+    animation-play-state:paused;       /* 划船时才推进 */
+  }
+  @keyframes bgPush{
+    from{transform:scale(1.0) translateY(0);}
+    to{transform:scale(1.14) translateY(2.5%);}   /* 推近 = 消失点放大、景物压向镜头 */
+  }
+  body.rowing #scene-bg .bg-track{animation-play-state:running;}
+  body.has-bg #scene-bg{display:block;}
+  /* 有真实背景图时，隐藏 CSS 画的天空/远山/河/岸 */
+  body.has-bg #sky,
+  body.has-bg #ridge,
+  body.has-bg #river,
+  body.has-bg .bank{display:none;}
+
+  /* ==================== 天空 ==================== */
+  #sky{
+    position:absolute;inset:0;
+    background:linear-gradient(180deg,var(--sky-top) 0%,#8fd4ff 42%,var(--sky-bot) 70%);
+    z-index:1;
+  }
+  .cloud{
+    position:absolute;
+    background:#fff;border-radius:50%;
+    filter:blur(1px);
+    opacity:.95;
+    box-shadow:0 8px 20px rgba(120,180,220,.25);
+  }
+  .cloud::before,.cloud::after{
+    content:"";position:absolute;background:#fff;border-radius:50%;
+  }
+  .cloud.c1{width:120px;height:42px;top:10%;left:12%;animation:drift 46s linear infinite;}
+  .cloud.c1::before{width:70px;height:70px;top:-32px;left:20px;}
+  .cloud.c1::after{width:52px;height:52px;top:-20px;left:70px;}
+  .cloud.c2{width:90px;height:32px;top:16%;left:62%;animation:drift 62s linear infinite;}
+  .cloud.c2::before{width:52px;height:52px;top:-24px;left:14px;}
+  .cloud.c2::after{width:40px;height:40px;top:-14px;left:52px;}
+  .cloud.c3{width:70px;height:26px;top:7%;left:40%;animation:drift 54s linear infinite;}
+  .cloud.c3::before{width:42px;height:42px;top:-20px;left:10px;}
+  .cloud.c3::after{width:32px;height:32px;top:-10px;left:40px;}
+  @keyframes drift{
+    from{transform:translateX(-140px);}
+    to{transform:translateX(120vw);}
+  }
+
+  /* ==================== 远山 / 岩壁 ==================== */
+  #ridge{position:absolute;left:0;right:0;top:34%;height:24%;z-index:2;}
+
+  /* ==================== 河道（透视梯形，向远处收窄） ==================== */
+  #river{
+    position:absolute;left:0;right:0;bottom:0;top:44%;
+    z-index:3;
+    /* 近宽远窄的碧蓝河：底部满宽，顶部收到中间一条 */
+    background:
+      radial-gradient(120% 90% at 50% 118%, var(--river-near) 0%, var(--river-far) 60%, transparent 78%),
+      linear-gradient(180deg, var(--river-far) 0%, var(--river-near) 60%, var(--river-deep) 100%);
+    clip-path:polygon(41% 0%, 59% 0%, 100% 100%, 0% 100%);
+    overflow:hidden;
+  }
+  /* 河面波光粼粼层：大量细碎高光点 */
+  #shimmer{position:absolute;inset:0;z-index:4;pointer-events:none;}
+  .spark{
+    position:absolute;
+    background:#fff;
+    border-radius:50%;
+    opacity:.0;
+    animation:sparkle var(--dur,3s) ease-in-out infinite;
+    animation-delay:var(--dl,0s);
+    filter:blur(.4px);
+  }
+  @keyframes sparkle{
+    0%,100%{opacity:0;transform:scale(.6);}
+    45%,55%{opacity:.9;transform:scale(1.15);}
+  }
+  /* 河面横向涟漪带 */
+  .ripple-band{
+    position:absolute;left:-10%;right:-10%;
+    height:2px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+    opacity:.5;
+    animation:rippleFlow 4s linear infinite;
+  }
+  @keyframes rippleFlow{
+    from{transform:translateY(0) scaleX(1);opacity:.15;}
+    50%{opacity:.5;}
+    to{transform:translateY(30px) scaleX(1.2);opacity:0;}
+  }
+
+  /* ==================== 两岸森林绿岸（透视） ==================== */
+  .bank{position:absolute;bottom:0;top:44%;width:46%;z-index:6;overflow:visible;}
+  #bank-left{left:0;}
+  #bank-right{right:0;}
+  .bank-ground{
+    position:absolute;bottom:0;top:0;width:100%;
+  }
+  #bank-left .bank-ground{
+    background:linear-gradient(180deg,var(--bank-mid),var(--bank-dark));
+    clip-path:polygon(0 0, 0 100%, 62% 100%, 40% 0);
+    box-shadow:inset -6px 0 14px rgba(0,0,0,.15);
+  }
+  #bank-right .bank-ground{
+    background:linear-gradient(180deg,var(--bank-mid),var(--bank-dark));
+    clip-path:polygon(100% 0, 100% 100%, 38% 100%, 60% 0);
+    box-shadow:inset 6px 0 14px rgba(0,0,0,.15);
+  }
+  /* 岸边亮草缘：贴着河岸斜边的一条亮绿高光，跟着 clip 的斜边走 */
+  #bank-left .bank-edge{
+    position:absolute;top:0;bottom:0;left:0;right:0;
+    background:linear-gradient(180deg,var(--bank-light),var(--bank-mid) 60%,transparent);
+    clip-path:polygon(40% 0, 46% 0, 68% 100%, 62% 100%);
+    opacity:.85;
+  }
+  #bank-right .bank-edge{
+    position:absolute;top:0;bottom:0;left:0;right:0;
+    background:linear-gradient(180deg,var(--bank-light),var(--bank-mid) 60%,transparent);
+    clip-path:polygon(60% 0, 54% 0, 32% 100%, 38% 100%);
+    opacity:.85;
+  }
+
+  /* 卡通树（SVG 定义，多处复用） */
+  .tree{position:absolute;transform-origin:bottom center;}
+  .tree svg{display:block;}
+  .fern{position:absolute;transform-origin:bottom center;}
+
+  /* ==================== 船 + Joy ==================== */
+  #boat-wrap{
+    position:absolute;
+    left:50%;bottom:6%;
+    width:340px;height:300px;
+    transform:translateX(-50%);
+    z-index:20;
+    /* 划桨时整体轻微前窜 + 上下浮 */
+    animation:boatBob 2.4s ease-in-out infinite;
+  }
+  @keyframes boatBob{
+    0%{transform:translateX(-50%) translateY(4px) scale(1);}
+    30%{transform:translateX(-50%) translateY(-6px) scale(1.03);} /* 后拉→船窜出、变近变大 */
+    60%{transform:translateX(-50%) translateY(2px) scale(1);}
+    100%{transform:translateX(-50%) translateY(4px) scale(1);}
+  }
+
+  /* 船体（红白充气艇，斜后方视角 → 椭圆） */
+  #boat{
+    position:absolute;left:50%;bottom:26px;
+    width:210px;height:120px;
+    transform:translateX(-50%);
+    z-index:2;
+  }
+  .boat-hull{
+    position:absolute;left:0;right:0;bottom:0;
+    height:96px;
+    background:linear-gradient(180deg,#ff5a4d 0%,#e23b2e 60%,#c22d22 100%);
+    border-radius:50% 50% 46% 46%/64% 64% 40% 40%;
+    box-shadow:0 10px 22px rgba(0,0,0,.28), inset 0 6px 10px rgba(255,255,255,.25);
+  }
+  .boat-rim{
+    position:absolute;left:-6px;right:-6px;top:2px;
+    height:44px;
+    background:linear-gradient(180deg,#ffffff,#e9eef2);
+    border-radius:50%;
+    box-shadow:inset 0 4px 8px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.2);
+  }
+  .boat-inner{
+    position:absolute;left:34px;right:34px;top:22px;height:44px;
+    background:radial-gradient(circle at 50% 30%,#2f7fd6,#1b5fa8);
+    border-radius:50%;
+    box-shadow:inset 0 6px 12px rgba(0,0,0,.35);
+  }
+
+  /* 船尾水花（后拉窜出时溅出） */
+  #wake{
+    position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+    width:180px;height:60px;z-index:1;
+  }
+  .wake-foam{
+    position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:130px;height:40px;
+    background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.9),rgba(255,255,255,0) 70%);
+    border-radius:50%;
+    opacity:.0;
+    animation:wakePulse 2.4s ease-in-out infinite;
+  }
+  @keyframes wakePulse{
+    0%,100%{opacity:0;transform:translateX(-50%) scaleY(.6);}
+    32%{opacity:.85;transform:translateX(-50%) scaleY(1.1);}
+    60%{opacity:.2;}
+  }
+
+  /* ===== 真图精灵：4 帧划桨图 ===== */
+  #joy-sprite{
+    position:absolute;left:50%;bottom:-2%;transform:translateX(-50%);
+    width:min(560px,52vw);aspect-ratio:1060/992;z-index:20;
+    display:none;                         /* 默认隐藏，检测到真图后由 JS 打开 */
+    transform-origin:50% 100%;
+    animation:boatBob 2.4s ease-in-out infinite;  /* 复用船身摆动 */
+  }
+  #joy-sprite .row-frame{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:contain;
+    display:none;                         /* 帧默认隐藏，JS 只显示当前相位帧 */
+    filter:drop-shadow(0 10px 18px rgba(0,60,90,.25));
+  }
+  #joy-sprite .row-frame.active{display:block;}
+  /* 位移补偿：伪造"前后拉"体感——前伸帧缩小上移(远)，后拉帧放大下沉(近发力) */
+  #joy-sprite .row-frame[data-phase="catch"].active{transform:scale(.965) translateY(-1.2%);}
+  #joy-sprite .row-frame[data-phase="drive"].active{transform:scale(1.03) translateY(1.4%);}
+  #joy-sprite .row-frame[data-phase="finish"].active{transform:scale(1.0) translateY(.4%);}
+  #joy-sprite .row-frame[data-phase="recovery"].active{transform:scale(.98) translateY(-.4%);}
+  #joy-sprite .row-frame{transition:transform .22s ease-out;}
+  /* 真图就绪：隐藏 CSS 占位的船和狗，显示精灵 */
+  body.has-sprite #joy-sprite{display:block;}
+  body.has-sprite #boat,
+  body.has-sprite #joy{display:none;}
+
+  /* Joy 背影（CSS 画的占位，可用 background-image 替换成生成图） */
+  #joy{
+    position:absolute;left:50%;bottom:52px;transform:translateX(-50%);
+    width:132px;height:150px;z-index:3;
+    transform-origin:50% 100%;
+    /* 划桨：身体前倾→后仰扩胸 */
+    animation:joyRow 2.4s ease-in-out infinite;
+  }
+  @keyframes joyRow{
+    0%{transform:translateX(-50%) rotate(6deg) translateY(6px);}   /* 前伸抓水 */
+    30%{transform:translateX(-50%) rotate(-5deg) translateY(-2px);} /* 后拉扩胸 */
+    60%{transform:translateX(-50%) rotate(0deg) translateY(2px);}   /* 收桨 */
+    100%{transform:translateX(-50%) rotate(6deg) translateY(6px);}  /* 回位 */
+  }
+
+  .joy-css{position:absolute;inset:0;}
+  .joy-body{
+    position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+    width:86px;height:96px;
+    background:linear-gradient(180deg,#ffffff,#eef2f5);
+    border-radius:46% 46% 42% 42%/54% 54% 46% 46%;
+    box-shadow:inset 0 6px 12px rgba(0,0,0,.06), 0 6px 14px rgba(0,0,0,.18);
+  }
+  .joy-collar{
+    position:absolute;left:50%;top:44px;transform:translateX(-50%);
+    width:70px;height:12px;background:var(--joy-red);
+    border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.2);
+  }
+  .joy-head{
+    position:absolute;left:50%;top:-6px;transform:translateX(-50%);
+    width:104px;height:96px;
+    background:linear-gradient(180deg,#ffffff,#f0f3f6);
+    border-radius:50% 50% 48% 48%/52% 52% 48% 48%;
+    box-shadow:inset 0 8px 14px rgba(0,0,0,.05), 0 8px 18px rgba(0,0,0,.18);
+    z-index:2;
+  }
+  .joy-ear{
+    position:absolute;top:16px;width:34px;height:64px;
+    background:linear-gradient(180deg,#f4f6f8,#dfe5ea);
+    border-radius:40% 40% 50% 50%;
+    z-index:1;
+  }
+  .joy-ear.l{left:-8px;transform:rotate(6deg);}
+  .joy-ear.r{right:-8px;transform:rotate(-6deg);}
+  /* 背影：只隐约看到一点点侧脸轮廓，不画完整五官 */
+  .joy-cheek{
+    position:absolute;top:52px;width:16px;height:12px;border-radius:50%;
+    background:rgba(255,180,180,.35);
+  }
+  .joy-cheek.l{left:20px;}
+  .joy-cheek.r{right:20px;}
+
+  /* 双桨 */
+  .oar{
+    position:absolute;top:60px;
+    width:120px;height:9px;
+    background:linear-gradient(90deg,#c9862f,#e8a94a);
+    border-radius:6px;
+    z-index:1;box-shadow:0 3px 6px rgba(0,0,0,.2);
+  }
+  .oar::after{ /* 桨叶 */
+    content:"";position:absolute;
+    width:30px;height:20px;
+    background:linear-gradient(180deg,#fff,#e6ebee);
+    border:3px solid var(--joy-red);
+    border-radius:6px;
+  }
+  .oar.l{left:-96px;transform-origin:right center;animation:oarL 2.4s ease-in-out infinite;}
+  .oar.l::after{left:-24px;top:-6px;}
+  .oar.r{right:-96px;transform-origin:left center;animation:oarR 2.4s ease-in-out infinite;}
+  .oar.r::after{right:-24px;top:-6px;}
+  @keyframes oarL{
+    0%{transform:rotate(-24deg);}   /* 前伸入水 */
+    30%{transform:rotate(18deg);}   /* 后拉 */
+    60%{transform:rotate(6deg);}
+    100%{transform:rotate(-24deg);}
+  }
+  @keyframes oarR{
+    0%{transform:rotate(24deg);}
+    30%{transform:rotate(-18deg);}
+    60%{transform:rotate(-6deg);}
+    100%{transform:rotate(24deg);}
+  }
+  /* 桨叶入水溅水花 */
+  .oar-splash{
+    position:absolute;top:70px;width:26px;height:26px;z-index:0;
+    opacity:0;
+    animation:splashPop 2.4s ease-in-out infinite;
+  }
+  .oar-splash.l{left:-118px;}
+  .oar-splash.r{right:-118px;}
+  .oar-splash span{
+    position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;
+    box-shadow:0 0 4px #fff;
+  }
+  .oar-splash span:nth-child(1){left:0;top:8px;}
+  .oar-splash span:nth-child(2){left:10px;top:0;}
+  .oar-splash span:nth-child(3){left:18px;top:10px;}
+  .oar-splash span:nth-child(4){left:8px;top:16px;}
+  @keyframes splashPop{
+    0%,100%{opacity:0;transform:scale(.4);}
+    8%{opacity:.9;transform:scale(1);}
+    24%{opacity:0;transform:scale(1.3) translateY(-6px);}
+  }
+
+  /* ==================== 漂流物（荷叶/鸭子/落叶，随每桨涌向镜头） ==================== */
+  #drift-layer{position:absolute;inset:0;z-index:15;pointer-events:none;}
+  .drift{
+    position:absolute;
+    will-change:transform,opacity;
+  }
+
+  /* ==================== 水闸保持事件 ==================== */
+  #gate{
+    position:absolute;left:50%;top:44%;transform:translate(-50%,0);
+    z-index:14;opacity:0;transition:opacity .6s;
+  }
+  #gate.show{opacity:1;}
+  .hold-ring{
+    position:absolute;left:50%;top:12%;transform:translateX(-50%);
+    width:130px;height:130px;z-index:25;opacity:0;transition:opacity .4s;
+  }
+  .hold-ring.show{opacity:1;}
+  .hold-ring svg{transform:rotate(-90deg);}
+  .hold-ring .track{fill:none;stroke:rgba(255,255,255,.3);stroke-width:8;}
+  .hold-ring .prog{fill:none;stroke:var(--gold);stroke-width:8;stroke-linecap:round;
+    stroke-dasharray:364;stroke-dashoffset:364;
+    filter:drop-shadow(0 0 6px var(--gold-bright));}
+  .hold-ring .hold-txt{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:12px;font-weight:800;color:var(--gold-bright);text-align:center;
+    text-shadow:0 1px 3px rgba(0,0,0,.5);width:110px;
+  }
+
+  /* ==================== HUD ==================== */
+  .hud-title{
+    position:absolute;top:18px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    color:#0b3b52;padding:6px 22px;border-radius:20px;
+    font-size:13px;font-weight:800;letter-spacing:2px;z-index:40;
+    box-shadow:0 4px 14px rgba(255,214,107,.5);
+  }
+  .hud-left{position:absolute;top:16px;left:18px;display:flex;flex-direction:column;gap:8px;z-index:40;}
+  .chip{
+    background:rgba(11,59,82,.55);border:1px solid var(--gold);
+    color:var(--gold-bright);padding:7px 15px;border-radius:22px;
+    font-size:13px;font-weight:700;letter-spacing:1px;
+    display:flex;align-items:center;gap:7px;backdrop-filter:blur(6px);
+  }
+  .chip .val{color:#fff;font-size:16px;}
+
+  /* 河程进度条 */
+  .progress-wrap{
+    position:absolute;top:18px;right:18px;width:150px;z-index:40;
+    background:rgba(11,59,82,.55);border:1px solid var(--gold);
+    border-radius:14px;padding:9px 12px;backdrop-filter:blur(6px);
+  }
+  .progress-label{font-size:10px;color:var(--gold-bright);font-weight:800;letter-spacing:1px;margin-bottom:6px;}
+  .progress-track{height:8px;background:rgba(255,255,255,.2);border-radius:5px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));border-radius:5px;transition:width .4s;}
+
+  /* 节拍器（拉—放呼吸提示） */
+  .metronome{
+    position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+    z-index:40;display:flex;align-items:center;gap:14px;
+    background:rgba(11,59,82,.5);border:1px solid rgba(255,214,107,.5);
+    padding:10px 22px;border-radius:30px;backdrop-filter:blur(6px);
+  }
+  .metronome .beat{
+    font-size:15px;font-weight:800;letter-spacing:3px;color:var(--gold-bright);
+    min-width:44px;text-align:center;
+  }
+  .metronome .pulse{
+    width:14px;height:14px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 12px var(--gold-bright);
+    animation:beatPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes beatPulse{
+    0%{transform:scale(.7);opacity:.6;}
+    30%{transform:scale(1.4);opacity:1;}
+    60%{transform:scale(.9);opacity:.7;}
+    100%{transform:scale(.7);opacity:.6;}
+  }
+
+  /* PERFECT 飘字 */
+  .floater{
+    position:absolute;left:50%;top:26%;transform:translateX(-50%);
+    z-index:42;font-weight:900;pointer-events:none;
+    text-align:center;
+  }
+  .floater .big{
+    font-size:34px;color:var(--gold-bright);
+    text-shadow:0 2px 8px rgba(0,0,0,.45),0 0 18px var(--gold);
+    letter-spacing:2px;
+  }
+  .floater .sub{font-size:14px;color:#fff;margin-top:2px;text-shadow:0 1px 4px rgba(0,0,0,.6);}
+  .floater.play{animation:floatUp 1.1s ease-out forwards;}
+  @keyframes floatUp{
+    0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.8);}
+    20%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.1);}
+    100%{opacity:0;transform:translateX(-50%) translateY(-40px) scale(1);}
+  }
+
+  /* 右下动作占位小窗（演示视频：真人在旁比划划船动作） */
+  .action-cam{
+    position:absolute;bottom:18px;right:18px;z-index:40;
+    width:132px;height:132px;border-radius:16px;
+    background:rgba(11,59,82,.7);border:2px solid var(--gold);
+    backdrop-filter:blur(6px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    box-shadow:0 8px 22px rgba(0,0,0,.4);
+  }
+  .action-cam .ac-fig{opacity:.9;}
+  .action-cam .ac-txt{font-size:10px;color:var(--gold-bright);font-weight:700;letter-spacing:.5px;text-align:center;line-height:1.4;}
+  .action-cam .ac-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;border-radius:50%;background:#6bff9d;box-shadow:0 0 8px #6bff9d;animation:acDot 2s ease-in-out infinite;}
+  @keyframes acDot{0%,100%{opacity:1;}50%{opacity:.4;}}
+
+  /* ==================== 开场 / 结算 ==================== */
+  .overlay{
+    position:absolute;inset:0;z-index:60;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:18px;
+    background:radial-gradient(circle at 50% 40%,rgba(20,90,130,.5),rgba(4,18,28,.92));
+    backdrop-filter:blur(3px);
+    transition:opacity .8s;
+  }
+  .overlay.hide{opacity:0;pointer-events:none;}
+  .brand{
+    border:2px solid var(--gold);color:var(--gold-bright);
+    padding:6px 20px;border-radius:24px;font-size:13px;font-weight:800;letter-spacing:3px;
+  }
+  .big-title{
+    font-size:60px;font-weight:900;letter-spacing:2px;line-height:1.1;
+    background:linear-gradient(135deg,#fff 0%,var(--gold-bright) 50%,#a8e0ff 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:0 6px 30px rgba(255,214,107,.2);
+  }
+  .subtitle{font-size:15px;color:#cfe8f5;line-height:1.7;max-width:440px;}
+  .how-grid{display:flex;gap:12px;margin-top:6px;}
+  .how-item{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,214,107,.4);
+    border-radius:14px;padding:12px 16px;min-width:96px;
+  }
+  .how-item .ico{font-size:22px;margin-bottom:6px;}
+  .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
+  .btn{
+    margin-top:10px;
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    color:#0b3b52;border:none;padding:15px 44px;border-radius:30px;
+    font-size:17px;font-weight:900;letter-spacing:2px;cursor:pointer;
+    box-shadow:0 8px 24px rgba(255,214,107,.5);
+  }
+  .btn:active{transform:translateY(1px);}
+  .status{font-size:12px;color:#8fb8ce;margin-top:2px;}
+
+  /* 结算页专属 */
+  #result .result-card{
+    background:rgba(11,59,82,.6);border:1px solid var(--gold);
+    border-radius:22px;padding:26px 34px;backdrop-filter:blur(8px);
+    display:flex;flex-direction:column;gap:14px;align-items:center;
+  }
+  .result-stat{display:flex;gap:34px;}
+  .result-stat .item{text-align:center;}
+  .result-stat .num{font-size:40px;font-weight:900;color:var(--gold-bright);line-height:1;}
+  .result-stat .lb{font-size:12px;color:#cfe8f5;margin-top:6px;}
+  .result-up{font-size:14px;color:#6bff9d;font-weight:700;}
+
+  /* 提示条 */
+  .toast{
+    position:absolute;top:64px;left:50%;transform:translateX(-50%) translateY(-10px);
+    z-index:45;background:rgba(11,59,82,.8);border:1px solid var(--gold);
+    color:var(--gold-bright);padding:10px 22px;border-radius:24px;
+    font-size:14px;font-weight:700;letter-spacing:1px;opacity:0;
+    box-shadow:0 6px 20px rgba(0,0,0,.4);transition:all .5s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* 底部导航提示 */
+  .hint{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);z-index:41;font-size:10px;color:rgba(255,255,255,.4);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 场景背景图槽位（生成的 3D 河道大图，纵深推进） -->
+  <div id="scene-bg">
+    <div class="bg-track"></div>
+  </div>
+
+  <!-- 天空 -->
+  <div id="sky">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+  </div>
+
+  <!-- 远山岩壁 -->
+  <svg id="ridge" viewBox="0 0 1200 240" preserveAspectRatio="none">
+    <path d="M0,150 L120,90 L240,140 L360,70 L520,130 L640,60 L780,120 L920,80 L1060,140 L1200,100 L1200,240 L0,240 Z"
+          fill="#9ec6a0" opacity=".5"/>
+    <path d="M0,190 L160,120 L320,180 L480,110 L640,170 L820,120 L980,180 L1140,130 L1200,160 L1200,240 L0,240 Z"
+          fill="#7fb583" opacity=".6"/>
+  </svg>
+
+  <!-- 河道 + 波光 -->
+  <div id="river">
+    <div id="shimmer"></div>
+  </div>
+
+  <!-- 两岸森林绿岸 -->
+  <div class="bank" id="bank-left"><div class="bank-ground"></div><div class="bank-edge"></div></div>
+  <div class="bank" id="bank-right"><div class="bank-ground"></div><div class="bank-edge"></div></div>
+
+  <!-- 漂流物层 -->
+  <div id="drift-layer"></div>
+
+  <!-- 水闸保持事件 -->
+  <div id="gate"></div>
+
+  <!-- 船 + Joy -->
+  <div id="boat-wrap">
+    <div id="wake"><div class="wake-foam"></div></div>
+
+    <!-- 真图精灵：4 帧划桨图叠在一起，JS 按相位切换 display -->
+    <div id="joy-sprite">
+      <img class="row-frame" data-phase="catch"    src="img/joy/joy-row-01-catch.png"    alt="">
+      <img class="row-frame" data-phase="drive"    src="img/joy/joy-row-02-drive.png"    alt="">
+      <img class="row-frame" data-phase="finish"   src="img/joy/joy-row-03-finish.png"   alt="">
+      <img class="row-frame" data-phase="recovery" src="img/joy/joy-row-04-recovery.png" alt="">
+    </div>
+
+    <!-- CSS 占位版（真图未加载时的回退） -->
+    <div id="boat">
+      <div class="boat-rim"></div>
+      <div class="boat-hull"></div>
+      <div class="boat-inner"></div>
+    </div>
+    <div id="joy">
+      <div class="joy-css">
+        <div class="joy-body"></div>
+        <div class="joy-collar"></div>
+        <div class="joy-head">
+          <div class="joy-ear l"></div>
+          <div class="joy-ear r"></div>
+          <div class="joy-cheek l"></div>
+          <div class="joy-cheek r"></div>
+        </div>
+        <div class="oar l"></div>
+        <div class="oar r"></div>
+        <div class="oar-splash l"><span></span><span></span><span></span><span></span></div>
+        <div class="oar-splash r"><span></span><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 保持倒计时圈 -->
+  <div class="hold-ring" id="holdRing">
+    <svg width="130" height="130" viewBox="0 0 130 130">
+      <circle class="track" cx="65" cy="65" r="58"/>
+      <circle class="prog" id="holdProg" cx="65" cy="65" r="58"/>
+    </svg>
+    <div class="hold-txt">双桨拉满<br>保持</div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud-title">今天不低头 · 河道划船</div>
+  <div class="hud-left">
+    <div class="chip"><span>扩胸</span><span class="val" id="repVal">0</span><span>次</span></div>
+    <div class="chip"><span>连击</span><span class="val" id="comboVal">0</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label">河程</div>
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <div class="metronome">
+    <div class="beat" id="beatTxt">拉</div>
+    <div class="pulse"></div>
+  </div>
+
+  <!-- 动作占位小窗 -->
+  <div class="action-cam">
+    <div class="ac-dot"></div>
+    <svg class="ac-fig" width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#ffe89b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="12" r="6"/>
+      <path d="M24 18 L24 32"/>
+      <path d="M24 22 L10 28 M24 22 L38 28"/>
+      <path d="M24 32 L16 44 M24 32 L32 44"/>
+    </svg>
+    <div class="ac-txt">跟我一起<br>划船 · 扩胸</div>
+  </div>
+
+  <div class="hint">空格：重播 · 参考马里奥漂流镜头 + 京东蓝粼粼水面</div>
+
+  <!-- 开场 -->
+  <div class="overlay" id="intro">
+    <div class="brand">JOY · 河道划船</div>
+    <div class="big-title">Joy 想去划船</div>
+    <div class="subtitle">坐直、挺胸，双桨对称往后拉<br>一拉一放，舒展你的肩膀，赶走圆肩驼背</div>
+    <div class="how-grid">
+      <div class="how-item"><div class="ico">🚣</div><div class="lb">双桨后拉</div></div>
+      <div class="how-item"><div class="ico">💪</div><div class="lb">肩胛后收</div></div>
+      <div class="how-item"><div class="ico">🌊</div><div class="lb">保持挺胸</div></div>
+    </div>
+    <button class="btn" id="startBtn">开始划船 · ROW TIME!</button>
+    <div class="status">演示模式 · 自动播放约 35 秒</div>
+  </div>
+
+  <!-- 结算 -->
+  <div class="overlay hide" id="result">
+    <div class="brand">今日训练完成</div>
+    <div class="result-card">
+      <div class="result-stat">
+        <div class="item"><div class="num" id="rStrokes">0</div><div class="lb">扩胸次数</div></div>
+        <div class="item"><div class="num" id="rHold">0</div><div class="lb">末端保持</div></div>
+        <div class="item"><div class="num">+5°</div><div class="lb">肩部活动度</div></div>
+      </div>
+      <div class="result-up">↑ 比上周舒展 5°，圆肩缓解中</div>
+    </div>
+    <button class="btn" id="againBtn">再划一程</button>
+    <div class="status">今天不低头 · 关注你的肩颈健康</div>
+  </div>
+
+  <!-- 提示条 -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+/* ============ 波光粼粼：生成大量高光点 ============ */
+(function genSparks(){
+  const box=document.getElementById('shimmer');
+  const N=90;
+  for(let i=0;i<N;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    // 越靠近底部（近处）越大越密
+    const y=Math.random();               // 0 顶 1 底
+    const size=1.5+y*4.5;
+    s.style.left=(Math.random()*100)+'%';
+    s.style.top=(y*100)+'%';
+    s.style.width=size+'px';
+    s.style.height=size+'px';
+    s.style.setProperty('--dur',(2+Math.random()*3)+'s');
+    s.style.setProperty('--dl',(Math.random()*3)+'s');
+    box.appendChild(s);
+  }
+  // 涟漪带
+  for(let i=0;i<5;i++){
+    const r=document.createElement('div');
+    r.className='ripple-band';
+    r.style.top=(30+i*14)+'%';
+    r.style.animationDelay=(i*0.8)+'s';
+    box.appendChild(r);
+  }
+})();
+
+/* ============ 两岸森林树木：透视排布 ============ */
+function treeSVG(scale){
+  return `<svg width="${70*scale}" height="${96*scale}" viewBox="0 0 70 96">
+    <ellipse cx="35" cy="30" rx="30" ry="26" fill="#4faf38"/>
+    <ellipse cx="20" cy="42" rx="20" ry="18" fill="#3f9b2e"/>
+    <ellipse cx="52" cy="42" rx="20" ry="18" fill="#5cbf42"/>
+    <ellipse cx="35" cy="20" rx="20" ry="18" fill="#6bd44e"/>
+    <rect x="31" y="52" width="8" height="40" rx="3" fill="#7a5230"/>
+  </svg>`;
+}
+function fernSVG(scale){
+  return `<svg width="${44*scale}" height="${48*scale}" viewBox="0 0 44 48">
+    <path d="M22 48 Q10 30 4 10 Q16 24 22 40 Q28 24 40 10 Q34 30 22 48Z" fill="#3f9b2e"/>
+    <path d="M22 48 Q18 28 22 6 Q26 28 22 48Z" fill="#5cbf42"/>
+  </svg>`;
+}
+(function genBanks(){
+  const L=document.getElementById('bank-left');
+  const R=document.getElementById('bank-right');
+  // 每岸从远（小、上、靠中）到近（大、下、靠边）排树
+  const rows=[
+    {top:2,  scale:.5,  edge:34},
+    {top:14, scale:.7,  edge:26},
+    {top:30, scale:1.0, edge:16},
+    {top:52, scale:1.5, edge:4},
+    {top:74, scale:2.1, edge:-8},
+  ];
+  rows.forEach((r,i)=>{
+    // 左岸
+    const tl=document.createElement('div');
+    tl.className='tree';
+    tl.style.top=r.top+'%';
+    tl.style.left=(r.edge+2)+'%';
+    tl.innerHTML= i%2? fernSVG(r.scale): treeSVG(r.scale);
+    tl.style.zIndex=Math.round(r.scale*10);
+    L.appendChild(tl);
+    // 右岸
+    const tr=document.createElement('div');
+    tr.className='tree';
+    tr.style.top=r.top+'%';
+    tr.style.right=(r.edge+2)+'%';
+    tr.innerHTML= i%2? treeSVG(r.scale): fernSVG(r.scale);
+    tr.style.zIndex=Math.round(r.scale*10);
+    R.appendChild(tr);
+  });
+})();
+
+/* ============ 漂流物：随每桨涌向镜头 ============ */
+const driftLayer=document.getElementById('drift-layer');
+const DRIFT_KINDS=[
+  {emoji:'🪷',size:34},   // 莲花
+  {emoji:'🍃',size:26},   // 叶
+  {emoji:'🦆',size:34},   // 鸭
+  {emoji:'🌿',size:28},
+];
+function spawnDrift(){
+  const k=DRIFT_KINDS[Math.floor(Math.random()*DRIFT_KINDS.length)];
+  const el=document.createElement('div');
+  el.className='drift';
+  el.textContent=k.emoji;
+  // 从河道远处（中间偏上）某个横向位置出现
+  const side=Math.random()<.5?-1:1;
+  const startX=50 + side*(4+Math.random()*8);   // 靠河道中线附近
+  const endX=50 + side*(30+Math.random()*20);    // 漂向两侧
+  el.style.left=startX+'%';
+  el.style.top='46%';
+  el.style.fontSize=k.size+'px';
+  el.style.filter='drop-shadow(0 4px 6px rgba(0,0,0,.2))';
+  driftLayer.appendChild(el);
+  const dur=5000+Math.random()*2000;
+  const anim=el.animate([
+    {transform:`translate(-50%,0) scale(.3)`,opacity:0,offset:0},
+    {opacity:1,offset:.12},
+    {transform:`translate(calc(-50% + ${(endX-startX)}vw),52vh) scale(2.4)`,opacity:1,offset:.9},
+    {transform:`translate(calc(-50% + ${(endX-startX)*1.1}vw),60vh) scale(2.8)`,opacity:0,offset:1},
+  ],{duration:dur,easing:'cubic-bezier(.4,0,.7,1)'});
+  anim.onfinish=()=>el.remove();
+}
+
+/* ============ 场景背景大图：探测存在则启用，替换 CSS 保底场景 ============ */
+(function detectSceneBg(){
+  const CANDIDATES=[
+    'img/bg/rowing-river-bg.png',
+    'img/bg/rowing-river.png',
+    'img/bg/river-bg.png',
+  ];
+  let i=0;
+  (function tryNext(){
+    if(i>=CANDIDATES.length) return;      // 都没有 → 保持 CSS 场景
+    const url=CANDIDATES[i++];
+    const im=new Image();
+    im.onload=()=>{
+      const track=document.querySelector('#scene-bg .bg-track');
+      if(track) track.style.backgroundImage=`url("${url}")`;
+      document.body.classList.add('has-bg');
+    };
+    im.onerror=tryNext;
+    im.src=url;
+  })();
+})();
+
+/* ============ Joy 划桨精灵：多帧检测 + 相位切换 ============ */
+/* 循环顺序：catch(前伸抓水) → drive(后拉发力) → finish(提桨出水) → recovery(回桨) */
+const PHASE_ORDER=['catch','drive','finish','recovery'];
+const frameImgs={};      // phase -> <img>（仅收录加载成功的帧）
+let spriteReady=false;
+let rowTimer=null;
+
+(function detectFrames(){
+  const imgs=document.querySelectorAll('#joy-sprite .row-frame');
+  let pending=imgs.length;
+  if(!pending) return;
+  imgs.forEach(img=>{
+    const done=(ok)=>{
+      if(ok && img.naturalWidth>0) frameImgs[img.dataset.phase]=img;
+      if(--pending===0) finalizeSprite();
+    };
+    if(img.complete){ done(img.naturalWidth>0); }
+    else{ img.onload=()=>done(true); img.onerror=()=>done(false); }
+  });
+})();
+
+function finalizeSprite(){
+  const have=PHASE_ORDER.filter(p=>frameImgs[p]);
+  if(have.length===0) return;      // 没有任何真图 → 保持 CSS 占位
+  spriteReady=true;
+  document.body.classList.add('has-sprite');
+  showFrame(have[0]);              // 先定格第一帧
+}
+
+/* 显示某个相位帧（缺帧时回退到最接近的已有帧） */
+function showFrame(phase){
+  if(!spriteReady) return;
+  let use=frameImgs[phase];
+  if(!use){                        // 该相位没生成 → 顺着循环找下一个存在的
+    const start=PHASE_ORDER.indexOf(phase);
+    for(let i=1;i<PHASE_ORDER.length;i++){
+      const alt=frameImgs[PHASE_ORDER[(start+i)%PHASE_ORDER.length]];
+      if(alt){use=alt;break;}
+    }
+  }
+  document.querySelectorAll('#joy-sprite .row-frame').forEach(f=>f.classList.remove('active'));
+  if(use) use.classList.add('active');
+}
+
+/* 一桨周期内推进相位：入水抓→后拉→提桨→回桨，与 STROKE_MS 对齐 */
+function playStrokeFrames(){
+  if(!spriteReady) return;
+  showFrame('catch');
+  T(()=>showFrame('drive'),  STROKE_MS*0.30);   // 后拉发力（和计数/溅水同步）
+  T(()=>showFrame('finish'), STROKE_MS*0.55);   // 提桨出水
+  T(()=>showFrame('recovery'),STROKE_MS*0.78);  // 回桨前送
+}
+
+/* ============ 游戏状态 ============ */
+let reps=0, combo=0, holds=0;
+let playing=false;
+let timers=[];
+const repVal=document.getElementById('repVal');
+const comboVal=document.getElementById('comboVal');
+const progFill=document.getElementById('progFill');
+const beatTxt=document.getElementById('beatTxt');
+const toast=document.getElementById('toast');
+
+function T(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id;}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+
+function showToast(txt,dur=2000){
+  toast.textContent=txt;toast.classList.add('show');
+  T(()=>toast.classList.remove('show'),dur);
+}
+
+function floatPerfect(){
+  const f=document.createElement('div');
+  f.className='floater play';
+  f.innerHTML=`<div class="big">PERFECT</div><div class="sub">扩胸 +1 · 肩胛后收</div>`;
+  document.getElementById('app').appendChild(f);
+  T(()=>f.remove(),1100);
+}
+
+const STROKE_MS=2400;  // 一桨周期，和 CSS 动画一致（慢节奏、治愈）
+
+function doStroke(idx,total){
+  // 节拍器：拉→放
+  beatTxt.textContent='拉';
+  T(()=>{beatTxt.textContent='放';},STROKE_MS*0.4);
+  // 精灵帧：这一桨的 catch→drive→finish→recovery
+  playStrokeFrames();
+  // 后拉发力瞬间（30% 处）：计数 + 溅水 + 漂流物 + PERFECT
+  T(()=>{
+    reps++;combo++;
+    repVal.textContent=reps;
+    comboVal.textContent=combo;
+    progFill.style.width=Math.min(100,(idx+1)/total*100)+'%';
+    floatPerfect();
+    spawnDrift();
+    if(Math.random()<.5) T(spawnDrift,200);
+  },STROKE_MS*0.30);
+}
+
+/* ============ 时间轴：自动播放 ============ */
+function runShow(){
+  playing=true;
+  document.body.classList.add('rowing');   // 启动背景纵深推进
+  reps=0;combo=0;holds=0;
+  repVal.textContent=0;comboVal.textContent=0;progFill.style.width='0%';
+
+  const strokesBeforeGate=6;
+  const strokesAfterGate=5;
+  const total=strokesBeforeGate+strokesAfterGate+1;
+  let t=0;
+
+  // 开场提示
+  T(()=>showToast('坐直挺胸，跟着节拍一拉一放 🚣'),300);
+
+  // 第一段：连续划桨
+  for(let i=0;i<strokesBeforeGate;i++){
+    T(()=>doStroke(i,total), 1400 + i*STROKE_MS);
+  }
+  t=1400+strokesBeforeGate*STROKE_MS;
+
+  // 水闸保持事件
+  T(()=>{
+    showToast('前方水闸 · 双桨拉满保持 2 秒！',2200);
+    startHoldEvent(()=>{
+      holds++;
+      // 保持成功后继续划
+      for(let i=0;i<strokesAfterGate;i++){
+        T(()=>doStroke(strokesBeforeGate+i,total), 600 + i*STROKE_MS);
+      }
+      T(()=>endShow(), 600+strokesAfterGate*STROKE_MS+800);
+    });
+  }, t+400);
+}
+
+/* 保持事件：暂停划桨动画，Joy 保持后拉扩胸姿势，金色圈 2s */
+const boatWrap=document.getElementById('boat-wrap');
+const joy=document.getElementById('joy');
+const oarL=document.querySelector('.oar.l');
+const oarR=document.querySelector('.oar.r');
+const holdRing=document.getElementById('holdRing');
+const holdProg=document.getElementById('holdProg');
+
+function pauseRowAnim(pause){
+  const els=[boatWrap,joy,oarL,oarR,document.getElementById('joy-sprite'),
+             document.querySelector('.wake-foam'),
+             ...document.querySelectorAll('.oar-splash'),document.querySelector('.pulse')];
+  els.forEach(e=>{if(e)e.style.animationPlayState=pause?'paused':'running';});
+}
+
+function startHoldEvent(onDone){
+  if(spriteReady){
+    // 精灵版：定格在“后拉发力”帧（双桨拉满 = 末端扩胸）
+    showFrame('drive');
+  }else{
+    // CSS 占位版：定格在"扩胸后拉"姿势
+    joy.style.transition='transform .5s';
+    joy.style.transform='translateX(-50%) rotate(-6deg) translateY(-3px)';
+    oarL.style.transition='transform .5s';oarR.style.transition='transform .5s';
+    oarL.style.transform='rotate(20deg)';oarR.style.transform='rotate(-20deg)';
+  }
+  pauseRowAnim(true);
+  beatTxt.textContent='保持';
+
+  holdRing.classList.add('show');
+  const DUR=2000, C=364;
+  const t0=performance.now();
+  function tick(now){
+    const p=Math.min(1,(now-t0)/DUR);
+    holdProg.style.strokeDashoffset=C*(1-p);
+    if(p<1){requestAnimationFrame(tick);}
+    else{
+      floatBig('保持达标！','末端扩胸 +10° 活动度');
+      holdRing.classList.remove('show');
+      holdProg.style.strokeDashoffset=C;
+      // 恢复划桨
+      if(!spriteReady){
+        joy.style.transition='';oarL.style.transition='';oarR.style.transition='';
+        joy.style.transform='';oarL.style.transform='';oarR.style.transform='';
+      }
+      pauseRowAnim(false);
+      onDone&&onDone();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function floatBig(big,sub){
+  const f=document.createElement('div');
+  f.className='floater play';
+  f.innerHTML=`<div class="big">${big}</div><div class="sub">${sub}</div>`;
+  document.getElementById('app').appendChild(f);
+  T(()=>f.remove(),1100);
+}
+
+function endShow(){
+  playing=false;
+  document.getElementById('rStrokes').textContent=reps;
+  document.getElementById('rHold').textContent=holds+' 次';
+  document.getElementById('result').classList.remove('hide');
+}
+
+/* ============ 控制 ============ */
+const intro=document.getElementById('intro');
+const result=document.getElementById('result');
+
+function start(){
+  intro.classList.add('hide');
+  result.classList.add('hide');
+  clearTimers();
+  // 复位划桨动画
+  pauseRowAnim(false);
+  runShow();
+}
+document.getElementById('startBtn').addEventListener('click',start);
+document.getElementById('againBtn').addEventListener('click',start);
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){e.preventDefault();start();}
+});
+
+/* 环境漂流物：即使未开始也偶尔漂几片，让首屏有生气 */
+setInterval(()=>{if(Math.random()<.4) spawnDrift();},2600);
+
+/* URL ?auto=1 自动开始（截图 / 直接进战斗演示用） */
+if(location.search.indexOf('auto=1')>=0){ start(); }
+</script>
+</body>
+</html>

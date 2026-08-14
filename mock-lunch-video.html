@@ -1,0 +1,169 @@
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Doga 餐厅 · 喂饭演示</title>
+<style>
+  :root{
+    --ink:#3a2a1a; --bubble-bg:#fffdf7;
+    --joy:#ea3323; --max:#5c6470; --chill:#f39c1f;
+    --blink:#8a5a3c; --yummy:#6b6b6b; --snow:#eb7fa8; --gold:#ffd66b; --gold-bright:#ffe89b;
+    --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+  html,body{height:100%;background:#140d04;font-family:var(--font);overflow:hidden;}
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#140d04;}
+  .frame{
+    position:relative;
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.55);
+  }
+  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+  .layer{position:absolute;inset:0;pointer-events:none;}
+
+  /* ---------- 说话气泡 ---------- */
+  .bubble{
+    position:absolute;transform:translate(-50%,-50%) scale(.5);
+    background:var(--bubble-bg);color:var(--ink);font-weight:800;
+    font-size:clamp(12px,1.9vw,24px);letter-spacing:1px;
+    padding:.45em .8em;border-radius:16px;white-space:nowrap;opacity:0;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);border:2.5px solid var(--c,#fff);
+    transition:opacity .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .bubble::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
+    width:0;height:0;border:9px solid transparent;border-top-color:var(--bubble-bg);}
+  .bubble.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+
+  /* ---------- 金色倒计时环 ---------- */
+  .ring{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .2s;}
+  .ring.show{opacity:1;}
+  .ring svg{transform:rotate(-90deg);display:block;filter:drop-shadow(0 0 6px var(--gold-bright));}
+  .ring .track{fill:none;stroke:rgba(0,0,0,.18);stroke-width:6;}
+  .ring .prog{fill:none;stroke:var(--gold-bright);stroke-width:6;stroke-linecap:round;
+    stroke-dasharray:283;stroke-dashoffset:283;}
+
+  /* ---------- 飞入的菜 ---------- */
+  .food{position:absolute;transform:translate(-50%,-50%) scale(.4);opacity:0;
+    width:clamp(46px,7vw,96px);height:auto;pointer-events:none;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
+  .food img{width:100%;height:auto;display:block;}
+
+  /* ---------- 命中星光 ---------- */
+  .spark{position:absolute;transform:translate(-50%,-50%);pointer-events:none;
+    color:var(--gold-bright);font-weight:900;font-size:clamp(16px,2.4vw,30px);
+    opacity:0;text-shadow:0 2px 8px rgba(0,0,0,.5);}
+
+  /* ---------- 顶部 HUD ---------- */
+  .hud{position:absolute;top:3.5%;left:50%;transform:translateX(-50%);z-index:8;
+    display:flex;align-items:center;gap:10px;background:rgba(42,24,16,.72);
+    backdrop-filter:blur(6px);color:#ffe9b8;padding:.5em 1.2em;border-radius:999px;
+    font-size:clamp(11px,1.5vw,16px);font-weight:800;letter-spacing:2px;
+    border:1px solid rgba(255,214,107,.45);}
+  .hud .dot{width:8px;height:8px;border-radius:50%;background:#6bff9d;box-shadow:0 0 8px #6bff9d;animation:blink 1.6s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .replay{position:absolute;right:3%;bottom:4%;z-index:8;pointer-events:auto;
+    background:rgba(42,24,16,.7);color:#ffe9b8;border:1px solid rgba(255,214,107,.4);
+    border-radius:999px;padding:.5em 1em;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);}
+</style>
+
+<div id="stage">
+  <div class="frame" id="frame">
+    <video id="v" src="img/lunch.mp4" autoplay muted loop playsinline></video>
+    <div class="layer" id="layer"></div>
+    <div class="hud"><span class="dot"></span> Doga 餐厅 · 转头喂饱每一只</div>
+    <button class="replay" id="replay">↻ 重播</button>
+  </div>
+</div>
+
+<script>
+// 6 只狗:头顶(气泡+环)位置 + 面前盘子位置(百分比,基于 1382x768 帧构图)
+const DOGS = [
+  { key:'max',   name:'Max',   c:'var(--max)',   head:[12,30], plate:[15,58], line:'我饿啦' },
+  { key:'yummy', name:'Yummy', c:'var(--yummy)', head:[27,22], plate:[26,50], line:'还行吧' },
+  { key:'joy',   name:'Joy',   c:'var(--joy)',   head:[41,20], plate:[40,47], line:'我也要！' },
+  { key:'chill', name:'Chill', c:'var(--chill)', head:[59,17], plate:[58,47], line:'我饿啦' },
+  { key:'snow',  name:'Snow',  c:'var(--snow)',  head:[75,22], plate:[72,50], line:'人家也想吃…' },
+  { key:'blink', name:'Blink', c:'var(--blink)', head:[90,30], plate:[85,58], line:'我请客！' },
+];
+const FOODS = ['food-bone.png','food-chicken.png','food-fish.png','food-cake.png'];
+const FOOD_DIR = 'img/lunch/';
+
+const layer = document.getElementById('layer');
+const v = document.getElementById('v');
+let foodIdx = 0, dogIdx = 0, timers = [];
+
+const pct = (arr)=>({left:arr[0]+'%', top:arr[1]+'%'});
+function el(cls){ const d=document.createElement('div'); d.className=cls; return d; }
+function later(fn,ms){ const t=setTimeout(fn,ms); timers.push(t); return t; }
+
+// 一轮喂食:气泡"我饿啦" -> 金环倒计时 -> 菜飞入盘 -> "谢谢!" -> 收尾
+function feedRound(dog, food){
+  // 1) 我饿啦气泡
+  const b = el('bubble'); b.textContent = dog.line; b.style.setProperty('--c',dog.c);
+  Object.assign(b.style, pct(dog.head)); layer.appendChild(b);
+  requestAnimationFrame(()=> b.classList.add('show'));
+
+  // 2) 金色倒计时环(1.4s)—— 套在狗面前的盘子上,表示"正在喂这只"
+  const HOLD=1400;
+  const ring = el('ring'); Object.assign(ring.style, pct(dog.plate));
+  ring.innerHTML = `<svg width="clamp(54,7vw,110)" height="clamp(54,7vw,110)" viewBox="0 0 100 100">
+    <circle class="track" cx="50" cy="50" r="45"/>
+    <circle class="prog"  cx="50" cy="50" r="45"/></svg>`;
+  // 用固定像素尺寸(clamp 在 svg 属性里不生效)
+  const rsz = Math.round(Math.min(frame.clientWidth*0.07, 96));
+  const svg = ring.querySelector('svg'); svg.setAttribute('width',rsz); svg.setAttribute('height',rsz);
+  layer.appendChild(ring);
+  later(()=>{
+    ring.classList.add('show');
+    const prog = ring.querySelector('.prog');
+    prog.style.transition = `stroke-dashoffset ${HOLD}ms linear`;
+    requestAnimationFrame(()=> prog.style.strokeDashoffset = '0');
+  }, 260);
+
+  // 3) 环走完 -> 菜从下方飞入盘子
+  later(()=>{
+    ring.classList.remove('show');
+    const f = el('food'); f.innerHTML = `<img src="${FOOD_DIR}${food}" alt="">`;
+    // 起点:盘子正下方(屏幕外),终点:盘子
+    f.style.left = dog.plate[0]+'%'; f.style.top = '110%';
+    layer.appendChild(f);
+    requestAnimationFrame(()=>{
+      f.style.transition = 'top .5s cubic-bezier(.22,1,.36,1), opacity .3s, transform .5s cubic-bezier(.22,1,.36,1)';
+      f.style.opacity = '1';
+      f.style.top = dog.plate[1]+'%';
+      f.style.transform = 'translate(-50%,-50%) scale(1)';
+    });
+    // 命中星光 + 气泡变谢谢
+    later(()=>{
+      const s = el('spark'); s.textContent='✦'; Object.assign(s.style, pct(dog.plate));
+      layer.appendChild(s);
+      s.style.transition='opacity .4s, transform .6s ease-out';
+      requestAnimationFrame(()=>{ s.style.opacity='1'; s.style.transform='translate(-50%,-90%) scale(1.4)'; });
+      later(()=>{ s.style.opacity='0'; }, 500);
+      b.textContent = '谢谢！'; b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    }, 520);
+  }, 260+HOLD);
+
+  // 4) 收尾:淡出气泡和菜
+  later(()=>{
+    b.classList.remove('show');
+    const f = layer.querySelector('.food:last-of-type');
+    if(f){ f.style.opacity='0'; f.style.transform='translate(-50%,-50%) scale(1.15)'; }
+    later(()=>{ layer.querySelectorAll('.bubble,.ring,.food,.spark').forEach(n=>n.remove()); }, 500);
+  }, 260+HOLD+1400);
+}
+
+const ROUND_MS = 260+1400+1400+700; // 一轮总时长 ~3.76s
+function loop(){
+  const dog = DOGS[dogIdx % DOGS.length];
+  const food = FOODS[foodIdx % FOODS.length];
+  feedRound(dog, food);
+  dogIdx++; foodIdx++;
+  later(loop, ROUND_MS);
+}
+
+function start(){ timers.forEach(clearTimeout); timers=[]; layer.innerHTML=''; dogIdx=0; foodIdx=0; loop(); }
+const frame = document.getElementById('frame');
+document.getElementById('replay').addEventListener('click',()=>{ v.currentTime=0; v.play(); start(); });
+v.play().catch(()=>{});
+start();
+</script>

@@ -14,6 +14,9 @@ JOY及DOGA IP规范手册*.pdf
 3B/
 3B-face/
 
+# 视频加工中间产物（逐帧 png + 临时视频，314MB 工作缓存，不入库）
+_video_work/
+
 # 编辑器/IDE
 .vscode/
 .idea/
