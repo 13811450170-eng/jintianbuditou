@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 河道划船</title>
+<style>
+  :root{
+    --gold:#ffd66b;
+    --gold-bright:#ffe89b;
+    --ink:#0b3b52;
+    --joy-red:#ea3323;
+    --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+  html,body{height:100%;overflow:hidden;font-family:var(--font);background:#8fd4ff;color:#fff;}
+  #app{position:fixed;inset:0;overflow:hidden;background:#8fd4ff;}
+
+  /* ===== 底层视频 ===== */
+  #bgvid{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    min-width:100%;min-height:100%;width:auto;height:auto;
+    object-fit:cover;z-index:1;background:#8fd4ff;
+  }
+
+  /* 顶部/底部轻微暗角，让 HUD 更清晰（不挡主体） */
+  .vignette{
+    position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:
+      linear-gradient(180deg, rgba(4,25,40,.35) 0%, rgba(4,25,40,0) 18%, rgba(4,25,40,0) 82%, rgba(4,25,40,.30) 100%);
+  }
+
+  /* ==================== HUD ==================== */
+  .hud-title{
+    position:absolute;top:22px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    color:var(--ink);padding:8px 26px;border-radius:22px;
+    font-size:15px;font-weight:800;letter-spacing:2px;z-index:30;
+    box-shadow:0 4px 16px rgba(255,214,107,.5);
+  }
+  .hud-left{position:absolute;top:20px;left:22px;display:flex;flex-direction:column;gap:9px;z-index:30;}
+  .chip{
+    background:rgba(11,59,82,.55);border:1px solid var(--gold);
+    color:var(--gold-bright);padding:8px 17px;border-radius:22px;
+    font-size:14px;font-weight:700;letter-spacing:1px;
+    display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px);
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+  .chip .val{color:#fff;font-size:18px;min-width:20px;text-align:center;}
+
+  /* 河程进度 */
+  .progress-wrap{
+    position:absolute;top:20px;right:22px;width:172px;z-index:30;
+    background:rgba(11,59,82,.55);border:1px solid var(--gold);
+    border-radius:16px;padding:11px 14px;backdrop-filter:blur(8px);
+    box-shadow:0 4px 14px rgba(0,0,0,.25);
+  }
+  .progress-label{font-size:11px;color:var(--gold-bright);font-weight:800;letter-spacing:1px;margin-bottom:7px;display:flex;justify-content:space-between;}
+  .progress-track{height:9px;background:rgba(255,255,255,.22);border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));border-radius:6px;transition:width .5s;}
+
+  /* 节拍器 */
+  .metronome{
+    position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+    z-index:30;display:flex;align-items:center;gap:16px;
+    background:rgba(11,59,82,.5);border:1px solid rgba(255,214,107,.55);
+    padding:11px 26px;border-radius:32px;backdrop-filter:blur(8px);
+    box-shadow:0 4px 16px rgba(0,0,0,.3);
+  }
+  .metronome .beat{
+    font-size:17px;font-weight:800;letter-spacing:4px;color:var(--gold-bright);
+    min-width:52px;text-align:center;
+  }
+  .metronome .pulse{
+    width:15px;height:15px;border-radius:50%;background:var(--gold);
+    box-shadow:0 0 14px var(--gold-bright);
+  }
+
+  /* PERFECT 飘字 */
+  .floater{
+    position:absolute;left:50%;top:30%;transform:translateX(-50%);
+    z-index:28;font-weight:900;pointer-events:none;text-align:center;
+  }
+  .floater .big{
+    font-size:38px;color:var(--gold-bright);
+    text-shadow:0 2px 10px rgba(0,0,0,.5),0 0 22px var(--gold);letter-spacing:2px;
+  }
+  .floater .sub{font-size:15px;color:#fff;margin-top:3px;text-shadow:0 1px 5px rgba(0,0,0,.6);}
+  .floater.play{animation:floatUp 1.3s ease-out forwards;}
+  @keyframes floatUp{
+    0%{opacity:0;transform:translateX(-50%) translateY(12px) scale(.8);}
+    18%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.12);}
+    100%{opacity:0;transform:translateX(-50%) translateY(-46px) scale(1);}
+  }
+
+  /* 保持事件圈 */
+  .hold-ring{
+    position:absolute;left:50%;top:12%;transform:translateX(-50%);
+    width:140px;height:140px;z-index:29;opacity:0;transition:opacity .4s;
+  }
+  .hold-ring.show{opacity:1;}
+  .hold-ring svg{transform:rotate(-90deg);}
+  .hold-ring .track{fill:none;stroke:rgba(255,255,255,.3);stroke-width:9;}
+  .hold-ring .prog{fill:none;stroke:var(--gold);stroke-width:9;stroke-linecap:round;
+    stroke-dasharray:396;stroke-dashoffset:396;filter:drop-shadow(0 0 7px var(--gold-bright));}
+  .hold-ring .hold-txt{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-size:13px;font-weight:800;color:var(--gold-bright);text-align:center;
+    text-shadow:0 1px 3px rgba(0,0,0,.6);width:120px;
+  }
+
+  /* 右下动作提示小窗 */
+  .action-cam{
+    position:absolute;bottom:24px;right:24px;z-index:30;
+    width:142px;height:142px;border-radius:18px;
+    background:rgba(11,59,82,.55);border:2px solid var(--gold);
+    backdrop-filter:blur(8px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+    box-shadow:0 8px 24px rgba(0,0,0,.4);
+  }
+  .action-cam .ac-txt{font-size:11px;color:var(--gold-bright);font-weight:700;letter-spacing:.5px;text-align:center;line-height:1.5;}
+  .action-cam .ac-dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:#6bff9d;box-shadow:0 0 9px #6bff9d;animation:acDot 2s ease-in-out infinite;}
+  @keyframes acDot{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .action-cam .ac-fig{animation:acRow 3s ease-in-out infinite;}
+  @keyframes acRow{
+    0%,100%{transform:rotate(5deg);}
+    50%{transform:rotate(-5deg);}
+  }
+
+  /* ==================== 开场 / 结算 ==================== */
+  .overlay{
+    position:absolute;inset:0;z-index:60;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:18px;
+    background:radial-gradient(circle at 50% 42%,rgba(20,90,130,.42),rgba(4,18,28,.9));
+    backdrop-filter:blur(3px);transition:opacity .8s;
+  }
+  .overlay.hide{opacity:0;pointer-events:none;}
+  .brand{
+    border:2px solid var(--gold);color:var(--gold-bright);
+    padding:7px 22px;border-radius:24px;font-size:14px;font-weight:800;letter-spacing:3px;
+  }
+  .big-title{
+    font-size:64px;font-weight:900;letter-spacing:2px;line-height:1.1;
+    background:linear-gradient(135deg,#fff 0%,var(--gold-bright) 50%,#a8e0ff 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:0 6px 30px rgba(255,214,107,.2);
+  }
+  .subtitle{font-size:16px;color:#dff0fa;line-height:1.7;max-width:460px;}
+  .how-grid{display:flex;gap:13px;margin-top:6px;}
+  .how-item{
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,214,107,.45);
+    border-radius:15px;padding:13px 18px;min-width:100px;
+  }
+  .how-item .ico{font-size:24px;margin-bottom:6px;}
+  .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
+  .btn{
+    margin-top:10px;
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    color:var(--ink);border:none;padding:16px 46px;border-radius:32px;
+    font-size:18px;font-weight:900;letter-spacing:2px;cursor:pointer;
+    box-shadow:0 8px 26px rgba(255,214,107,.5);
+  }
+  .btn:active{transform:translateY(1px);}
+  .status{font-size:13px;color:#9fc4d8;margin-top:2px;}
+
+  #result .result-card{
+    background:rgba(11,59,82,.6);border:1px solid var(--gold);
+    border-radius:24px;padding:28px 38px;backdrop-filter:blur(8px);
+    display:flex;flex-direction:column;gap:16px;align-items:center;
+  }
+  .result-stat{display:flex;gap:38px;}
+  .result-stat .item{text-align:center;}
+  .result-stat .num{font-size:44px;font-weight:900;color:var(--gold-bright);line-height:1;}
+  .result-stat .lb{font-size:13px;color:#dff0fa;margin-top:7px;}
+  .result-up{font-size:15px;color:#6bff9d;font-weight:700;}
+
+  .toast{
+    position:absolute;top:74px;left:50%;transform:translateX(-50%) translateY(-10px);
+    z-index:35;background:rgba(11,59,82,.8);border:1px solid var(--gold);
+    color:var(--gold-bright);padding:11px 24px;border-radius:24px;
+    font-size:15px;font-weight:700;letter-spacing:1px;opacity:0;
+    box-shadow:0 6px 20px rgba(0,0,0,.4);transition:all .5s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 底层视频 -->
+  <video id="bgvid" src="img/划船.mp4" muted loop playsinline></video>
+  <div class="vignette"></div>
+
+  <!-- HUD -->
+  <div class="hud-title">今天不低头 · 河道划船</div>
+  <div class="hud-left">
+    <div class="chip"><span>🫁 扩胸</span><span class="val" id="repVal">0</span><span>次</span></div>
+    <div class="chip"><span>🔥 连击</span><span class="val" id="comboVal">0</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>河程</span><span id="progPct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <div class="metronome">
+    <div class="beat" id="beatTxt">拉</div>
+    <div class="pulse" id="beatPulse"></div>
+  </div>
+
+  <!-- 保持圈 -->
+  <div class="hold-ring" id="holdRing">
+    <svg width="140" height="140" viewBox="0 0 140 140">
+      <circle class="track" cx="70" cy="70" r="63"/>
+      <circle class="prog" id="holdProg" cx="70" cy="70" r="63"/>
+    </svg>
+    <div class="hold-txt">双桨拉满<br>保持挺胸</div>
+  </div>
+
+  <!-- 动作提示小窗 -->
+  <div class="action-cam">
+    <div class="ac-dot"></div>
+    <svg class="ac-fig" width="52" height="52" viewBox="0 0 48 48" fill="none" stroke="#ffe89b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="11" r="6"/>
+      <path d="M24 17 L24 32"/>
+      <path d="M24 21 L10 27 M24 21 L38 27"/>
+      <path d="M24 32 L16 44 M24 32 L32 44"/>
+    </svg>
+    <div class="ac-txt">跟我一起<br>划船 · 扩胸</div>
+  </div>
+
+  <!-- 开场 -->
+  <div class="overlay" id="intro">
+    <div class="brand">JOY · 河道划船</div>
+    <div class="big-title">Joy 想去划船</div>
+    <div class="subtitle">坐直、挺胸，双桨对称往后拉<br>一拉一放，舒展你的肩膀，赶走圆肩驼背</div>
+    <div class="how-grid">
+      <div class="how-item"><div class="ico">🚣</div><div class="lb">双桨后拉</div></div>
+      <div class="how-item"><div class="ico">💪</div><div class="lb">肩胛后收</div></div>
+      <div class="how-item"><div class="ico">🌊</div><div class="lb">保持挺胸</div></div>
+    </div>
+    <button class="btn" id="startBtn">开始划船 · ROW TIME!</button>
+    <div class="status">演示模式 · 自动播放</div>
+  </div>
+
+  <!-- 结算 -->
+  <div class="overlay hide" id="result">
+    <div class="brand">今日训练完成</div>
+    <div class="result-card">
+      <div class="result-stat">
+        <div class="item"><div class="num" id="rStrokes">0</div><div class="lb">扩胸次数</div></div>
+        <div class="item"><div class="num" id="rHold">0</div><div class="lb">末端保持</div></div>
+        <div class="item"><div class="num">+5°</div><div class="lb">肩部活动度</div></div>
+      </div>
+      <div class="result-up">↑ 比上周舒展 5°，圆肩缓解中</div>
+    </div>
+    <button class="btn" id="againBtn">再划一程</button>
+    <div class="status">今天不低头 · 关注你的肩颈健康</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const vid=document.getElementById('bgvid');
+const repVal=document.getElementById('repVal');
+const comboVal=document.getElementById('comboVal');
+const progFill=document.getElementById('progFill');
+const progPct=document.getElementById('progPct');
+const beatTxt=document.getElementById('beatTxt');
+const beatPulse=document.getElementById('beatPulse');
+const toast=document.getElementById('toast');
+const holdRing=document.getElementById('holdRing');
+const holdProg=document.getElementById('holdProg');
+const intro=document.getElementById('intro');
+const result=document.getElementById('result');
+
+let reps=0, combo=0, holds=0, playing=false;
+let timers=[];
+function T(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id;}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+
+const STROKE_MS=3000;   // 一桨 3 秒（舒缓，贴合视频节奏 + 医学慢节奏）
+const TOTAL_STROKES=8;  // 演示划 8 桨
+const GATE_AT=5;        // 第 5 桨后触发水闸保持事件
+
+function showToast(txt,dur=2200){
+  toast.textContent=txt;toast.classList.add('show');
+  T(()=>toast.classList.remove('show'),dur);
+}
+function floatBig(big,sub){
+  const f=document.createElement('div');
+  f.className='floater play';
+  f.innerHTML=`<div class="big">${big}</div><div class="sub">${sub}</div>`;
+  document.getElementById('app').appendChild(f);
+  T(()=>f.remove(),1300);
+}
+
+/* 节拍脉冲：拉—放 */
+function beatPulseAnim(){
+  beatPulse.animate([
+    {transform:'scale(.7)',opacity:.6},
+    {transform:'scale(1.5)',opacity:1,offset:.3},
+    {transform:'scale(.9)',opacity:.7}
+  ],{duration:STROKE_MS,easing:'ease-in-out'});
+}
+
+function doStroke(idx){
+  beatTxt.textContent='拉';
+  beatPulseAnim();
+  T(()=>{beatTxt.textContent='放';},STROKE_MS*0.42);
+  // 后拉发力点：计数 + PERFECT
+  T(()=>{
+    reps++;combo++;
+    repVal.textContent=reps;
+    comboVal.textContent=combo;
+    const pct=Math.min(100,Math.round((idx+1)/TOTAL_STROKES*100));
+    progFill.style.width=pct+'%';progPct.textContent=pct+'%';
+    floatBig('PERFECT','扩胸 +1 · 肩胛后收');
+  },STROKE_MS*0.32);
+}
+
+function startHoldEvent(onDone){
+  showToast('前方水闸 · 双桨拉满保持 2 秒！',2400);
+  beatTxt.textContent='保持';
+  holdRing.classList.add('show');
+  const DUR=2000,C=396,t0=performance.now();
+  function tick(now){
+    const p=Math.min(1,(now-t0)/DUR);
+    holdProg.style.strokeDashoffset=C*(1-p);
+    if(p<1)requestAnimationFrame(tick);
+    else{
+      floatBig('保持达标！','末端扩胸 +10° 活动度');
+      holdRing.classList.remove('show');
+      holdProg.style.strokeDashoffset=C;
+      holds++;
+      onDone&&onDone();
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+function runShow(){
+  playing=true;
+  reps=0;combo=0;holds=0;
+  repVal.textContent=0;comboVal.textContent=0;
+  progFill.style.width='0%';progPct.textContent='0%';
+
+  T(()=>showToast('坐直挺胸，跟着节拍一拉一放 🚣'),400);
+
+  let clock=1500;
+  // 第一段：GATE_AT 桨
+  for(let i=0;i<GATE_AT;i++){
+    T(()=>doStroke(i),clock+i*STROKE_MS);
+  }
+  clock+=GATE_AT*STROKE_MS;
+
+  // 水闸保持
+  T(()=>{
+    startHoldEvent(()=>{
+      // 继续划到结束
+      let c=400;
+      for(let i=GATE_AT;i<TOTAL_STROKES;i++){
+        T(()=>doStroke(i),c+(i-GATE_AT)*STROKE_MS);
+      }
+      T(()=>endShow(),c+(TOTAL_STROKES-GATE_AT)*STROKE_MS+900);
+    });
+  },clock+300);
+}
+
+function endShow(){
+  playing=false;
+  document.getElementById('rStrokes').textContent=reps;
+  document.getElementById('rHold').textContent=holds+' 次';
+  result.classList.remove('hide');
+}
+
+function start(){
+  intro.classList.add('hide');
+  result.classList.add('hide');
+  clearTimers();
+  vid.currentTime=0;
+  vid.play().catch(()=>{});
+  runShow();
+}
+document.getElementById('startBtn').addEventListener('click',start);
+document.getElementById('againBtn').addEventListener('click',start);
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();start();}});
+
+/* 截图/自动演示 */
+if(location.search.indexOf('auto=1')>=0){ T(start,300); }
+</script>
+</body>
+</html>

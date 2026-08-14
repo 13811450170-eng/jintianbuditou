@@ -99,6 +99,38 @@
     filter: drop-shadow(0 4px 8px rgba(0,0,0,.4));
   }
 
+  /* ==================== 生成图接入:背景板 + 角色立绘(有图用图,无图回落 CSS/emoji) ==================== */
+  .scene-art {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    opacity: 0; transition: opacity .5s ease;
+    z-index: 1; pointer-events: none;
+  }
+  #stage.has-scene .scene-art { opacity: 1; }
+  #stage.has-scene .table,
+  #stage.has-scene .lantern { display: none; }
+  #stage.has-scene { background: #17100b; }
+
+  .diner-img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,.55));
+  }
+  /* 有立绘时:去掉圆形底和阴影,放大一点,让 3D 立绘自然展示 */
+  .diner.has-art { width: 128px; height: 128px; }
+  .diner.has-art .diner-avatar {
+    background: none !important;
+    box-shadow: none !important;
+    border-radius: 0;
+    font-size: 0;
+  }
+  .diner.has-art.hungry .diner-img {
+    filter: drop-shadow(0 0 16px currentColor) drop-shadow(0 6px 12px rgba(0,0,0,.5));
+  }
+  .diner.has-art.aimed .diner-img {
+    filter: drop-shadow(0 0 20px var(--gold-glow)) drop-shadow(0 0 10px var(--gold-glow));
+  }
+
   /* ==================== HUD ==================== */
   .hud-title {
     position: absolute;
@@ -605,6 +637,9 @@
 
 <div id="stage">
 
+  <!-- 生成的餐厅背景板(有图才显示,自动接管;无图回落到下面的 CSS 木桌) -->
+  <div class="scene-art" id="sceneArt"></div>
+
   <!-- 氛围灯 -->
   <div class="lantern l1"></div>
   <div class="lantern l2"></div>
@@ -822,6 +857,53 @@ const debugEl = $('debug');
 const dbgYaw = $('dbgYaw'), dbgPitch = $('dbgPitch'), dbgRoll = $('dbgRoll'), dbgFps = $('dbgFps');
 
 if (DEBUG) debugEl.classList.add('show');
+
+// ============ 生成图接入:背景板 + 6 只 Doga 立绘(有图用图,无图回落) ============
+// 你在 Gemini/MJ 生成后,把文件按以下命名丢进目录即可自动生效,无需改代码:
+//   角色 → img/dogas/<狗名>-lunch-portrait.png
+//   背景 → img/bg/lunch-restaurant.png
+const DINER_ART = {
+  joy:   'img/dogas/joy-lunch-portrait.png',
+  yummy: 'img/dogas/yummy-lunch-portrait.png',
+  max:   'img/dogas/max-lunch-portrait.png',
+  snow:  'img/dogas/snow-lunch-portrait.png',
+  chill: 'img/dogas/chill-lunch-portrait.png',
+  blink: 'img/dogas/blink-lunch-portrait.png',
+};
+const SCENE_BG = 'img/bg/lunch-restaurant.png';
+// Joy 已有官方立绘,没生成坐姿版时用它兜底
+const JOY_FALLBACK = 'img/anchor/joy-standard.png';
+
+function tryLoadImage(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve(src);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+async function loadSceneArt() {
+  // 背景板
+  tryLoadImage(SCENE_BG).then(ok => {
+    if (ok) {
+      $('sceneArt').style.backgroundImage = `url("${SCENE_BG}")`;
+      stage.classList.add('has-scene');
+    }
+  });
+  // 6 只角色立绘
+  for (const who of Object.keys(DINER_ART)) {
+    const dinerEl = document.querySelector(`.diner[data-diner="${who}"]`);
+    if (!dinerEl) continue;
+    let src = await tryLoadImage(DINER_ART[who]);
+    if (!src && who === 'joy') src = await tryLoadImage(JOY_FALLBACK);
+    if (!src) continue;  // 无图:保留现在的 emoji 占位
+    const avatar = dinerEl.querySelector('.diner-avatar');
+    avatar.innerHTML = `<img class="diner-img" src="${src}" alt="${who}">`;
+    dinerEl.classList.add('has-art');
+  }
+}
+loadSceneArt();
 
 // ============ MediaPipe 加载 ============
 async function loadModel() {

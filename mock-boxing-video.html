@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 拳击派对</title>
+<style>
+  :root{
+    --gold:#ffd66b;
+    --gold-bright:#ffe89b;
+    --red:#ff3b3b;
+    --red-deep:#c81f2d;
+    --ink:#1a0608;
+    --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
+  html,body{height:100%;overflow:hidden;font-family:var(--font);background:#1a0608;color:#fff;}
+  #app{position:fixed;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 40%, #2a0a0e 0%, #150406 70%, #0d0204 100%);}
+
+  /* ===== 底层视频 ===== */
+  #bgvid{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.85);
+    min-width:100%;min-height:100%;width:auto;height:auto;
+    object-fit:cover;z-index:1;background:#1a0608;
+  }
+  /* 视频缩小后四周由 #app 的深黑红渐变兜底，和擂台氛围融为一体 */
+  .vignette{
+    position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:linear-gradient(180deg, rgba(20,4,6,.4) 0%, rgba(20,4,6,0) 18%, rgba(20,4,6,0) 80%, rgba(20,4,6,.38) 100%);
+  }
+
+  /* ==================== HUD ==================== */
+  .hud-title{
+    position:absolute;top:22px;left:50%;transform:translateX(-50%);
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    color:var(--ink);padding:8px 26px;border-radius:22px;
+    font-size:15px;font-weight:800;letter-spacing:2px;z-index:30;
+    box-shadow:0 4px 16px rgba(255,214,107,.45);
+  }
+  .hud-left{position:absolute;top:20px;left:22px;display:flex;flex-direction:column;gap:9px;z-index:30;}
+  .chip{
+    background:rgba(40,8,12,.6);border:1px solid var(--gold);
+    color:var(--gold-bright);padding:8px 17px;border-radius:22px;
+    font-size:14px;font-weight:700;letter-spacing:1px;
+    display:flex;align-items:center;gap:8px;backdrop-filter:blur(8px);
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .chip .val{color:#fff;font-size:18px;min-width:20px;text-align:center;}
+
+  .progress-wrap{
+    position:absolute;top:20px;right:22px;width:172px;z-index:30;
+    background:rgba(40,8,12,.6);border:1px solid var(--gold);
+    border-radius:16px;padding:11px 14px;backdrop-filter:blur(8px);
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
+  }
+  .progress-label{font-size:11px;color:var(--gold-bright);font-weight:800;letter-spacing:1px;margin-bottom:7px;display:flex;justify-content:space-between;}
+  .progress-track{height:9px;background:rgba(255,255,255,.2);border-radius:6px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--red),var(--gold));border-radius:6px;transition:width .5s;}
+
+  /* 节拍器 → 拳击叫"出拳提示" */
+  .metronome{
+    position:absolute;bottom:26px;left:50%;transform:translateX(-50%);
+    z-index:30;display:flex;align-items:center;gap:16px;
+    background:rgba(40,8,12,.55);border:1px solid rgba(255,214,107,.5);
+    padding:11px 26px;border-radius:32px;backdrop-filter:blur(8px);
+    box-shadow:0 4px 16px rgba(0,0,0,.4);
+  }
+  .metronome .beat{
+    font-size:16px;font-weight:800;letter-spacing:3px;color:var(--gold-bright);
+    min-width:72px;text-align:center;
+  }
+  .metronome .pulse{
+    width:15px;height:15px;border-radius:50%;background:var(--red);
+    box-shadow:0 0 14px var(--red);
+  }
+
+  /* 判定飘字 */
+  .floater{
+    position:absolute;left:50%;top:24%;transform:translateX(-50%);
+    z-index:28;font-weight:900;pointer-events:none;text-align:center;
+  }
+  .floater .big{
+    font-size:40px;color:var(--gold-bright);
+    text-shadow:0 2px 10px rgba(0,0,0,.6),0 0 24px var(--red);letter-spacing:2px;
+  }
+  .floater .sub{font-size:15px;color:#fff;margin-top:3px;text-shadow:0 1px 5px rgba(0,0,0,.7);}
+  .floater.play{animation:floatUp 1.2s ease-out forwards;}
+  @keyframes floatUp{
+    0%{opacity:0;transform:translateX(-50%) translateY(12px) scale(.8);}
+    18%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.14);}
+    100%{opacity:0;transform:translateX(-50%) translateY(-46px) scale(1);}
+  }
+
+  /* 来拳方向指示（顶部四角提示玩家往哪躲） */
+  .punch-cue{
+    position:absolute;top:50%;left:50%;
+    z-index:27;font-size:60px;font-weight:900;color:var(--red);
+    text-shadow:0 0 20px var(--red),0 0 40px rgba(255,59,59,.6);
+    opacity:0;pointer-events:none;
+  }
+  .punch-cue.play{animation:cuePop .8s ease-out forwards;}
+  @keyframes cuePop{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.4);}
+    30%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.3);}
+  }
+
+  /* 右下动作提示小窗 */
+  .action-cam{
+    position:absolute;bottom:24px;right:24px;z-index:30;
+    width:142px;height:142px;border-radius:18px;
+    background:rgba(40,8,12,.6);border:2px solid var(--gold);
+    backdrop-filter:blur(8px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+    box-shadow:0 8px 24px rgba(0,0,0,.5);
+  }
+  .action-cam .ac-txt{font-size:11px;color:var(--gold-bright);font-weight:700;letter-spacing:.5px;text-align:center;line-height:1.5;}
+  .action-cam .ac-dot{position:absolute;top:9px;right:9px;width:9px;height:9px;border-radius:50%;background:#6bff9d;box-shadow:0 0 9px #6bff9d;animation:acDot 2s ease-in-out infinite;}
+  @keyframes acDot{0%,100%{opacity:1;}50%{opacity:.4;}}
+  .action-cam .ac-fig{animation:acDodge 1.6s ease-in-out infinite;}
+  @keyframes acDodge{
+    0%,100%{transform:translateX(-6px) rotate(-6deg);}
+    50%{transform:translateX(6px) rotate(6deg);}
+  }
+
+  /* ==================== 开场 / 结算 ==================== */
+  .overlay{
+    position:absolute;inset:0;z-index:60;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:18px;
+    background:radial-gradient(circle at 50% 42%,rgba(120,20,28,.45),rgba(20,4,6,.92));
+    backdrop-filter:blur(3px);transition:opacity .8s;
+  }
+  .overlay.hide{opacity:0;pointer-events:none;}
+  .brand{
+    border:2px solid var(--gold);color:var(--gold-bright);
+    padding:7px 22px;border-radius:24px;font-size:14px;font-weight:800;letter-spacing:3px;
+  }
+  .big-title{
+    font-size:66px;font-weight:900;letter-spacing:3px;line-height:1.1;
+    background:linear-gradient(135deg,#fff 0%,var(--gold-bright) 45%,var(--red) 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    text-shadow:0 6px 30px rgba(255,59,59,.25);
+  }
+  .subtitle{font-size:16px;color:#f4d9dc;line-height:1.7;max-width:470px;}
+  .subtitle b{color:var(--gold-bright);}
+  .how-grid{display:flex;gap:12px;margin-top:6px;}
+  .how-item{
+    background:rgba(255,255,255,.08);border:1px solid rgba(255,214,107,.4);
+    border-radius:15px;padding:13px 16px;min-width:96px;
+  }
+  .how-item .ico{font-size:22px;margin-bottom:6px;color:#fff;}
+  .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
+  .how-item .sub2{font-size:10px;color:#d8b8bc;margin-top:3px;}
+  .btn{
+    margin-top:10px;
+    background:linear-gradient(135deg,var(--red),var(--red-deep));
+    color:#fff;border:none;padding:16px 46px;border-radius:32px;
+    font-size:18px;font-weight:900;letter-spacing:2px;cursor:pointer;
+    box-shadow:0 8px 26px rgba(255,59,59,.5);
+  }
+  .btn:active{transform:translateY(1px);}
+  .status{font-size:13px;color:#c89ca0;margin-top:2px;}
+
+  #result .result-card{
+    background:rgba(40,8,12,.65);border:1px solid var(--gold);
+    border-radius:24px;padding:28px 38px;backdrop-filter:blur(8px);
+    display:flex;flex-direction:column;gap:16px;align-items:center;
+  }
+  .result-stat{display:flex;gap:38px;}
+  .result-stat .item{text-align:center;}
+  .result-stat .num{font-size:44px;font-weight:900;color:var(--gold-bright);line-height:1;}
+  .result-stat .lb{font-size:13px;color:#f4d9dc;margin-top:7px;}
+  .result-up{font-size:15px;color:#6bff9d;font-weight:700;}
+
+  .toast{
+    position:absolute;top:74px;left:50%;transform:translateX(-50%) translateY(-10px);
+    z-index:35;background:rgba(40,8,12,.85);border:1px solid var(--gold);
+    color:var(--gold-bright);padding:11px 24px;border-radius:24px;
+    font-size:15px;font-weight:700;letter-spacing:1px;opacity:0;
+    box-shadow:0 6px 20px rgba(0,0,0,.5);transition:all .5s;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 底层视频 -->
+  <video id="bgvid" src="img/拳击.mp4" muted loop playsinline></video>
+  <div class="vignette"></div>
+
+  <!-- HUD -->
+  <div class="hud-title">今天不低头 · 拳击派对</div>
+  <div class="hud-left">
+    <div class="chip"><span>🥊 闪避</span><span class="val" id="repVal">0</span><span>次</span></div>
+    <div class="chip"><span>🔥 连击</span><span class="val" id="comboVal">0</span></div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-label"><span>回合</span><span id="progPct">0%</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+  </div>
+
+  <div class="metronome">
+    <div class="beat" id="beatTxt">准备</div>
+    <div class="pulse" id="beatPulse"></div>
+  </div>
+
+  <!-- 来拳方向指示 -->
+  <div class="punch-cue" id="punchCue">◀</div>
+
+  <!-- 动作提示小窗 -->
+  <div class="action-cam">
+    <div class="ac-dot"></div>
+    <svg class="ac-fig" width="52" height="52" viewBox="0 0 48 48" fill="none" stroke="#ffe89b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="24" cy="12" r="6"/>
+      <path d="M24 18 L24 34"/>
+      <path d="M24 22 L12 28 M24 22 L36 28"/>
+      <path d="M24 34 L16 44 M24 34 L32 44"/>
+    </svg>
+    <div class="ac-txt">跟我一起<br>转头 · 躲拳</div>
+  </div>
+
+  <!-- 开场 -->
+  <div class="overlay" id="intro">
+    <div class="brand">JOY · 拳击派对</div>
+    <div class="big-title">拳击派对</div>
+    <div class="subtitle">Joy 会挥拳过来，你用<b>头部动作</b>躲开<br>转头、抬头、收下巴——40 秒的舒缓颈椎训练</div>
+    <div class="how-grid">
+      <div class="how-item"><div class="ico">◀</div><div class="lb">头向左倾</div><div class="sub2">躲左钩拳</div></div>
+      <div class="how-item"><div class="ico">▶</div><div class="lb">头向右倾</div><div class="sub2">躲右钩拳</div></div>
+      <div class="how-item"><div class="ico">▼</div><div class="lb">收下巴</div><div class="sub2">躲上勾拳</div></div>
+      <div class="how-item"><div class="ico">▲</div><div class="lb">抬起头</div><div class="sub2">躲下勾拳</div></div>
+    </div>
+    <button class="btn" id="startBtn">开始对战 · BOXING TIME!</button>
+    <div class="status">演示模式 · 自动播放</div>
+  </div>
+
+  <!-- 结算 -->
+  <div class="overlay hide" id="result">
+    <div class="brand">回合结束</div>
+    <div class="result-card">
+      <div class="result-stat">
+        <div class="item"><div class="num" id="rDodge">0</div><div class="lb">完美闪避</div></div>
+        <div class="item"><div class="num" id="rCombo">0</div><div class="lb">最高连击</div></div>
+        <div class="item"><div class="num">+6°</div><div class="lb">颈部活动度</div></div>
+      </div>
+      <div class="result-up">↑ 比上周灵活 6°，颈部更轻松了</div>
+    </div>
+    <button class="btn" id="againBtn">再来一回合</button>
+    <div class="status">今天不低头 · 关注你的颈椎健康</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const vid=document.getElementById('bgvid');
+const repVal=document.getElementById('repVal');
+const comboVal=document.getElementById('comboVal');
+const progFill=document.getElementById('progFill');
+const progPct=document.getElementById('progPct');
+const beatTxt=document.getElementById('beatTxt');
+const beatPulse=document.getElementById('beatPulse');
+const toast=document.getElementById('toast');
+const punchCue=document.getElementById('punchCue');
+const intro=document.getElementById('intro');
+const result=document.getElementById('result');
+
+let dodges=0, combo=0, maxCombo=0, playing=false;
+let timers=[];
+function T(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id;}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+
+const PUNCH_MS=4300;      // 每拳间隔 4.3s（配合视频 0.7 倍速，3000/0.7≈4300）
+const TOTAL_PUNCHES=10;   // 演示 10 拳
+
+// 四种来拳 → 对应躲避方向
+const PUNCHES=[
+  {name:'左钩拳',dodge:'头向左倾',cue:'◀',cueX:32,cueY:42},
+  {name:'右钩拳',dodge:'头向右倾',cue:'▶',cueX:68,cueY:42},
+  {name:'上勾拳',dodge:'收下巴',  cue:'▼',cueX:50,cueY:30},
+  {name:'下勾拳',dodge:'抬起头',  cue:'▲',cueX:50,cueY:55},
+];
+
+function showToast(txt,dur=2200){
+  toast.textContent=txt;toast.classList.add('show');
+  T(()=>toast.classList.remove('show'),dur);
+}
+function floatBig(big,sub){
+  const f=document.createElement('div');
+  f.className='floater play';
+  f.innerHTML=`<div class="big">${big}</div><div class="sub">${sub}</div>`;
+  document.getElementById('app').appendChild(f);
+  T(()=>f.remove(),1200);
+}
+function showCue(p){
+  punchCue.textContent=p.cue;
+  punchCue.style.left=p.cueX+'%';
+  punchCue.style.top=p.cueY+'%';
+  punchCue.classList.remove('play');void punchCue.offsetWidth;
+  punchCue.classList.add('play');
+}
+function beatPulseAnim(){
+  beatPulse.animate([
+    {transform:'scale(.7)',opacity:.6},
+    {transform:'scale(1.5)',opacity:1,offset:.3},
+    {transform:'scale(.9)',opacity:.7}
+  ],{duration:PUNCH_MS,easing:'ease-in-out'});
+}
+
+function doPunch(idx){
+  const p=PUNCHES[idx%PUNCHES.length];
+  // 预判：来拳方向提示 + 节拍
+  beatTxt.textContent=p.name;
+  beatPulseAnim();
+  showCue(p);
+  // 命中判定：0.9s 后玩家"躲开" → 完美闪避
+  T(()=>{
+    dodges++;combo++;maxCombo=Math.max(maxCombo,combo);
+    repVal.textContent=dodges;
+    comboVal.textContent=combo;
+    const pct=Math.min(100,Math.round((idx+1)/TOTAL_PUNCHES*100));
+    progFill.style.width=pct+'%';progPct.textContent=pct+'%';
+    beatTxt.textContent=p.dodge;
+    const grade=Math.random()<.7?'PERFECT':'GOOD';
+    floatBig(grade, '完美闪避 · '+p.dodge);
+  },PUNCH_MS*0.42);
+}
+
+function runShow(){
+  playing=true;
+  dodges=0;combo=0;maxCombo=0;
+  repVal.textContent=0;comboVal.textContent=0;
+  progFill.style.width='0%';progPct.textContent='0%';
+
+  T(()=>showToast('看 Joy 的拳，转头躲开它 🥊'),400);
+
+  let clock=1600;
+  for(let i=0;i<TOTAL_PUNCHES;i++){
+    T(()=>doPunch(i),clock+i*PUNCH_MS);
+  }
+  T(()=>endShow(),clock+TOTAL_PUNCHES*PUNCH_MS+600);
+}
+
+function endShow(){
+  playing=false;
+  document.getElementById('rDodge').textContent=dodges;
+  document.getElementById('rCombo').textContent=maxCombo;
+  result.classList.remove('hide');
+}
+
+function start(){
+  intro.classList.add('hide');
+  result.classList.add('hide');
+  clearTimers();
+  vid.currentTime=0;
+  vid.playbackRate=0.7;    // 放慢到 0.7 倍速
+  vid.play().catch(()=>{});
+  runShow();
+}
+document.getElementById('startBtn').addEventListener('click',start);
+document.getElementById('againBtn').addEventListener('click',start);
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();start();}});
+
+if(location.search.indexOf('auto=1')>=0){ T(start,300); }
+</script>
+</body>
+</html>
