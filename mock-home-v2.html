@@ -7,8 +7,8 @@
 <style>
 :root {
   /* 底色系 */
-  --bg:          #EDEDF0;
-  --bg-hover:    #E4E4E9;
+  --bg:          #F0F1F8;
+  --bg-hover:    #E7E8F2;
   --card:        #FFFFFF;
   --line:        rgba(10, 10, 15, 0.06);
   --line-hard:   rgba(10, 10, 15, 0.1);
@@ -51,6 +51,27 @@ html, body {
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
 }
+
+/* 环境光:极淡品牌色光晕,让底色"活"起来 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(48vw 42vw at 12% 6%,  rgba(255, 156, 66, 0.07), transparent 60%),
+    radial-gradient(30vw 26vw at 18% 2%,  rgba(255, 190, 120, 0.06), transparent 62%),
+    radial-gradient(46vw 40vw at 88% 4%,  rgba(124, 90, 255, 0.13), transparent 60%),
+    radial-gradient(52vw 46vw at 78% 96%, rgba(255, 107, 74, 0.10), transparent 62%),
+    radial-gradient(40vw 38vw at 4% 92%,  rgba(76, 175, 136, 0.10), transparent 62%);
+  animation: bgDrift 22s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(0, -1.5%, 0) scale(1.06); }
+}
+.page { position: relative; z-index: 1; }
 
 .page {
   max-width: 1440px;
@@ -345,16 +366,24 @@ html, body {
 
 /* --- 左:身体数据分析面板 --- */
 .data-panel {
-  background: var(--card);
+  position: relative;
+  background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.9);
   border-radius: 24px;
   padding: 28px 30px;
   display: flex;
   flex-direction: column;
   gap: 22px;
   min-height: 0;
-  transition: box-shadow 0.2s;
+  box-shadow: 0 10px 34px rgba(60, 70, 140, 0.1), inset 0 1px 0 rgba(255,255,255,0.7);
+  transition: box-shadow 0.25s, transform 0.25s;
 }
-.data-panel:hover { box-shadow: var(--shadow-2); }
+.data-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 44px rgba(60, 70, 140, 0.16), inset 0 1px 0 rgba(255,255,255,0.8);
+}
 
 .dp-head {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -370,13 +399,6 @@ html, body {
   font-size: 12px;
   color: var(--ink-3);
   margin-top: 4px;
-  display: flex; align-items: center; gap: 5px;
-}
-.dp-sub::before {
-  content: "";
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--eye);
-  display: inline-block;
 }
 
 /* 数据三宫格 */
@@ -392,9 +414,15 @@ html, body {
 
 /* 身体状态分析 */
 .dp-zones {
-  display: flex; flex-direction: column; gap: 14px;
   flex: 1;
   min-height: 0;
+  display: flex;
+  gap: 22px;
+  align-items: center;
+}
+.dp-zones-body {
+  display: flex; flex-direction: column; gap: 14px;
+  flex: 1;
   justify-content: center;
 }
 .dp-zones-title {
@@ -403,16 +431,41 @@ html, body {
   color: var(--ink-2);
   letter-spacing: 0.2px;
 }
+
+/* 人体热区图 */
+.body-map {
+  flex-shrink: 0;
+  width: 96px;
+  align-self: stretch;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 50% 30%, rgba(0,163,255,0.06), transparent 70%);
+}
+.body-map svg { width: 100%; height: auto; max-height: 150px; overflow: visible; }
+.bm-body { fill: none; stroke: var(--ink-4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.5; }
+.bm-zone { transform-box: fill-box; transform-origin: center; }
+.bm-zone circle { animation: bmPulse 2.2s ease-in-out infinite; }
+.bm-zone.warn circle { fill: var(--fire); }
+.bm-zone.good circle { fill: var(--eye); }
+.bm-zone.shoulder-delay circle { animation-delay: 0.5s; }
+.bm-zone.eye-delay circle { animation-delay: 1s; }
+@keyframes bmPulse {
+  0%, 100% { opacity: 0.5; r: 5; }
+  50%      { opacity: 1;   r: 6.5; }
+}
+.bm-halo { opacity: 0.35; animation: bmHalo 2.2s ease-in-out infinite; }
+.bm-halo.warn { fill: var(--fire); }
+.bm-halo.good { fill: var(--eye); }
+.bm-halo.s-delay { animation-delay: 0.5s; }
+.bm-halo.e-delay { animation-delay: 1s; }
+@keyframes bmHalo {
+  0%, 100% { opacity: 0.12; r: 9; }
+  50%      { opacity: 0.4;  r: 14; }
+}
+
 .zone-row {
   display: flex; align-items: center; gap: 12px;
 }
-.zone-dot {
-  width: 8px; height: 8px; border-radius: 50%;
-  flex-shrink: 0;
-}
-.zone-dot.neck { background: var(--neck); }
-.zone-dot.shoulder { background: var(--shoulder); }
-.zone-dot.eye { background: var(--eye); }
 .zone-name {
   font-size: 13px; font-weight: 600; color: var(--ink);
   width: 40px; flex-shrink: 0;
@@ -465,22 +518,31 @@ html, body {
   gap: 18px;
 }
 .camp {
-  background: var(--card);
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.72));
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255,255,255,0.85);
   border-radius: 22px;
   padding: 20px 22px;
   min-height: 132px;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
   position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: row;
   align-items: stretch;
   gap: 18px;
 }
-.camp:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-3);
-}
+
+.camp-neck     { box-shadow: 0 8px 24px rgba(0, 163, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.7); }
+.camp-shoulder { box-shadow: 0 8px 24px rgba(124, 90, 255, 0.08), inset 0 1px 0 rgba(255,255,255,0.7); }
+.camp-eye      { box-shadow: 0 8px 24px rgba(76, 175, 136, 0.08), inset 0 1px 0 rgba(255,255,255,0.7); }
+
+.camp:hover { transform: translateY(-3px); }
+.camp-neck:hover     { box-shadow: 0 14px 32px rgba(0, 163, 255, 0.14); }
+.camp-shoulder:hover { box-shadow: 0 14px 32px rgba(124, 90, 255, 0.14); }
+.camp-eye:hover      { box-shadow: 0 14px 32px rgba(76, 175, 136, 0.14); }
 
 /* 左侧大视觉块 */
 .camp-visual {
@@ -489,11 +551,24 @@ html, body {
   align-self: stretch;
   border-radius: 16px;
   display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s;
 }
-.camp-neck     .camp-visual { background: var(--neck-bg); color: var(--neck); }
-.camp-shoulder .camp-visual { background: var(--shoulder-bg); color: var(--shoulder); }
-.camp-eye      .camp-visual { background: var(--eye-bg); color: var(--eye); }
-.camp-visual svg { width: 38px; height: 38px; }
+.camp:hover .camp-visual { transform: scale(1.04); }
+.camp-visual::after {
+  content: "";
+  position: absolute;
+  top: -30%; left: -30%;
+  width: 80%; height: 80%;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.55);
+  filter: blur(14px);
+}
+.camp-neck     .camp-visual { background: linear-gradient(150deg, #EAF6FF, #C9E8FF); color: var(--neck); }
+.camp-shoulder .camp-visual { background: linear-gradient(150deg, #F1ECFF, #DCD0FF); color: var(--shoulder); }
+.camp-eye      .camp-visual { background: linear-gradient(150deg, #E7F7EF, #CBEEDC); color: var(--eye); }
+.camp-visual svg { width: 38px; height: 38px; position: relative; z-index: 1; }
 
 /* 右侧内容列 */
 .camp-main {
@@ -871,6 +946,31 @@ html, body {
   margin-top: -4px; margin-right: -4px;
 }
 .toast-close svg { width: 14px; height: 14px; }
+
+/* ========== 入场动效 ========== */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .data-panel, .today, .camp {
+    opacity: 0;
+    animation: riseIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .data-panel { animation-delay: 0.05s; }
+  .today      { animation-delay: 0.15s; }
+  .camp:nth-child(1) { animation-delay: 0.30s; }
+  .camp:nth-child(2) { animation-delay: 0.38s; }
+  .camp:nth-child(3) { animation-delay: 0.46s; }
+
+  /* 进度条填充:入场时从 0 长到目标宽度 */
+  .zone-fill, .fill {
+    animation: barGrow 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+@keyframes barGrow {
+  from { width: 0 !important; }
+}
 </style>
 </head>
 <body>
@@ -943,7 +1043,7 @@ html, body {
 
       <div class="dp-stats">
         <div class="stat">
-          <span class="stat-num">23</span>
+          <span class="stat-num" data-count="23">0</span>
           <span class="stat-label">累计训练</span>
         </div>
         <div class="stat">
@@ -957,24 +1057,45 @@ html, body {
       </div>
 
       <div class="dp-zones">
-        <div class="dp-zones-title">近期身体状态</div>
-        <div class="zone-row">
-          <span class="zone-dot neck"></span>
-          <span class="zone-name">颈部</span>
-          <div class="zone-bar"><div class="zone-fill neck" style="width: 42%;"></div></div>
-          <span class="zone-status warn">偏紧</span>
+        <!-- 人体热区图:部位状态可视化 -->
+        <div class="body-map">
+          <svg viewBox="0 0 80 150" aria-label="身体热区">
+            <!-- 简笔人体 -->
+            <g class="bm-body">
+              <circle cx="40" cy="16" r="10"/>
+              <path d="M40 26 L40 92"/>
+              <path d="M40 40 L18 58 M40 40 L62 58"/>
+              <path d="M40 92 L26 138 M40 92 L54 138"/>
+            </g>
+            <!-- 颈部(偏紧·红) -->
+            <circle class="bm-halo warn" cx="40" cy="30" r="9"/>
+            <g class="bm-zone warn"><circle cx="40" cy="30" r="5"/></g>
+            <!-- 肩部(灵活·绿) -->
+            <circle class="bm-halo good s-delay" cx="40" cy="42" r="9"/>
+            <g class="bm-zone good shoulder-delay"><circle cx="40" cy="42" r="5"/></g>
+            <!-- 眼部(疲劳·红) -->
+            <circle class="bm-halo warn e-delay" cx="40" cy="14" r="8"/>
+            <g class="bm-zone warn eye-delay"><circle cx="40" cy="14" r="4.5"/></g>
+          </svg>
         </div>
-        <div class="zone-row">
-          <span class="zone-dot shoulder"></span>
-          <span class="zone-name">肩部</span>
-          <div class="zone-bar"><div class="zone-fill shoulder" style="width: 78%;"></div></div>
-          <span class="zone-status good">灵活</span>
-        </div>
-        <div class="zone-row">
-          <span class="zone-dot eye"></span>
-          <span class="zone-name">眼部</span>
-          <div class="zone-bar"><div class="zone-fill eye" style="width: 35%;"></div></div>
-          <span class="zone-status warn">疲劳</span>
+
+        <div class="dp-zones-body">
+          <div class="dp-zones-title">近期身体状态</div>
+          <div class="zone-row">
+            <span class="zone-name">颈部</span>
+            <div class="zone-bar"><div class="zone-fill neck" style="width: 42%;"></div></div>
+            <span class="zone-status warn">偏紧</span>
+          </div>
+          <div class="zone-row">
+            <span class="zone-name">肩部</span>
+            <div class="zone-bar"><div class="zone-fill shoulder" style="width: 78%;"></div></div>
+            <span class="zone-status good">灵活</span>
+          </div>
+          <div class="zone-row">
+            <span class="zone-name">眼部</span>
+            <div class="zone-bar"><div class="zone-fill eye" style="width: 35%;"></div></div>
+            <span class="zone-status warn">疲劳</span>
+          </div>
         </div>
       </div>
 
@@ -1174,6 +1295,23 @@ document.querySelector('.toast-btn-ghost').addEventListener('click', () => toast
   const kick = () => v.play().catch(() => {});
   kick();
   document.addEventListener('click', kick, { once: true });
+})();
+
+/* 数字滚动:入场时从 0 滚到目标值 */
+(function countUp() {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target = parseInt(el.dataset.count, 10) || 0;
+    if (reduce) { el.textContent = target; return; }
+    const dur = 1200, t0 = performance.now();
+    function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(tick);
+    }
+    setTimeout(() => requestAnimationFrame(tick), 300);
+  });
 })();
 </script>
 
