@@ -121,10 +121,10 @@ body::before {
 
 /* ========== Streak 5 态系统 (多邻国式) ========== */
 .streak-pill {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; gap: 14px;
   height: 48px;
   background: var(--card);
-  padding: 6px 20px 6px 10px;
+  padding: 6px 32px 6px 12px;
   border-radius: 100px;
   cursor: pointer;
   transition: all 0.25s;
@@ -408,22 +408,22 @@ body::before {
   gap: 12px;
   padding: 18px 0;
   border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
 }
 .dp-stats .stat { gap: 4px; }
 
-/* 身体状态分析 */
+/* 身体状态分析:三部位状态条 + AI 洞察(左对齐铺满) */
 .dp-zones {
   flex: 1;
   min-height: 0;
   display: flex;
-  gap: 22px;
-  align-items: center;
 }
-.dp-zones-body {
-  display: flex; flex-direction: column; gap: 14px;
+
+.dp-zones-right {
   flex: 1;
-  justify-content: center;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 .dp-zones-title {
   font-size: 13px;
@@ -431,37 +431,17 @@ body::before {
   color: var(--ink-2);
   letter-spacing: 0.2px;
 }
-
-/* 人体热区图 */
-.body-map {
-  flex-shrink: 0;
-  width: 96px;
-  align-self: stretch;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 18px;
-  background: radial-gradient(ellipse at 50% 30%, rgba(0,163,255,0.06), transparent 70%);
+.dp-insight {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(0,163,255,0.06), rgba(124,90,255,0.05));
+  border-radius: 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink-2);
 }
-.body-map svg { width: 100%; height: auto; max-height: 150px; overflow: visible; }
-.bm-body { fill: none; stroke: var(--ink-4); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.5; }
-.bm-zone { transform-box: fill-box; transform-origin: center; }
-.bm-zone circle { animation: bmPulse 2.2s ease-in-out infinite; }
-.bm-zone.warn circle { fill: var(--fire); }
-.bm-zone.good circle { fill: var(--eye); }
-.bm-zone.shoulder-delay circle { animation-delay: 0.5s; }
-.bm-zone.eye-delay circle { animation-delay: 1s; }
-@keyframes bmPulse {
-  0%, 100% { opacity: 0.5; r: 5; }
-  50%      { opacity: 1;   r: 6.5; }
-}
-.bm-halo { opacity: 0.35; animation: bmHalo 2.2s ease-in-out infinite; }
-.bm-halo.warn { fill: var(--fire); }
-.bm-halo.good { fill: var(--eye); }
-.bm-halo.s-delay { animation-delay: 0.5s; }
-.bm-halo.e-delay { animation-delay: 1s; }
-@keyframes bmHalo {
-  0%, 100% { opacity: 0.12; r: 9; }
-  50%      { opacity: 0.4;  r: 14; }
-}
+.dp-insight svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: var(--neck); }
+.dp-insight strong { color: var(--ink); font-weight: 700; }
 
 .zone-row {
   display: flex; align-items: center; gap: 12px;
@@ -556,19 +536,16 @@ body::before {
   transition: transform 0.25s;
 }
 .camp:hover .camp-visual { transform: scale(1.04); }
-.camp-visual::after {
-  content: "";
-  position: absolute;
-  top: -30%; left: -30%;
-  width: 80%; height: 80%;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.55);
-  filter: blur(14px);
+.camp-neck     .camp-visual { background: linear-gradient(150deg, #EAF6FF, #C9E8FF); }
+.camp-shoulder .camp-visual { background: linear-gradient(150deg, #F1ECFF, #DCD0FF); }
+.camp-eye      .camp-visual { background: linear-gradient(150deg, #E7F7EF, #CBEEDC); }
+.camp-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
 }
-.camp-neck     .camp-visual { background: linear-gradient(150deg, #EAF6FF, #C9E8FF); color: var(--neck); }
-.camp-shoulder .camp-visual { background: linear-gradient(150deg, #F1ECFF, #DCD0FF); color: var(--shoulder); }
-.camp-eye      .camp-visual { background: linear-gradient(150deg, #E7F7EF, #CBEEDC); color: var(--eye); }
-.camp-visual svg { width: 38px; height: 38px; position: relative; z-index: 1; }
 
 /* 右侧内容列 */
 .camp-main {
@@ -987,7 +964,7 @@ body::before {
         </svg>
       </div>
       <div class="greeting">
-        <span class="hello">下午好,</span>小马宝莉
+        <span class="hello">下午好，</span>刘四喜
       </div>
     </div>
 
@@ -1047,7 +1024,7 @@ body::before {
           <span class="stat-label">累计训练</span>
         </div>
         <div class="stat">
-          <span class="stat-num">12<small>h</small>30<small>m</small></span>
+          <span class="stat-num">23<small>h</small></span>
           <span class="stat-label">总时长</span>
         </div>
         <div class="stat">
@@ -1057,29 +1034,8 @@ body::before {
       </div>
 
       <div class="dp-zones">
-        <!-- 人体热区图:部位状态可视化 -->
-        <div class="body-map">
-          <svg viewBox="0 0 80 150" aria-label="身体热区">
-            <!-- 简笔人体 -->
-            <g class="bm-body">
-              <circle cx="40" cy="16" r="10"/>
-              <path d="M40 26 L40 92"/>
-              <path d="M40 40 L18 58 M40 40 L62 58"/>
-              <path d="M40 92 L26 138 M40 92 L54 138"/>
-            </g>
-            <!-- 颈部(偏紧·红) -->
-            <circle class="bm-halo warn" cx="40" cy="30" r="9"/>
-            <g class="bm-zone warn"><circle cx="40" cy="30" r="5"/></g>
-            <!-- 肩部(灵活·绿) -->
-            <circle class="bm-halo good s-delay" cx="40" cy="42" r="9"/>
-            <g class="bm-zone good shoulder-delay"><circle cx="40" cy="42" r="5"/></g>
-            <!-- 眼部(疲劳·红) -->
-            <circle class="bm-halo warn e-delay" cx="40" cy="14" r="8"/>
-            <g class="bm-zone warn eye-delay"><circle cx="40" cy="14" r="4.5"/></g>
-          </svg>
-        </div>
-
-        <div class="dp-zones-body">
+        <!-- 三部位状态 + AI 洞察 -->
+        <div class="dp-zones-right">
           <div class="dp-zones-title">近期身体状态</div>
           <div class="zone-row">
             <span class="zone-name">颈部</span>
@@ -1095,6 +1051,10 @@ body::before {
             <span class="zone-name">眼部</span>
             <div class="zone-bar"><div class="zone-fill eye" style="width: 35%;"></div></div>
             <span class="zone-status warn">疲劳</span>
+          </div>
+          <div class="dp-insight">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+            <span><strong>颈部本周偏紧</strong>，久坐后建议做套拳击放松，眼睛也该远眺休息啦。</span>
           </div>
         </div>
       </div>
@@ -1174,10 +1134,7 @@ body::before {
 
     <div class="camp camp-neck" onclick="location.href='index.html'">
       <div class="camp-visual">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-        </svg>
+        <img src="img/颈部.png" alt="颈部训练营">
       </div>
       <div class="camp-main">
         <div class="camp-top">
@@ -1203,9 +1160,7 @@ body::before {
 
     <div class="camp camp-shoulder">
       <div class="camp-visual">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
-        </svg>
+        <img src="img/肩部.png" alt="肩部训练营">
       </div>
       <div class="camp-main">
         <div class="camp-top">
@@ -1231,10 +1186,7 @@ body::before {
 
     <div class="camp camp-eye">
       <div class="camp-visual">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
+        <img src="img/眼部.png" alt="眼部训练营">
       </div>
       <div class="camp-main">
         <div class="camp-top">
