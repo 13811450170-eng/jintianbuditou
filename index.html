@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1440">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>今天不低头 · 关注你的颈椎健康</title>
 <style>
 :root {
@@ -46,8 +46,7 @@ html, body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--ink);
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
 }
@@ -75,7 +74,7 @@ body::before {
 
 .page {
   max-width: 1440px;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0 auto;
   padding: 22px 40px 44px;
   display: flex;
@@ -436,19 +435,16 @@ body::before {
 
 /* 三张部位卡横排 */
 .zone-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  display: flex;
+  justify-content: space-between;
 }
 .zone-card {
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 18px 10px 16px;
-  background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(255,255,255,0.9);
-  border-radius: 18px;
+  padding: 8px 0 0;
 }
 
 /* 部位色圆环 */
@@ -484,6 +480,16 @@ body::before {
 .zone-ring-label.shoulder { color: var(--shoulder); }
 .zone-ring-label.eye      { color: var(--eye); }
 
+/* 部位分数 */
+.zone-score {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.zone-score small { font-size: 12px; font-weight: 700; color: var(--ink-3); margin-left: 1px; }
+
 /* 状态词 + 趋势箭头 */
 .zone-card-status {
   display: flex;
@@ -495,10 +501,6 @@ body::before {
 .zone-card-status .st-word { color: var(--ink); }
 .zone-card-status .st-word.warn { color: var(--fire); }
 .zone-card-status .st-word.good { color: var(--eye); }
-.zone-trend { font-size: 15px; font-weight: 900; line-height: 1; }
-.zone-trend.up   { color: var(--eye); }
-.zone-trend.flat { color: var(--ink-4); }
-.zone-trend.down { color: var(--fire); }
 .zone-card-name {
   font-size: 12px;
   color: var(--ink-3);
@@ -764,6 +766,9 @@ body::before {
   display: flex; gap: 8px;
 }
 .btn-white-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: rgba(255,255,255,0.12);
   color: #fff;
   border: 1px solid rgba(255,255,255,0.2);
@@ -777,6 +782,7 @@ body::before {
   transition: all 0.2s;
   font-family: inherit;
 }
+.btn-white-ghost svg { width: 13px; height: 13px; }
 .btn-white-ghost:hover { background: rgba(255,255,255,0.22); }
 
 /* 底部信息 + CTA */
@@ -808,11 +814,11 @@ body::before {
 }
 
 .today-title {
-  font-size: 48px;
+  font-size: 60px;
   font-weight: 900;
   color: #fff;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
   text-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
@@ -998,6 +1004,57 @@ body::before {
 @keyframes barGrow {
   from { width: 0 !important; }
 }
+
+/* ========== 响应式:小屏自适应 ========== */
+
+/* 中等屏(笔记本 ~1180px 及以下):压缩左面板宽度与标题 */
+@media (max-width: 1180px) {
+  .page { padding: 18px 26px 32px; }
+  .main { grid-template-columns: 380px 1fr; gap: 16px; }
+  .today-title { font-size: 50px; }
+  .camps-row { gap: 14px; }
+  .mydata-stats { gap: 36px; }
+}
+
+/* 窄屏(~900px 及以下):主体上下堆叠,今日推荐给足高度 */
+@media (max-width: 900px) {
+  html, body { letter-spacing: 0; }
+  .main {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .today { min-height: 380px; }
+  .today-info-left { max-width: 72%; }
+  .today-title { font-size: 44px; }
+  .camps-row { grid-template-columns: 1fr; }
+  .streak-pill { padding-right: 20px; }
+}
+
+/* 手机 / 极窄(~640px 及以下):元素缩小,顶栏与底栏换行 */
+@media (max-width: 640px) {
+  .page { padding: 14px 16px 28px; gap: 14px; }
+  .topbar { flex-wrap: wrap; gap: 12px; min-height: auto; }
+  .topbar-spacer { display: none; }
+  .greeting { font-size: 17px; }
+
+  .data-panel { padding: 22px 20px; gap: 18px; }
+  .dp-title { font-size: 20px; }
+  .dp-stats { gap: 8px; }
+  .stat-num { font-size: 22px; }
+
+  .today-content { padding: 24px 22px; }
+  .today-title { font-size: 30px; }
+  .today-info { flex-direction: column; align-items: flex-start; gap: 18px; }
+  .today-info-left { max-width: 100%; }
+  .today-info-right { align-items: flex-start; width: 100%; }
+  .today-meta { justify-content: flex-start; }
+
+  .mydata { flex-direction: column; align-items: flex-start; gap: 18px; padding: 22px; }
+  .mydata-stats { gap: 28px; flex-wrap: wrap; }
+  .mydata-right { width: 100%; justify-content: space-between; }
+
+  .toast { left: 16px; right: 16px; top: 14px; max-width: none; }
+}
 </style>
 </head>
 <body>
@@ -1091,13 +1148,13 @@ body::before {
               <svg viewBox="0 0 72 72">
                 <circle class="zone-ring-track neck" cx="36" cy="36" r="26"/>
                 <circle class="zone-ring-fill neck" cx="36" cy="36" r="26"
-                        stroke-dasharray="163.4" stroke-dashoffset="94.8" data-offset="94.8"/>
+                        stroke-dasharray="163.4" stroke-dashoffset="45.8" data-offset="45.8"/>
               </svg>
               <div class="zone-ring-label neck">颈</div>
             </div>
+            <div class="zone-score">72<small>分</small></div>
             <div class="zone-card-status">
               <span class="st-word warn">偏紧</span>
-              <span class="zone-trend up">↑</span>
             </div>
             <div class="zone-card-name">较上周好转</div>
           </div>
@@ -1108,13 +1165,13 @@ body::before {
               <svg viewBox="0 0 72 72">
                 <circle class="zone-ring-track shoulder" cx="36" cy="36" r="26"/>
                 <circle class="zone-ring-fill shoulder" cx="36" cy="36" r="26"
-                        stroke-dasharray="163.4" stroke-dashoffset="35.9" data-offset="35.9"/>
+                        stroke-dasharray="163.4" stroke-dashoffset="16.3" data-offset="16.3"/>
               </svg>
               <div class="zone-ring-label shoulder">肩</div>
             </div>
+            <div class="zone-score">90<small>分</small></div>
             <div class="zone-card-status">
               <span class="st-word good">灵活</span>
-              <span class="zone-trend flat">→</span>
             </div>
             <div class="zone-card-name">保持稳定</div>
           </div>
@@ -1125,21 +1182,16 @@ body::before {
               <svg viewBox="0 0 72 72">
                 <circle class="zone-ring-track eye" cx="36" cy="36" r="26"/>
                 <circle class="zone-ring-fill eye" cx="36" cy="36" r="26"
-                        stroke-dasharray="163.4" stroke-dashoffset="106.2" data-offset="106.2"/>
+                        stroke-dasharray="163.4" stroke-dashoffset="68.6" data-offset="68.6"/>
               </svg>
               <div class="zone-ring-label eye">眼</div>
             </div>
+            <div class="zone-score">58<small>分</small></div>
             <div class="zone-card-status">
               <span class="st-word warn">疲劳</span>
-              <span class="zone-trend down">↓</span>
             </div>
             <div class="zone-card-name">该休息了</div>
           </div>
-        </div>
-
-        <div class="dp-insight">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
-          <span><strong>颈部本周偏紧</strong>，久坐后打套拳放松一下，眼睛也该远眺休息啦。</span>
         </div>
       </div>
 
@@ -1156,10 +1208,10 @@ body::before {
       </div>
     </div>
 
-    <!-- 右:今日推荐(拳击实拍视频 + 悬浮内容) -->
+    <!-- 右:今日推荐(划船实拍视频 + 悬浮内容) -->
     <section class="today">
-      <!-- 拳击实拍视频背景(不叠游戏 HUD) -->
-      <video class="today-video" id="todayVideo" src="img/boxing.mp4" muted loop autoplay playsinline></video>
+      <!-- 划船实拍视频背景(不叠游戏 HUD) -->
+      <video class="today-video" id="todayVideo" src="img/rowing.mp4" muted loop autoplay playsinline></video>
       <div class="today-scrim"></div>
 
       <!-- 上层内容 -->
@@ -1172,20 +1224,23 @@ body::before {
             今日为你推荐
           </span>
           <div class="today-actions-top">
-            <button class="btn-white-ghost">🔄 换一个</button>
+            <button class="btn-white-ghost">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 8 16 8"/></svg>
+              换一个
+            </button>
           </div>
         </div>
 
         <!-- 底部:关卡信息 + CTA -->
         <div class="today-info">
           <div class="today-info-left">
-            <span class="today-branch">颈部训练营 · 拳击派对</span>
+            <span class="today-branch">肩部训练营 · 河道划船</span>
             <h1 class="today-title">
-              释放你的<br>
+              划开你的<br>
               工作烦恼
             </h1>
             <div class="today-quote">
-              <strong>下午三点最容易累~</strong> 挥挥拳把烦恼打飞,顺便活动一下颈椎。
+              <strong>下午三点最容易累~</strong> 划几桨舒展肩背,顺便放松一下肩颈。
             </div>
           </div>
 
@@ -1197,11 +1252,11 @@ body::before {
               </div>
               <div class="meta-chip">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8h12M6 16h12M8 4v16M16 4v16"/></svg>
-                综合灵活度
+                肩背舒展
               </div>
               <div class="meta-chip">🌱 轻度</div>
             </div>
-            <button class="btn-primary" onclick="location.href='mock-boxing-video.html'">
+            <button class="btn-primary" onclick="location.href='mock-rowing-video.html'">
               开始训练
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
