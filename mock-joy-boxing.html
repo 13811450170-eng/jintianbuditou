@@ -821,6 +821,7 @@ html, body { height: 100%; overflow: hidden; font-family: var(--font); color: va
 
 <script type="module">
 import { createPoseKernel } from "./js/pose-kernel.js";
+import { recordSession } from "./js/health-store.js";
 let kernel = null;
 
 // ========================================================================
@@ -1327,6 +1328,20 @@ function resolve(beat, kind, reason, angle) {
   }
 
   if (DEBUG) console.log(`[JUDGE] beat #${beat.id}${beat.subId||''} ${kind} (${reason}, ${angle?.toFixed?.(1)}°)`);
+
+  // 记录逐拳数据供报告页逐轴分析(与散步关 session 同源:只存数值/枚举,无画面)。
+  // 拳型 expect(roll±/pitch±)即颈椎轴向;whiplash/over-rotation 记为甩头。
+  const axis = beat.expect && beat.expect.startsWith('roll') ? 'roll'
+    : beat.expect && beat.expect.startsWith('pitch') ? 'pitch' : null;
+  if (reason === 'whiplash' || reason === 'over-rotation') sessionStats.flingCount++;
+  if (axis) {
+    sessionStats.sessionLog.push({
+      axis,
+      result: (reason === 'whiplash' || reason === 'over-rotation') ? 'fling' : kind,
+      peakAngle: (typeof angle === 'number') ? Math.abs(angle) : null,
+      holdMs: null,   // 拳击关是节拍命中,无保持时长概念
+    });
+  }
 }
 
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
@@ -1630,6 +1645,7 @@ function beginSession() {
     perfectCount: 0, goodCount: 0, missCount: 0,
     score: 0, currentCombo: 0, maxCombo: 0,
     koTriggered: false, koAtBeat: null,
+    sessionLog: [], flingCount: 0,   // 逐拳日志 + 甩头计数(供报告页逐轴分析,与散步关同源)
   };
 
   // 克隆 beat 数据到 runtime
@@ -1757,8 +1773,10 @@ function runOutro() {
   const totalBeats = 9;   // 8 拳 + 1 combo 组合(拳击关固定)
   const hits = s.perfectCount + s.goodCount;
   const completion = Math.round((hits / totalBeats) * 100);
+  const session = summarizeBoxingSession();
   const lastRun = {
     branch: 'boxing',
+    level: 'boxing',        // 关卡标识,报告页/后端据此分流
     rank,
     stats: {
       time: 30,             // 关卡固定 30s 战斗段
@@ -1772,10 +1790,42 @@ function runOutro() {
       joy:   '你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦',
       total: '累计训练 <strong>23 次 · 12 小时 30 分</strong>',
     },
+    session,                // 逐轴汇总,供报告页结论卡 + 后端 AI 分析
   };
   try { sessionStorage.setItem('lastRun', JSON.stringify(lastRun)); } catch (e) {}
+  // 写进统一健康档案(与散步关同源)。隐私:只存数值。
+  try { recordSession({ level: 'boxing', byAxis: session.byAxis, flingCount: session.flingCount, durationMs: session.durationMs, ts: Date.now() }); } catch (e) {}
   setTimeout(() => { location.href = 'mock-report.html'; }, 1800);
 }
+
+// 把拳击关逐拳日志派生成"按轴汇总"(与 mock-walk 的 summarizeSession 同形状)。
+// 拳型只覆盖 pitch(上/下勾)与 roll(左/右钩),无 yaw;只含数值,无画面。
+function summarizeBoxingSession() {
+  const s = sessionStats || { sessionLog: [], flingCount: 0 };
+  const log = s.sessionLog || [];
+  const byAxis = {};
+  for (const k of ['pitch', 'roll']) byAxis[k] = { reps: 0, peakMax: 0, peakAvg: 0, holdAvg: 0, _sum: 0 };
+  let hits = 0;
+  for (const a of log) {
+    if (a.result === 'fling') continue;
+    const b = byAxis[a.axis]; if (!b) continue;
+    b.reps++; hits++;
+    if (a.peakAngle != null) { b._sum += a.peakAngle; b.peakMax = Math.max(b.peakMax, a.peakAngle); }
+  }
+  for (const k of Object.keys(byAxis)) {
+    const b = byAxis[k];
+    b.peakAvg = b.reps ? Math.round(b._sum / b.reps) : 0;
+    delete b._sum;
+  }
+  return {
+    durationMs: 30000,           // 战斗段固定 30s
+    totalActions: hits,
+    flingCount: s.flingCount || 0,
+    byAxis,
+    actions: log,
+  };
+}
+
 
 function getRank() {
   const p = sessionStats.perfectCount, m = sessionStats.missCount;
