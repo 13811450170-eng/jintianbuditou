@@ -34,17 +34,18 @@ python3 -m http.server 8000
 
 ## 项目结构
 
+> 📌 **根目录 = 当前在用的 app 页面**(HTML 之间靠文件名互相跳转,所以都放同一层,别挪进子文件夹)。
+> 文档在 `docs/`,已被取代的旧版页在 `_archive/`。
+
 ```
 ├── index.html                       # 主入口 · 首页 + 森林公园散步(晨间)关卡
 │
-│  【颈部关卡】
-├── mock-joy-boxing.html             # 拳击派对(CSS/canvas 版)
+│  【颈部关卡 · 在用】
 ├── mock-boxing-video.html           # 拳击派对(视频底图版,依赖 img/boxing.mp4)
-├── mock-lunch-restaurant.html       # 餐厅喂 Doga(有生成图用图,无图回落 emoji)
-├── mock-night-fireworks.html        # 星光派对流星关卡
+├── mock-joy-boxing.html             # 拳击派对(CSS/canvas 可玩原型)
+├── mock-lunch-video.html            # 餐厅喂 Doga(视频底图版,依赖 img/lunch.mp4)
 │
-│  【肩部关卡】
-├── mock-rowing-river.html           # 河道划船(4 帧 Joy 立绘,前倾→后仰扩胸)
+│  【肩部关卡 · 在用】
 ├── mock-rowing-video.html           # 河道划船(视频底图版,依赖 img/rowing.mp4)
 ├── mock-shoulder-star.html          # 举臂摘星(抬臂上举够星星)
 │
@@ -52,18 +53,25 @@ python3 -m http.server 8000
 ├── mock-home-v2.html                # 首页 v2
 ├── mock-onboarding.html             # 首次自查引导
 ├── mock-body-profile.html           # 身体档案
-├── mock-report.html                 # 单次训练报告
+├── mock-report.html                 # 单次训练报告(接后端 AI 逐轴点评)
 ├── mock-weekly-report.html          # 周报
 ├── mock-addiction-report.html       # 留存/上瘾机制报告
+├── zone.html                        # 部位关卡列表(颈部/肩部入口)
+├── design-system.html               # 关卡 HUD 设计系统母版(参考用)
 │
+├── js/                              # pose-kernel.js(头姿检测内核) · you-facecam.js(小窗)
+├── server/                          # 零依赖 Node 后端(LLM 代理 · 3 端点 · 同源托管)
+├── skills/                          # 健康评估/指导 skill 规格文档
 ├── assets/joy/                      # 已加工的 Joy 表情、素材(可直接引用)
-├── img/                             # 关卡背景、Joy 立绘、视频底图(boxing/rowing.mp4)
-├── 今天不低头-初赛玩法方案.md            # 初赛完整玩法设计文档
-├── 今天不低头-项目交接文档.md            # 交接文档
-└── 京东黑马-今天不低头-报名材料.md        # 报名材料
+├── img/                             # 关卡背景、Joy 立绘、视频底图(boxing/rowing/lunch.mp4)
+│
+├── docs/                            # 📄 文档与比赛材料(玩法方案/交接/报名/PROMPT 手册/架构图)
+└── _archive/                        # 🗄️ 已被取代的旧版页(保留备查,不再维护)
 ```
 
-> 视频版关卡(`mock-boxing-video` / `mock-rowing-video`)用一段合成视频当底图做**画面演示**,HUD 叠在视频上。视频文件 `img/boxing.mp4` / `img/rowing.mp4` 已在 Git 里,clone 下来即有;但仍需走本地服务器打开(见上面第 3 步),`file://` 双击不会加载视频。
+> **视频版关卡**(`mock-boxing-video` / `mock-rowing-video` / `mock-lunch-video`)用一段合成视频当底图做**画面演示**,HUD 叠在视频上。视频文件已在 Git 里,clone 下来即有;但仍需走本地服务器打开(见上面第 3 步),`file://` 双击不会加载视频。
+>
+> **`_archive/` 里有什么**:`mock-lunch-restaurant`(被 lunch-video 取代)、`mock-rowing-river`(被 rowing-video 取代)、`mock-night-fireworks`(烟花关已无入口)、`_record-rowing`(划船素材录制工具页)。需要旧版随时能移回根目录。
 
 ## 关卡总览(按部位组织)
 
@@ -72,17 +80,18 @@ python3 -m http.server 8000
 | 颈部 | 森林公园散步 | 转头 / 抬头低头 / 侧屈 | `index.html` | ✅ 初赛真玩版 |
 | 颈部 | 拳击派对 | 4 拳型(左钩/右钩/上勾/下勾) | `mock-joy-boxing.html` | 🧪 可玩原型 |
 | 颈部 | 拳击派对(视频版) | 同上 · 视频底图演示 | `mock-boxing-video.html` | 🎬 画面演示 |
-| 颈部 | 餐厅喂 Doga | 金勺准星 · 6 位置喂食 | `mock-lunch-restaurant.html` | 🧪 可玩原型 |
-| 颈部 | 星光派对 | 头姿控制接流星 | `mock-night-fireworks.html` | 🧪 可玩原型 |
-| 肩部 | 河道划船 | 前倾→后仰扩胸 · 肩胛后收 | `mock-rowing-river.html` | 🧪 可玩原型 |
-| 肩部 | 河道划船(视频版) | 同上 · 视频底图演示 | `mock-rowing-video.html` | 🎬 画面演示 |
+| 颈部 | 餐厅喂 Doga(视频版) | 转头对准 · 金勺喂食 | `mock-lunch-video.html` | 🎬 画面演示 |
+| 肩部 | 河道划船(视频版) | 前倾→后仰扩胸 · 肩胛后收 | `mock-rowing-video.html` | 🎬 画面演示 |
 | 肩部 | 举臂摘星 | 抬臂上举够星星 | `mock-shoulder-star.html` | 🧪 可玩原型 |
 
 > 🎬 **视频版** = 用合成视频当底图做画面演示(还没接姿态检测),让人一眼看懂关卡长什么样;🧪 **可玩原型** = 摄像头 + 姿态检测能真玩。
+>
+> 旧版可玩原型(餐厅 `mock-lunch-restaurant`、划船 `mock-rowing-river`、星光派对 `mock-night-fireworks`)已移入 `_archive/`,被视频版 / 摘星关取代。
 
 ## 分工协作建议
 
-- **改 UI / 视觉:** 各关卡 html 之间没有共享代码,各自独立,可以分工各改一个
+- **改 UI / 视觉:** 各关卡 html 的视觉/HUD 各自独立,可以分工各改一个
+- **改检测逻辑要当心:** 四个真玩关卡共用 `js/pose-kernel.js`(头姿检测内核),改内核会同时影响多关;各关自己的阈值/手感是在各 html 里注入的,改那部分只影响单关
 - **想改前提前打个招呼:** 同一个 html 两人一起改容易冲突,尽量避免
 - **改完记得推:** GitHub Desktop 左下角写「改了什么」→ Commit → 顶部 Push origin
 
