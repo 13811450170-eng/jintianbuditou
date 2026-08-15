@@ -992,12 +992,14 @@ body::before {
 .intake-textarea::placeholder { color: var(--ink-4); }
 
 .intake-hint-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 24px; }
+.intake-dim-hint { font-size: 12px; color: var(--ink-4); margin: 16px 0 8px; font-weight: 600; }
 .intake-chip {
   padding: 7px 14px; border-radius: 100px;
   background: var(--card); border: 1px solid var(--line);
   color: var(--ink-3); font-size: 12px; cursor: pointer; transition: all 0.2s;
 }
 .intake-chip:hover { color: var(--ink); border-color: var(--line-hard); background: var(--card-hover); }
+.intake-chip .chip-plus { color: var(--accent); font-weight: 800; margin-right: 4px; }
 
 .intake-actions { display: flex; gap: 12px; align-items: center; }
 .intake-skip {
@@ -1017,6 +1019,22 @@ body::before {
 .intake-parsing-dots span:nth-child(3) { animation-delay: 0.3s; background: var(--shoulder); }
 @keyframes parseBounce { 0%,80%,100%{transform:scale(0.6);opacity:0.4;} 40%{transform:scale(1);opacity:1;} }
 .intake-parsing-txt { font-size: 15px; color: var(--ink-2); }
+
+/* AI 逐步思考链 */
+.intake-think { display: flex; flex-direction: column; gap: 12px; padding: 20px 4px; }
+.think-row { display: flex; align-items: center; gap: 12px; opacity: 0; transform: translateY(6px); animation: thinkIn 0.3s ease forwards; }
+@keyframes thinkIn { to { opacity: 1; transform: none; } }
+.think-row.done .think-tx { color: var(--ink-3); }
+.think-ic {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: var(--accent);
+  background: var(--card); border: 1px solid var(--line);
+}
+.think-ic.ok { color: #fff; background: var(--eye, #4CAF88); border-color: var(--eye, #4CAF88); }
+.think-spin { width: 12px; height: 12px; border: 2px solid var(--accent); border-right-color: transparent; border-radius: 50%; animation: thinkSpin 0.7s linear infinite; }
+@keyframes thinkSpin { to { transform: rotate(360deg); } }
+.think-tx { font-size: 15px; color: var(--ink); font-weight: 600; letter-spacing: -0.01em; }
 
 /* 确认卡:字段网格 */
 .intake-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
@@ -2239,6 +2257,7 @@ function renderInput() {
     <div class="intake-title">先用一句话,<br>告诉我你的情况</div>
     <div class="intake-sub">不用填表格,像聊天一样说就好 —— 年龄、工作、每天坐多久、哪里不舒服，想到什么说什么，Joy 来帮你整理。</div>
     <textarea class="intake-textarea" id="intakeText" placeholder="例如:我程序员,32,每天坐 9 小时,最近转头有点发僵…"></textarea>
+    <div class="intake-dim-hint">可以说说这些 ↓</div>
     <div class="intake-hint-chips" id="intakeChips"></div>
     <div class="intake-actions">
       <button class="btn-primary" id="intakeGo">让 Joy 理解
@@ -2249,18 +2268,28 @@ function renderInput() {
   `;
   const ta = card.querySelector('#intakeText');
   ta.focus();
-  // 示例快捷填充
-  const samples = [
-    '我程序员,32,每天坐 9 小时,最近转头发僵',
-    '设计师,29 岁女,168 55kg,每天看屏幕 10 小时,肩膀紧',
-    '运营,26,久坐一天,颈椎有点酸',
+  // 维度提示标签:点一下把该维度的引导词补进输入框,引导用户说什么
+  const dims = [
+    { label: '年龄', hint: '我今年 岁' },
+    { label: '职业', hint: '我是做 的' },
+    { label: '每天久坐', hint: '每天大概坐 小时' },
+    { label: '身高体重', hint: '身高 cm、体重 kg' },
+    { label: '哪里不舒服', hint: '最近 有点不舒服' },
+    { label: '看屏时长', hint: '每天看屏幕 小时' },
   ];
   const chips = card.querySelector('#intakeChips');
-  samples.forEach(s => {
+  dims.forEach(d => {
     const c = document.createElement('span');
-    c.className = 'intake-chip'; c.textContent = s.length > 20 ? s.slice(0, 18) + '…' : s;
-    c.title = s;
-    c.onclick = () => { ta.value = s; ta.focus(); };
+    c.className = 'intake-chip';
+    c.innerHTML = `<span class="chip-plus">+</span>${d.label}`;
+    c.onclick = () => {
+      const cur = ta.value.trim();
+      ta.value = (cur ? cur + '，' : '') + d.hint;
+      ta.focus();
+      // 光标定位到引导词里的空格处,方便直接接着填
+      const gap = ta.value.lastIndexOf(' ');
+      if (gap >= 0) ta.setSelectionRange(gap, gap);
+    };
     chips.appendChild(c);
   });
   card.querySelector('#intakeGo').onclick = () => {
@@ -2279,11 +2308,50 @@ function renderParsing() {
       <div class="intake-joy-avatar">J</div>
       <div class="intake-joy-meta"><div class="n">Joy</div><div class="s">正在理解你说的话…</div></div>
     </div>
-    <div class="intake-parsing">
-      <div class="intake-parsing-dots"><span></span><span></span><span></span></div>
-      <div class="intake-parsing-txt">Joy 正在从你的描述里提取健康信息…</div>
-    </div>
+    <div class="intake-think" id="intakeThink"></div>
   `;
+}
+
+// 逐条刷出思考链。steps: [{text, done}]。返回一个 Promise,全部刷完后 resolve。
+function playThinkChain(steps) {
+  const box = card.querySelector('#intakeThink');
+  if (!box) return Promise.resolve();
+  return new Promise(resolve => {
+    let i = 0;
+    function next() {
+      if (i >= steps.length) { resolve(); return; }
+      const s = steps[i];
+      const row = document.createElement('div');
+      row.className = 'think-row';
+      row.innerHTML = `<span class="think-ic"><span class="think-spin"></span></span><span class="think-tx">${s.text}</span>`;
+      box.appendChild(row);
+      // 上一条标记完成(打勾)
+      if (i > 0) {
+        const prev = box.children[i - 1];
+        prev.querySelector('.think-ic').innerHTML = '✓';
+        prev.querySelector('.think-ic').classList.add('ok');
+        prev.classList.add('done');
+      }
+      i++;
+      setTimeout(next, s.delay || 600);
+    }
+    next();
+  });
+}
+
+// 把真实解析结果 fields 翻成"思考链"条目(基于真值,不瞎编)
+function fieldsToThinkSteps(fields) {
+  const CN = { neck: '颈部', shoulder: '肩部', eye: '眼部' };
+  const steps = [{ text: '读取你的描述…', delay: 500 }];
+  if (fields.occupation) steps.push({ text: `识别职业:${fields.occupation}`, delay: 550 });
+  if (fields.age) steps.push({ text: `提取年龄:${fields.age} 岁`, delay: 500 });
+  if (fields.sitHoursPerDay != null) steps.push({ text: `记录久坐时长:每天约 ${fields.sitHoursPerDay} 小时`, delay: 550 });
+  if (fields.screenHoursPerDay != null) steps.push({ text: `记录用屏时长:每天约 ${fields.screenHoursPerDay} 小时`, delay: 500 });
+  if (fields.heightCm && fields.weightKg) steps.push({ text: `计算体态:${fields.heightCm}cm / ${fields.weightKg}kg`, delay: 500 });
+  if (fields.history && fields.history.length) steps.push({ text: `留意既往不适:${fields.history.join('、')}`, delay: 600 });
+  if (fields.chiefComplaint && CN[fields.chiefComplaint]) steps.push({ text: `定位主诉部位:${CN[fields.chiefComplaint]}`, delay: 600 });
+  steps.push({ text: '整理成健康档案…', delay: 500 });
+  return steps;
 }
 
 /* ---------- 调 /api/intake,失败降级 ---------- */
@@ -2314,6 +2382,9 @@ async function submitIntake(text) {
   // 存下 skill 产出的意图画像与交接背景(供即时预览 + 交给 assessment)
   if (data.intentProfile) intakeIntentProfile = data.intentProfile;
   if (data.handoffToAssessment) intakeHandoff = data.handoffToAssessment;
+
+  // 逐步思考链:用真实抽到的字段逐条刷出,体现"AI 在分析"(基于真值,非编造)
+  await playThinkChain(fieldsToThinkSteps(intakeFields));
 
   // 还有关键缺失 且 追问不超过 2 轮 → 追问一句
   if (!data.done && data.followupQuestion && intakeRound < 3) {
