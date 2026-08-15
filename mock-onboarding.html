@@ -1781,6 +1781,7 @@ function toggleCheck(el) {
 
 /* ========== 完成 ========== */
 function goDone() {
+  try { window.__markOnboarded && window.__markOnboarded(); } catch (e) {}
   location.href = 'index.html';
 }
 
@@ -2211,7 +2212,9 @@ updateProgress();
 
 <!-- ========== AI 对话式录入逻辑(ES module:要 import health-store) ========== -->
 <script type="module">
-import { saveProfileBasics, loadProfile } from './js/health-store.js';
+import { saveProfileBasics, loadProfile, markOnboarded } from './js/health-store.js';
+// 供普通脚本的 goDone() 调用:走到完成页即标记已 onboarded(之后首页不再强制引导)
+window.__markOnboarded = markOnboarded;
 
 const mask = document.getElementById('intakeMask');
 const card = document.getElementById('intakeCard');

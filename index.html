@@ -1424,7 +1424,13 @@ document.querySelector('.toast-btn-ghost').addEventListener('click', () => toast
 <!-- ========== 首页数据联动:读录入档案个性化(ES module) ========== -->
 <script type="module">
 // 填完 onboarding 录入后,首页读统一健康档案做个性化。无档案→完全不动,保持现有写死展示(降级铁律)。
-import { loadProfile } from './js/health-store.js';
+import { loadProfile, isOnboarded } from './js/health-store.js';
+
+// 新用户首访:没走过 onboarding → 先去信息测评区(replace 不留历史,避免返回键弹回又被踢)。
+// 老用户/已完成 → 正常进首页。之后更新资料走头像 → 身体档案页手动编辑。
+if (!isOnboarded()) {
+  location.replace('mock-onboarding.html');
+}
 
 const COMPLAINT_CN = { neck: '颈部', shoulder: '肩部', eye: '眼部' };
 
