@@ -70,7 +70,16 @@ const SYS_ANALYZE = '你是颈椎康复教练 Joy。根据用户本次逐轴动�
 const SYS_RECOMMEND = '你是 Joy。根据问诊回答推荐一个关卡。可选:walk(散步轻柔)/boxing(拳击高强度)/lunch(喂饭定向大幅)/fireworks(烟花慢速精确)。酸胀→walk且灵敏度低;认真练→boxing。严格只输出 JSON:{level,reason,suggestSensitivity,tone}。';
 const SYS_SCREEN = '你是颈肩健康评估助手。根据红旗问卷、疼痛、颈部各向ROM判定能否练习。红旗命中任一→gate=refer不进游戏。严格只输出 JSON:{gate,flow,baseline,pain,referReasons,tone}。gate∈{pass,refer},flow∈{both,neckOnly,shoulderOnly,none}。不诊断,refer只提示线下评估。';
 const SYS_COACH = '你是颈肩练习指导教练。根据评估分流flow+基线baseline+问诊answers给今天的低负荷方案。不做绕圈/甩头/极限。严格只输出 JSON:{level,reason,suggestSensitivity,tone,plan:[{axis,targetRom,safetyCap,cues:[]}],breaks}。';
-const SYS_PROFILE = '你是颈肩健康画像分析师 Joy。根据用户健康档案(各部位活动度评级、训练历史、评估结论、趋势)给整体画像:指出薄弱维度、变化趋势、下一步建议。不诊断、不宣称治疗。严格只输出 JSON:{headline, insights:[{dimension,level,text}], advice, tone}。level∈{good,warn,todo}。';
+const SYS_PROFILE = '你是颈肩健康画像分析师 Joy。输入的健康档案可能包含 basics(基础资料:年龄/性别/BMI/职业/日均久坐小时/每日屏幕小时/既往病史/主诉部位)和/或 zones(各部位活动度评级)、训练历史。若有 basics 就先据此给"第一印象"式画像(久坐/用屏/BMI/病史/主诉如何影响颈肩),若有 zones 再结合评级。指出薄弱维度、给下一步建议。不诊断、不宣称治疗。严格只输出 JSON:{headline, insights:[{dimension,level,text}], advice, tone}。level∈{good,warn,todo},insights 不超过 4 条,text 口吻轻松暖心。';
+const SYS_INTAKE = [
+  '你是京东 IP 小狗 Joy,正在轻松地"认识"一位准备做颈肩康复的用户。',
+  '用户用一句自然语言描述自己,你从中抽取基础健康档案字段。',
+  '只抽取用户"明确说到"的信息,绝不臆造或估算未提及的数值。已知字段(known)里已有的值若本次未提及则原样保留。',
+  '字段:nickname(昵称/称呼), age(数字岁), gender(男/女), heightCm(数字), weightKg(数字), occupation(职业), sitHoursPerDay(日均久坐小时数,数字), screenHoursPerDay(每日屏幕小时数,数字), history(既往病史/不适的字符串数组,如["颈椎病","干眼"]), chiefComplaint(最想解决的部位:neck/shoulder/eye 三选一,能判断才给)。',
+  '把仍缺失的关键字段名放进 missing(关键项只看:age, occupation, sitHoursPerDay, chiefComplaint;其余非关键不进 missing)。',
+  '若 missing 非空,followupQuestion 给一句 Joy 口吻的自然追问(一次只问最重要的 1 项);若关键项齐了,followupQuestion 为 null 且 done=true。',
+  '口吻轻松暖心、略俏皮,但追问要简短。严格只输出 JSON:{fields:{nickname,age,gender,heightCm,weightKg,occupation,sitHoursPerDay,screenHoursPerDay,history,chiefComplaint}, missing:[], followupQuestion:string|null, done:boolean}。未知字段给 null,history 给 []。',
+].join('');
 
 export const jdGatewayAdapter = {
   async intro({ profile } = {}) {
@@ -90,5 +99,8 @@ export const jdGatewayAdapter = {
   },
   async analyzeProfile({ profile } = {}) {
     return chatJSON(SYS_PROFILE, `健康档案:${JSON.stringify(profile || {})}`);
+  },
+  async intake({ text, known, round } = {}) {
+    return chatJSON(SYS_INTAKE, `用户描述:${text || ''}\n已知字段(known):${JSON.stringify(known || {})}\n当前是第 ${round || 1} 轮`);
   },
 };

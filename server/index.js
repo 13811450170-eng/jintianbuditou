@@ -99,6 +99,10 @@ async function handleApi(req, res, path) {
       const data = await provider.analyzeProfile(payload);
       return sendJSON(res, 200, { provider: provider.name, ...data });
     }
+    if (path === '/api/intake') {          // 对话式录入:自由描述 → 结构化档案字段
+      const data = await provider.intake(payload);
+      return sendJSON(res, 200, { provider: provider.name, ...data });
+    }
     return sendJSON(res, 404, { error: 'no such api' });
   } catch (e) {
     // provider 未配置 / 网关报错等 —— 不让前端 hard-fail,返回可降级标记
