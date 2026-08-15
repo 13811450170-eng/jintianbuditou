@@ -604,6 +604,20 @@ body { overflow-y: scroll; }
     </div>
   </section>
 
+  <!-- 个人信息卡(读 health-store profile,可编辑) -->
+  <section class="personal" id="personalCard" style="background:var(--card);border-radius:22px;padding:24px 28px;box-shadow:var(--shadow-1);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:32px;height:32px;border-radius:10px;background:var(--neck-bg);color:var(--neck);display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-6 8-6s8 2 8 6"/></svg>
+        </div>
+        <div style="font-size:15px;font-weight:800;color:var(--ink);">个人信息</div>
+      </div>
+      <button id="personalEditBtn" style="background:var(--card-alt);border:1px solid var(--line);color:var(--ink-2);padding:8px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">编辑</button>
+    </div>
+    <div id="personalBody"><!-- 展示态 / 编辑态 由 JS 渲染 --></div>
+  </section>
+
   <!-- 3 部位状态卡 -->
   <section class="parts-grid">
 
@@ -803,7 +817,7 @@ body { overflow-y: scroll; }
 <script type="module">
 // 档案页:读统一健康档案(health-store)填真实数据,并调后端 /api/profile 出 AI 画像。
 // 降级:无真实数据→保留页面原有 mock 展示;后端挂→AI 画像卡隐藏。均不报错。
-import { loadProfile } from './js/health-store.js';
+import { loadProfile, saveProfileBasics } from './js/health-store.js';
 
 const p = loadProfile();
 
@@ -859,6 +873,112 @@ if (hasRealData) {
     } catch (e) { /* 后端不可用 → 卡片保持隐藏 */ }
   })();
 }
+
+/* ========== 个人信息卡:展示 / 编辑(读写 health-store profile) ========== */
+(function personalInfo() {
+  const bodyEl = document.getElementById('personalBody');
+  const editBtn = document.getElementById('personalEditBtn');
+  if (!bodyEl || !editBtn) return;
+
+  const GENDER_OPTS = ['女', '男'];
+  const OCC_OPTS = ['程序员','设计师','产品经理','运营','教师','学生','文员','销售','医护','司机','其他'];
+  const COMPLAINT_CN = { neck: '颈部', shoulder: '肩部', eye: '眼部' };
+  const fieldStyle = 'background:var(--card-alt);border:1px solid var(--line);border-radius:12px;padding:12px 16px;';
+  const lblStyle = 'font-size:11px;color:var(--ink-3);font-weight:600;letter-spacing:.5px;margin-bottom:6px;';
+  const valStyle = 'font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.01em;';
+  const inputStyle = 'width:100%;background:transparent;border:none;color:var(--ink);font-size:16px;font-weight:700;font-family:inherit;padding:0;outline:none;';
+
+  let editing = false;
+
+  function prof() { return loadProfile().profile || {}; }
+  function hasData(p) { return !!p.filledAt; }
+
+  const dash = (v, unit) => (v == null || v === '' ? '<span style="color:var(--ink-4);font-weight:400;">未填写</span>' : `${v}${unit || ''}`);
+
+  function renderView() {
+    const p = prof();
+    if (!hasData(p)) {
+      bodyEl.innerHTML = `<div style="text-align:center;padding:24px 0;color:var(--ink-3);font-size:14px;">
+        还没有个人信息~ <a href="mock-onboarding.html" style="color:var(--neck);font-weight:700;text-decoration:none;">去完成 60 秒自查 →</a></div>`;
+      editBtn.style.display = 'none';
+      return;
+    }
+    editBtn.style.display = '';
+    editBtn.textContent = '编辑';
+    const bmiTxt = p.bmi ? `${p.bmi} · ${p.bmi<18.5?'偏瘦':p.bmi<24?'正常':p.bmi<28?'偏重':'偏胖'}` : null;
+    const cells = [
+      ['昵称', dash(p.nickname)],
+      ['年龄', dash(p.age, ' 岁')],
+      ['性别', dash(p.gender)],
+      ['身高', dash(p.heightCm, ' cm')],
+      ['体重', dash(p.weightKg, ' kg')],
+      ['BMI', dash(bmiTxt)],
+      ['职业', dash(p.occupation)],
+      ['日均久坐', dash(p.sitHoursPerDay, ' 小时')],
+      ['每日屏幕', dash(p.screenHoursPerDay, ' 小时')],
+      ['最想解决', dash(COMPLAINT_CN[p.chiefComplaint])],
+    ];
+    const hist = (p.history && p.history.length) ? p.history.join('、') : null;
+    bodyEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        ${cells.map(([l,v]) => `<div style="${fieldStyle}"><div style="${lblStyle}">${l}</div><div style="${valStyle}">${v}</div></div>`).join('')}
+        <div style="${fieldStyle}grid-column:1/-1;"><div style="${lblStyle}">既往不适 / 病史</div><div style="${valStyle}">${dash(hist)}</div></div>
+      </div>`;
+  }
+
+  function renderEdit() {
+    const p = prof();
+    editBtn.textContent = '取消';
+    const seg = (id, opts, cur) => `<div style="display:flex;gap:6px;" data-seg="${id}">${opts.map(o=>`<button type="button" data-v="${o}" data-on="${cur===o?'1':''}" style="flex:1;padding:8px 4px;border-radius:10px;border:1px solid var(--line-hard);background:${cur===o?'var(--neck)':'transparent'};color:${cur===o?'#fff':'var(--ink-3)'};font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">${COMPLAINT_CN[o]||o}</button>`).join('')}</div>`;
+    bodyEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+        <div style="${fieldStyle}"><div style="${lblStyle}">昵称</div><input id="eNick" style="${inputStyle}" value="${p.nickname??''}"></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">年龄</div><input id="eAge" type="number" style="${inputStyle}" value="${p.age??''}"></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">性别</div>${seg('gender',GENDER_OPTS,p.gender)}</div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">身高 (cm)</div><input id="eH" type="number" style="${inputStyle}" value="${p.heightCm??''}"></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">体重 (kg)</div><input id="eW" type="number" style="${inputStyle}" value="${p.weightKg??''}"></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">职业</div>
+          <select id="eOcc" style="${inputStyle}cursor:pointer;"><option value="">未填写</option>${OCC_OPTS.map(o=>`<option ${p.occupation===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">日均久坐 (小时)</div><input id="eSit" type="number" style="${inputStyle}" value="${p.sitHoursPerDay??''}"></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">每日屏幕 (小时)</div><input id="eScr" type="number" style="${inputStyle}" value="${p.screenHoursPerDay??''}"></div>
+        <div style="${fieldStyle}"><div style="${lblStyle}">最想解决</div>${seg('complaint',['neck','shoulder','eye'],p.chiefComplaint)}</div>
+        <div style="${fieldStyle}grid-column:1/-1;"><div style="${lblStyle}">既往不适 / 病史(顿号分隔)</div><input id="eHist" style="${inputStyle}" value="${(p.history||[]).join('、')}"></div>
+      </div>
+      <button id="ePersonalSave" style="margin-top:16px;width:100%;border:none;border-radius:100px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;background:var(--ink);color:#fff;font-family:inherit;">保存</button>`;
+    // 分段选择器
+    bodyEl.querySelectorAll('[data-seg]').forEach(seg => {
+      seg.querySelectorAll('button').forEach(b => b.onclick = () => {
+        seg.querySelectorAll('button').forEach(x => { x.style.background='transparent'; x.style.color='var(--ink-3)'; x.dataset.on=''; });
+        b.style.background='var(--neck)'; b.style.color='#fff'; b.dataset.on='1';
+      });
+    });
+    bodyEl.querySelector('#ePersonalSave').onclick = () => {
+      const num = id => { const v = bodyEl.querySelector(id).value.trim(); return v===''?null:Number(v); };
+      const pickSeg = id => { const on = bodyEl.querySelector(`[data-seg="${id}"] button[data-on="1"]`); return on?on.dataset.v:null; };
+      const histRaw = bodyEl.querySelector('#eHist').value.trim();
+      saveProfileBasics({
+        nickname: bodyEl.querySelector('#eNick').value.trim() || null,
+        age: num('#eAge'),
+        gender: pickSeg('gender'),
+        heightCm: num('#eH'),
+        weightKg: num('#eW'),
+        occupation: bodyEl.querySelector('#eOcc').value || null,
+        sitHoursPerDay: num('#eSit'),
+        screenHoursPerDay: num('#eScr'),
+        chiefComplaint: pickSeg('complaint'),
+        history: histRaw ? histRaw.split(/[、,,\s]+/).filter(Boolean) : [],
+      });
+      editing = false;
+      renderView();
+    };
+  }
+
+  editBtn.onclick = () => {
+    editing = !editing;
+    if (editing) renderEdit(); else renderView();
+  };
+  renderView();
+})();
 </script>
 
 </body>

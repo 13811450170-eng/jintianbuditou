@@ -2068,6 +2068,8 @@ const card = document.getElementById('intakeCard');
 // 录入过程中累积的字段(跨追问轮合并)
 let intakeFields = {};
 let intakeRound = 0;
+let intakeIntentProfile = null;   // intake 返回的意图画像(health-intake skill),优先用于即时预览
+let intakeHandoff = null;         // 交给 health-assessment 的 pre 背景,存 sessionStorage
 
 const GENDER_OPTS = ['女', '男'];
 const OCC_OPTS = ['程序员', '设计师', '产品经理', '运营', '教师', '学生', '文员', '销售', '医护', '司机', '其他'];
@@ -2082,6 +2084,10 @@ window.openIntake = openIntake;   // 供欢迎页按钮 onclick 调用
 
 function closeIntakeAndProceed() {
   mask.classList.remove('show');
+  // 交接背景存 sessionStorage,供后续进关卡时 health-assessment 读作 pre 背景(钩子)
+  if (intakeHandoff) {
+    try { sessionStorage.setItem('intakeHandoff', JSON.stringify(intakeHandoff)); } catch (e) {}
+  }
   // 主诉回填 Q1(若识别到)
   if (intakeFields.chiefComplaint) {
     const opt = document.querySelector(`[data-step="2"] .qa-option[data-choice="${intakeFields.chiefComplaint}"]`);
@@ -2172,6 +2178,9 @@ async function submitIntake(text) {
 
   // 合并本轮抽取结果
   intakeFields = mergeFields(intakeFields, data.fields);
+  // 存下 skill 产出的意图画像与交接背景(供即时预览 + 交给 assessment)
+  if (data.intentProfile) intakeIntentProfile = data.intentProfile;
+  if (data.handoffToAssessment) intakeHandoff = data.handoffToAssessment;
 
   // 还有关键缺失 且 追问不超过 2 轮 → 追问一句
   if (!data.done && data.followupQuestion && intakeRound < 3) {
@@ -2304,11 +2313,17 @@ function collectConfirmForm() {
   };
 }
 
-/* ---------- 即时 AI 画像预览:调 /api/profile ---------- */
+/* ---------- 即时 AI 画像预览 ---------- */
+// 优先用 health-intake skill 已返回的 intentProfile(零往返);没有再回退调 /api/profile。
 async function maybeRenderPreview(f) {
-  // 至少要有 年龄 or 久坐 or 主诉 才值得分析
-  if (f.age == null && f.sitHoursPerDay == null && !f.chiefComplaint) return;
   const mount = card.querySelector('#intakePreviewMount');
+  // ① 首选:intake 已带回意图画像
+  if (intakeIntentProfile && (intakeIntentProfile.notes?.length || intakeIntentProfile.headline)) {
+    renderPreview(mount, intakeIntentProfile.headline, intakeIntentProfile.notes);
+    return;
+  }
+  // ② 回退:至少要有 年龄 or 久坐 or 主诉 才值得单独请求
+  if (f.age == null && f.sitHoursPerDay == null && !f.chiefComplaint) return;
   const bmi = (f.heightCm > 0 && f.weightKg > 0) ? Math.round((f.weightKg / ((f.heightCm/100)**2))*10)/10 : null;
   const payload = { profile: {
     basics: { age: f.age, gender: f.gender, bmi, occupation: f.occupation,
@@ -2325,16 +2340,22 @@ async function maybeRenderPreview(f) {
     clearTimeout(timer);
     const data = await res.json();
     if (!data || data.degraded || !(data.insights?.length || data.headline)) return;
-    const barColor = { good: '#4CAF88', warn: '#FFA726', todo: '#8B8B95' };
-    mount.innerHTML = `
-      <div class="intake-preview">
-        <div class="intake-preview-tag">JOY 的第一印象</div>
-        ${data.headline ? `<div class="intake-preview-head">${data.headline}</div>` : ''}
-        <ul class="intake-preview-list">
-          ${(data.insights||[]).slice(0,3).map(i => `<li><span class="bar" style="background:${barColor[i.level]||'#8B8B95'}"></span><span>${i.text||''}</span></li>`).join('')}
-        </ul>
-      </div>`;
+    renderPreview(mount, data.headline, data.insights);
   } catch (e) { /* 后端挂 → 不显示预览,不报错 */ }
+}
+
+// notes/insights 通用:都是 [{level,text}]
+function renderPreview(mount, headline, items) {
+  if (!mount) return;
+  const barColor = { good: '#4CAF88', warn: '#FFA726', todo: '#8B8B95' };
+  mount.innerHTML = `
+    <div class="intake-preview">
+      <div class="intake-preview-tag">JOY 的第一印象</div>
+      ${headline ? `<div class="intake-preview-head">${headline}</div>` : ''}
+      <ul class="intake-preview-list">
+        ${(items||[]).slice(0,3).map(i => `<li><span class="bar" style="background:${barColor[i.level]||'#8B8B95'}"></span><span>${i.text||''}</span></li>`).join('')}
+      </ul>
+    </div>`;
 }
 
 /* ---------- 完成页个性化:昵称 + 起始关卡推荐(goStep(8) 触发) ---------- */

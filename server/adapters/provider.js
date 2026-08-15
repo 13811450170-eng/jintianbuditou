@@ -15,6 +15,7 @@ import { stubAdapter } from './stub.js';
 import { jdGatewayAdapter } from './jd-gateway.js';
 import { healthAssessmentStub } from './health-assessment.stub.js';
 import { healthCoachingStub } from './health-coaching.stub.js';
+import { healthIntakeStub } from './health-intake.stub.js';
 
 // 档案画像的 stub(规则化)。两种输入都支持:
 //   ① basics(录入即时画像):年龄/BMI/久坐/屏幕/职业/主诉/病史 → 生成"第一印象"
@@ -87,7 +88,7 @@ const STUB = {
   screen: (a) => healthAssessmentStub.screen(a),
   coach:  (a) => healthCoachingStub.recommend(a),      // coaching 的入口叫 recommend
   analyzeProfile: (a) => profileStub(a),
-  intake: (a) => stubAdapter.intake(a),
+  intake: (a) => healthIntakeStub.intake(a),
 };
 
 const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'analyzeProfile', 'intake'];
