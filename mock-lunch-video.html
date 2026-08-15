@@ -131,32 +131,50 @@
     100%{opacity:0;transform:translateX(-50%) translateY(-52px) scale(1);}
   }
 
-  /* ---------- 狗狗说话气泡 ---------- */
+  /* ---------- 狗狗说话气泡(外圈=喂食保持进度环) ---------- */
   .bubble{
-    position:absolute;transform:translate(-50%,-50%) scale(.5);z-index:20;
-    background:var(--bubble-bg);color:var(--ink);font-weight:800;
-    font-size:clamp(12px,1.9vw,24px);letter-spacing:1px;
-    padding:.45em .8em;border-radius:16px;white-space:nowrap;opacity:0;
-    box-shadow:0 6px 18px rgba(0,0,0,.28);border:2.5px solid var(--c,#fff);
+    position:absolute;transform:translate(-50%,-50%) scale(.5);z-index:22;
+    background:rgba(42,24,16,.92);color:#fff;font-weight:800;
+    font-size:clamp(13px,1.9vw,24px);letter-spacing:1px;
+    padding:.52em .95em;border-radius:16px;white-space:nowrap;opacity:0;
+    box-shadow:0 6px 18px rgba(0,0,0,.35);
     transition:opacity .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
   }
-  .bubble::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
-    width:0;height:0;border:9px solid transparent;border-top-color:var(--bubble-bg);}
+  .bubble .bubble-txt{position:relative;z-index:2;}
+  .bubble::after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
+    width:0;height:0;border:8px solid transparent;border-top-color:rgba(42,24,16,.92);z-index:1;}
+  /* 外圈进度环:conic 从 12 点方向顺时针画金边,--p 0→100 表示喂食保持进度,满=闭合 */
+  .bubble .bubble-ring{
+    position:absolute;inset:-3px;border-radius:19px;padding:3px;pointer-events:none;z-index:0;
+    background:conic-gradient(from -90deg, var(--gold-bright) calc(var(--p,0)*1%), rgba(255,255,255,.14) 0);
+    -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor; mask-composite:exclude;
+    opacity:0;transition:opacity .2s;
+  }
+  .bubble.feeding .bubble-ring{opacity:1;}
+  .bubble.done .bubble-ring{opacity:1;background:var(--gold-bright);
+    box-shadow:0 0 12px var(--gold-bright);}
   .bubble.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
 
-  /* ---------- 金色倒计时环(套在盘子上,表示"正在喂") ---------- */
-  .ring{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .2s;z-index:19;}
-  .ring.show{opacity:1;}
-  .ring svg{transform:rotate(-90deg);display:block;filter:drop-shadow(0 0 6px var(--gold-bright));}
-  .ring .track{fill:none;stroke:rgba(0,0,0,.18);stroke-width:6;}
-  .ring .prog{fill:none;stroke:var(--gold-bright);stroke-width:6;stroke-linecap:round;
-    stroke-dasharray:283;stroke-dashoffset:283;}
+  /* ---------- 目标盘子高亮圈(对准时亮,提示"送到这") ---------- */
+  .plate-hi{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .25s;z-index:16;
+    width:clamp(60px,9vw,120px);height:clamp(38px,5.6vw,74px);
+    border:3px dashed rgba(255,232,155,.55);border-radius:50%;pointer-events:none;}
+  .plate-hi.on{opacity:1;border-style:solid;border-color:var(--gold-bright);
+    box-shadow:0 0 18px rgba(255,214,107,.6),inset 0 0 14px rgba(255,214,107,.3);
+    animation:plateHiPulse 1s ease-in-out infinite;}
+  @keyframes plateHiPulse{50%{box-shadow:0 0 26px rgba(255,214,107,.85),inset 0 0 18px rgba(255,214,107,.45);}}
 
-  /* ---------- 飞入的菜 ---------- */
-  .food{position:absolute;transform:translate(-50%,-50%) scale(.4);opacity:0;z-index:18;
-    width:clamp(46px,7vw,96px);height:auto;pointer-events:none;
-    filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
-  .food img{width:100%;height:auto;display:block;}
+  /* ---------- 被头控的菜(初始在中央草垫,转头移动送盘) ---------- */
+  .dish{position:absolute;transform:translate(-50%,-50%) scale(1);z-index:25;
+    width:clamp(92px,13vw,168px);height:auto;pointer-events:none;opacity:0;
+    filter:drop-shadow(0 10px 18px rgba(0,0,0,.45));
+    will-change:left,top,transform;transition:opacity .3s;}
+  .dish img{width:100%;height:auto;display:block;}
+  .dish.in{opacity:1;}
+  /* 落盘:平滑移到盘子精确位并缩到 50% */
+  .dish.landed{transition:left .45s cubic-bezier(.22,1,.36,1),top .45s cubic-bezier(.22,1,.36,1),transform .45s cubic-bezier(.22,1,.36,1),opacity .4s;}
 
   /* ---------- 命中星光 ---------- */
   .spark{position:absolute;transform:translate(-50%,-50%);pointer-events:none;z-index:21;
@@ -354,7 +372,7 @@
       </div>
       <button class="btn" id="startBtn"><svg class="ico"><use href="#i-bowl"/></svg>开始喂食 · FEED TIME!</button>
       <button class="btn-ghost" style="margin-top:18px;" onclick="location.href='zone.html?zone=neck'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回颈部训练营</button>
-    </div>
+      <div class="status" id="introStatus">真头控 · 无摄像头可用 ←→↑↓ 键</div>
     </div>
 
     <!-- 结算 -->
