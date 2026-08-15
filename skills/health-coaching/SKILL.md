@@ -11,6 +11,12 @@ description: 面向办公室人群的颈肩低负荷动作指导、练中提示�
 
 仅在 `gate=available` 或 `gate=limited` 时工作，并且只使用 `availableActions` 中的动作。每个动作均用现有的 `part`（`neck` 或 `shoulder`）与 `axis` 表达；不得另建动作 ID。它不诊断疾病，不替代专业评估，也不以疼痛、极限幅度、快速次数或游戏得分为目标。
 
+## 运行态兼容
+
+`health-coaching` 的目标输入是下文的嵌套 `assessment`、`userIntent`、`sessionMetrics` 结构；它消费 `assessment.gate` 的四态结论和 `assessment.availableActions`。若直接传入 `/api/screen` 的兼容响应，适配层应先取其中的 `decision` 作为 `assessment`。
+
+与 PR #4 对齐的服务端 `/api/coach` 尚接受旧结构 `{ flow, baseline, pain, answers }`。在前端迁移完成前，适配层应把 `assessment.gate=available | limited` 映射为可调用的旧输入；`assessment.gate=remeasure | stop` 不得调用关卡推荐。旧输出的 `level`、`suggestSensitivity`、`breaks` 继续保留给现有页面，新输出补充 `plan[].part`、`plan[].status`、`motionControl` 和 `metrics`。不得为了兼容旧界面而绕过四态闸门。
+
 ## 接收输入
 
 ```jsonc
@@ -24,7 +30,13 @@ description: 面向办公室人群的颈肩低负荷动作指导、练中提示�
     "metrics": { "discomfort": {}, "recognitionQuality": {} }
   },
   "userIntent": { "feel": "酸胀 | 发紧 | 还好", "goal": "轻松活动 | 完成一组" },
-  "sessionMetrics": { "completedActions": 0, "targetActions": 0, "compensationEvents": [], "validHoldSeconds": 0 }
+  "sessionMetrics": {
+    "completedActions": 0,
+    "targetActions": 0,
+    "compensationEvents": [],
+    "validHoldSeconds": 0,
+    "sensorEvents": { "flingCount": 0, "rapidMovementDetected": false }
+  }
 }
 ```
 
@@ -54,8 +66,9 @@ description: 面向办公室人群的颈肩低负荷动作指导、练中提示�
 1. 在舒适、无痛、缓慢且受控的范围内完成。
 2. 每次单一方向动作结束后回到自然中立位。
 3. 不做颈部绕圈、快速甩头、伸展叠加旋转或手部末端加压。
-4. 出现疼痛、眩晕、麻木、无力、明显不适或新的症状向上肢延伸时，立即停止本次练习，并交回 `health-assessment` 进行练后复核。
-5. 检测到耸肩、躯干跟转、躯干前倾/后仰或过度挺胸时，优先提示减小幅度、放慢动作或回中立位；不得将其记为健康异常。
+4. 检测到 `sensorEvents.rapidMovementDetected` 或累计甩头达到当前关卡提醒阈值时，立即停止本次计分并提示“放慢、回中立位”；下一个动作只在重新稳定后开始。该事件进入 `motionControl` 与练后报告，不替代用户自报安全事件，也不单独触发医疗转介。
+5. 出现疼痛、眩晕、麻木、无力、明显不适或新的症状向上肢延伸时，立即停止本次练习，并交回 `health-assessment` 进行练后复核。
+6. 检测到耸肩、躯干跟转、躯干前倾/后仰或过度挺胸时，优先提示减小幅度、放慢动作或回中立位；不得将其记为健康异常。
 
 动作游戏外，同时提示规律短暂休息、改变体位和基础工位调整；不得暗示一次拉伸可以抵消长期静态久坐。
 
@@ -84,8 +97,10 @@ description: 面向办公室人群的颈肩低负荷动作指导、练中提示�
     "completionRate": null,
     "compensationRate": null,
     "validHoldSeconds": 0,
-    "recognitionQuality": "usable | remeasure"
+    "recognitionQuality": "usable | remeasure",
+    "sensorEvents": { "flingCount": 0, "rapidMovementDetected": false }
   },
+  "motionControl": { "status": "normal | slowDown", "message": "" },
   "breakReminder": "建议短暂活动或改变坐姿",
   "reportHints": ["描述练习参与度、动作控制和自我报告变化，不作医疗结论"]
 }
