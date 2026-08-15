@@ -32,7 +32,7 @@ const EYE_L = 263, EYE_R = 33;
 export function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 
 // 列主序 4x4 变换矩阵 → 欧拉角(度)。yaw=转头 pitch=俯仰 roll=侧倾。
-// 纯函数，与 index.html 原 matrixToEuler 逐行等价。
+// 纯函数，与 mock-walk.html 原 matrixToEuler 逐行等价。
 export function matrixToEuler(m) {
   const r00 = m[0], r10 = m[1], r20 = m[2], r21 = m[6], r22 = m[10];
   const yaw = Math.asin(clamp(-r20, -1, 1));

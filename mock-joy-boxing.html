@@ -827,7 +827,7 @@ let kernel = null;
 const DEBUG = new URLSearchParams(location.search).has('debug');
 
 // 头姿轴向 —— 实测结论,勿改
-// AX.roll = +1(不是 -1!与 yaw 不同,勿想当然一起翻),详见 index.html L424-426
+// AX.roll = +1(不是 -1!与 yaw 不同,勿想当然一起翻),详见 mock-walk.html 头姿轴向注释
 // 应用 AX 后约定: yaw<0=向左转 / pitch<0=抬头 / pitch>0=收下巴 / roll<0=向左倾 / roll>0=向右倾
 const AX = { yaw: -1, pitch: 1, roll: 1 };
 

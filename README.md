@@ -38,19 +38,19 @@ python3 -m http.server 8000
 > 文档在 `docs/`,已被取代的旧版页在 `_archive/`。
 
 ```
-├── index.html                       # 主入口 · 首页 + 森林公园散步(晨间)关卡
+├── index.html                       # 主入口 · 首页(打开 localhost 默认进这里)
 │
 │  【颈部关卡 · 在用】
 ├── mock-boxing-video.html           # 拳击派对(视频底图版,依赖 img/boxing.mp4)
 ├── mock-joy-boxing.html             # 拳击派对(CSS/canvas 可玩原型)
 ├── mock-lunch-video.html            # 餐厅喂 Doga(视频底图版,依赖 img/lunch.mp4)
+├── mock-walk.html                   # 森林公园散步(初赛真玩版,头姿驱动三车道跑酷)
 │
 │  【肩部关卡 · 在用】
 ├── mock-rowing-video.html           # 河道划船(视频底图版,依赖 img/rowing.mp4)
 ├── mock-shoulder-star.html          # 举臂摘星(抬臂上举够星星)
 │
 │  【产品页面(非关卡)】
-├── mock-home-v2.html                # 首页 v2
 ├── mock-onboarding.html             # 首次自查引导
 ├── mock-body-profile.html           # 身体档案
 ├── mock-report.html                 # 单次训练报告(接后端 AI 逐轴点评)
@@ -77,7 +77,7 @@ python3 -m http.server 8000
 
 | 部位 | 关卡 | 主要动作 | 文件 | 状态 |
 |------|------|---------|------|------|
-| 颈部 | 森林公园散步 | 转头 / 抬头低头 / 侧屈 | `index.html` | ✅ 初赛真玩版 |
+| 颈部 | 森林公园散步 | 转头 / 抬头低头 / 侧屈 | `mock-walk.html` | ✅ 初赛真玩版 |
 | 颈部 | 拳击派对 | 4 拳型(左钩/右钩/上勾/下勾) | `mock-joy-boxing.html` | 🧪 可玩原型 |
 | 颈部 | 拳击派对(视频版) | 同上 · 视频底图演示 | `mock-boxing-video.html` | 🎬 画面演示 |
 | 颈部 | 餐厅喂 Doga(视频版) | 转头对准 · 金勺喂食 | `mock-lunch-video.html` | 🎬 画面演示 |
@@ -105,7 +105,7 @@ python3 -m http.server 8000
 
 > 这些文件通过 `.gitignore` 排除,不进 Git 是为了保持 clone 速度。需要的话找 lx 要云盘链接。
 
-## 玩法要点(初赛版本 · index.html)
+## 玩法要点(初赛版本 · mock-walk.html)
 
 颈部锻炼分三段:**转头 → 抬头低头 → 侧屈**,每段 4 个目标,中间有回正休息。
 
