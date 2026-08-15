@@ -145,14 +145,14 @@
     width:0;height:0;border:8px solid transparent;border-top-color:rgba(42,24,16,.92);z-index:1;}
   /* 外圈进度环:conic 从 12 点方向顺时针画金边,--p 0→100 表示喂食保持进度,满=闭合 */
   .bubble .bubble-ring{
-    position:absolute;inset:-3px;border-radius:19px;padding:3px;pointer-events:none;z-index:0;
-    background:conic-gradient(from -90deg, var(--gold-bright) calc(var(--p,0)*1%), rgba(255,255,255,.14) 0);
+    position:absolute;inset:-5px;border-radius:21px;padding:5px;pointer-events:none;z-index:0;
+    background:conic-gradient(from -90deg, var(--gold-bright) calc(var(--p,0)*1%), rgba(255,255,255,.16) 0);
     -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
             mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
     -webkit-mask-composite:xor; mask-composite:exclude;
     opacity:0;transition:opacity .2s;
   }
-  .bubble.feeding .bubble-ring{opacity:1;}
+  .bubble.feeding .bubble-ring{opacity:1;filter:drop-shadow(0 0 4px rgba(255,214,107,.7));}
   .bubble.done .bubble-ring{opacity:1;background:var(--gold-bright);
     box-shadow:0 0 12px var(--gold-bright);}
   .bubble.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
@@ -652,8 +652,12 @@ function loop(now){
     const r=relAngle();
     dbg.textContent=`yaw ${r.yaw.toFixed(1)}  pitch ${r.pitch.toFixed(1)}  face ${facePresent?1:0} cam ${camOK?1:0}\ndish ${dishPos.x.toFixed(0)},${dishPos.y.toFixed(0)}  held ${heldMs|0}`;
   }
+  if(_q.has('probe')) document.title=`fed=${fed} round=${roundIdx} held=${heldMs|0} dish=${dishPos.x.toFixed(0)},${dishPos.y.toFixed(0)} run=${running?1:0}`;
 }
 requestAnimationFrame(loop);
+
+// 调试探针:?probe 时暴露内部函数,便于自动化验证收尾态
+if(_q.has('probe')){ window.__game={ startRound, successFeed, get roundDone(){return roundDone;}, get fed(){return fed;} }; }
 
 // 键盘兜底:无摄像头时用方向键把菜挪进盘子
 document.addEventListener('keydown', e=>{
