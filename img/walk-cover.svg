@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 240" width="600" height="240" role="img" aria-label="Joy 在森林田野小径散步">
+  <defs>
+    <linearGradient id="wSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"    stop-color="#cfe5d0"/>
+      <stop offset="0.5"  stop-color="#b8dcbb"/>
+      <stop offset="1"    stop-color="#96c99a"/>
+    </linearGradient>
+    <linearGradient id="wGround" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"  stop-color="#8fc78f"/>
+      <stop offset="1"  stop-color="#3f9f5c"/>
+    </linearGradient>
+    <linearGradient id="wPath" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaddb2"/>
+      <stop offset="1" stop-color="#dcc98f"/>
+    </linearGradient>
+    <radialGradient id="wGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff6d8" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#fff6d8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- sky -->
+  <rect width="600" height="240" fill="url(#wSky)"/>
+  <!-- soft morning light -->
+  <circle cx="470" cy="46" r="90" fill="url(#wGlow)"/>
+  <circle cx="470" cy="46" r="20" fill="#fff4cf" opacity="0.9"/>
+
+  <!-- distant hills -->
+  <path d="M0 128 Q120 96 250 122 T600 112 V150 H0 Z" fill="#8ec392" opacity="0.85"/>
+  <path d="M0 140 Q160 112 340 138 T600 132 V160 H0 Z" fill="#79b57e" opacity="0.9"/>
+
+  <!-- ground -->
+  <rect y="132" width="600" height="108" fill="url(#wGround)"/>
+
+  <!-- perspective trail -->
+  <path d="M255 132 L345 132 L470 240 L130 240 Z" fill="url(#wPath)"/>
+  <path d="M255 132 L345 132 L470 240 L130 240 Z" fill="none" stroke="#c7b071" stroke-width="1.5" opacity="0.55"/>
+  <!-- dashed center guide (lane hint) -->
+  <path d="M300 138 L300 236" stroke="#fff3cf" stroke-width="4" stroke-linecap="round"
+        stroke-dasharray="2 16" opacity="0.7"/>
+
+  <!-- back pines (left) -->
+  <g fill="#5bb56f">
+    <polygon points="70,150 92,150 81,120"/>
+    <polygon points="66,164 96,164 81,132"/>
+  </g>
+  <rect x="78" y="162" width="6" height="12" fill="#8a6b4a"/>
+  <!-- back pines (right) -->
+  <g fill="#5bb56f">
+    <polygon points="512,150 534,150 523,120"/>
+    <polygon points="508,164 538,164 523,132"/>
+  </g>
+  <rect x="520" y="162" width="6" height="12" fill="#8a6b4a"/>
+
+  <!-- front pine left -->
+  <rect x="40" y="200" width="12" height="26" rx="3" fill="#7c5a3a"/>
+  <g fill="#3f9f5c">
+    <polygon points="20,208 72,208 46,164"/>
+    <polygon points="26,186 66,186 46,146"/>
+    <polygon points="30,166 62,166 46,132"/>
+  </g>
+  <!-- front pine right -->
+  <rect x="548" y="200" width="12" height="26" rx="3" fill="#7c5a3a"/>
+  <g fill="#3f9f5c">
+    <polygon points="528,208 580,208 554,164"/>
+    <polygon points="534,186 574,186 554,146"/>
+    <polygon points="538,166 570,166 554,132"/>
+  </g>
+
+  <!-- little obstacle ahead on the trail (dodge hint) -->
+  <ellipse cx="336" cy="158" rx="15" ry="8" fill="#b8ad97"/>
+  <ellipse cx="330" cy="155" rx="8" ry="5" fill="#cabfa8" fill-opacity="0.9"/>
+
+  <!-- ==== Joy (side view, trotting right) ==== -->
+  <ellipse cx="292" cy="212" rx="40" ry="8" fill="#000" opacity="0.12"/>
+  <g>
+    <!-- far legs -->
+    <rect x="276" y="192" width="9" height="18" rx="4.5" fill="#e6ede5"/>
+    <rect x="300" y="192" width="9" height="18" rx="4.5" fill="#e6ede5"/>
+    <!-- tail -->
+    <path d="M258 178 q-16 -4 -10 -18 q10 6 14 14 z" fill="#fff"/>
+    <!-- body -->
+    <ellipse cx="290" cy="180" rx="32" ry="20" fill="#fff"/>
+    <!-- near legs (mid-stride) -->
+    <rect x="282" y="196" width="9" height="18" rx="4.5" fill="#fff"/>
+    <rect x="306" y="194" width="9" height="18" rx="4.5" fill="#fff"/>
+    <!-- floppy ear -->
+    <ellipse cx="311" cy="150" rx="8.5" ry="14" fill="#f2f2f2" transform="rotate(-22 311 150)"/>
+    <!-- head -->
+    <circle cx="320" cy="164" r="18" fill="#fff"/>
+    <!-- nose -->
+    <ellipse cx="338" cy="169" rx="4.4" ry="3.6" fill="#141414"/>
+    <!-- eye -->
+    <circle cx="324" cy="160" r="2.5" fill="#141414"/>
+    <!-- Joy signature smile -->
+    <path d="M327 170 q6 6 11 0" fill="none" stroke="#141414" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+
+  <!-- restrained sparkles (healing tone) -->
+  <g fill="#ffd66b">
+    <circle cx="150" cy="70" r="2.2" opacity="0.8"/>
+    <circle cx="410" cy="100" r="1.8" opacity="0.7"/>
+  </g>
+</svg>

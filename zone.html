@@ -136,6 +136,15 @@ body::before {
 }
 .play-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
 .play-card:active { transform: translateY(-1px); }
+/* 有封面但暂不可点(如已能玩但本次不接入的关卡) */
+.play-card.nolink { cursor: default; }
+.play-card.nolink:hover { transform: none; box-shadow: var(--shadow-2); }
+.soon-pill {
+  display: inline-flex; align-items: center;
+  padding: 9px 16px; border-radius: 999px;
+  background: var(--bg); color: var(--ink-4);
+  font-size: 13px; font-weight: 700; letter-spacing: .3px;
+}
 .play-visual {
   position: relative; height: 120px;
   background: linear-gradient(150deg, var(--zone-bg), #fff);
@@ -271,6 +280,9 @@ const ZONES = {
       { name: 'Doga 餐厅', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '左右转头',
         sub: '转头对准饿了的 Doga,金勺圈闭合一秒喂饱它 —— 温和的左右转动,唤醒颈部。',
         url: 'mock-lunch-restaurant.html', video: 'img/lunch.mp4', assess: true },
+      { name: '田野散步', diff: 'hard', diffTxt: '重度', time: '约 60 秒', action: '转头躲避',
+        sub: 'Joy 自己往前走,你转头切道、抬头跳、低头钻,陪它躲开一路障碍 —— 颈椎全方位活动开。',
+        url: 'mock-walk.html', image: 'img/walk-cover.svg', assess: true },
       { name: '颈椎迷宫', diff: 'hard', diffTxt: '重度', time: '开发中', action: '转头控向',
         sub: '转头操控小球走迷宫,大范围多方向转动 —— 进阶挑战,敬请期待。',
         soon: true },
@@ -347,9 +359,11 @@ if (z.plays.length === 0) {
         <div class="lock-foot">敬请期待</div>
       </div>
     </div>` : `
-    <div class="play-card" onclick="enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})">
+    <div class="play-card${p.noLink ? ' nolink' : ''}"${p.noLink ? '' : ` onclick="enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})"`}>
       <div class="play-visual">
-        <video src="${p.video}" muted loop playsinline autoplay></video>
+        ${p.image
+          ? `<img src="${p.image}" alt="${p.name}">`
+          : `<video src="${p.video}" muted loop playsinline autoplay></video>`}
         <div class="scrim"></div>
         <span class="diff-badge diff-${p.diff}"><span class="dot"></span>${p.diffTxt}</span>
       </div>
@@ -361,8 +375,10 @@ if (z.plays.length === 0) {
           <span class="meta-chip">${ICO_MOVE}${p.action}</span>
         </div>
         <div class="play-foot">
-          <span class="hint">${p.assess ? '先做健康评估' : '演示版'}</span>
-          <button class="play-cta" onclick="event.stopPropagation();enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})">开始 ${ICO_ARROW}</button>
+          ${p.noLink
+            ? `<span class="soon-pill">即将上线</span>`
+            : `<span class="hint">${p.assess ? '先做健康评估' : '演示版'}</span>
+          <button class="play-cta" onclick="event.stopPropagation();enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})">开始 ${ICO_ARROW}</button>`}
         </div>
       </div>
     </div>`).join('');

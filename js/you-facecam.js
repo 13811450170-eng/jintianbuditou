@@ -83,6 +83,10 @@
   // 通用绘制:传入 canvas 像素坐标的关节点(可为 null),画点云 + 骨线 + 白关节
   function addSeg(dots,a,b,step){ if(!a||!b)return; const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy),n=Math.max(3,Math.round(len/(step||7))); for(let i=0;i<=n;i++)dots.push([a.x+dx*i/n,a.y+dy*i/n]); }
   function addArc(dots,cx,cy,r,n){ n=n||30; for(let i=0;i<n;i++){const t=i/n*Math.PI*2;dots.push([cx+Math.cos(t)*r,cy+Math.sin(t)*r]);} }
+  // 确定性散点填充:每帧同种子 → 点云随关节平滑变形而不闪烁,复刻面部点云的"扫描"密度
+  function mkRnd(seed){ let s=(seed>>>0)||1; return ()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; }; }
+  function fillQuad(dots,a,b,c,d,n,rnd){ if(!a||!b||!c||!d)return; for(let i=0;i<n;i++){ const u=rnd(),v=rnd(); const tx=a.x+(b.x-a.x)*u,ty=a.y+(b.y-a.y)*u, bx=d.x+(c.x-d.x)*u,by=d.y+(c.y-d.y)*u; dots.push([tx+(bx-tx)*v, ty+(by-ty)*v]); } }
+  function fillDisc(dots,cx,cy,r,n,rnd){ for(let i=0;i<n;i++){ const t=rnd()*Math.PI*2,rr=Math.sqrt(rnd())*r; dots.push([cx+Math.cos(t)*rr,cy+Math.sin(t)*rr]); } }
   function drawSkeleton(J) {
     bg();
     const bones = [];
@@ -90,25 +94,38 @@
     B('shL','shR'); B('shL','elL'); B('elL','wrL'); B('shR','elR'); B('elR','wrR');
     B('shL','hipL'); B('shR','hipR'); B('hipL','hipR');
     // 颈:双肩中点 → 鼻
-    let neck=null;
-    if(J.shL&&J.shR&&J.nose){ const mid={x:(J.shL.x+J.shR.x)/2,y:(J.shL.y+J.shR.y)/2}; neck=[mid,J.nose]; }
+    let neck=null, mid=null;
+    if(J.shL&&J.shR){ mid={x:(J.shL.x+J.shR.x)/2,y:(J.shL.y+J.shR.y)/2}; if(J.nose) neck=[mid,J.nose]; }
 
-    // 点云
-    const dots=[];
-    for(const [a,b] of bones) addSeg(dots,a,b,7);
-    if(neck) addSeg(dots,neck[0],neck[1],7);
-    if(J.nose&&J.headR) addArc(dots,J.nose.x,J.nose.y,J.headR,30);
+    const rnd=mkRnd(20240816);
+
+    // ① 面状点云:躯干/上臂/前臂当作有宽度的四边形填充,头当圆盘填充 —— 复刻面部点云的密度感
+    const cloud=[];
+    const perp=(a,b,w)=>{ const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1; return {x:-dy/L*w,y:dx/L*w}; };
+    const limb=(a,b,w,n)=>{ if(!a||!b)return; const p=perp(a,b,w); fillQuad(cloud,{x:a.x+p.x,y:a.y+p.y},{x:b.x+p.x,y:b.y+p.y},{x:b.x-p.x,y:b.y-p.y},{x:a.x-p.x,y:a.y-p.y},n,rnd); };
+    // 躯干:双肩→双髋 的梯形
+    if(J.shL&&J.shR&&J.hipL&&J.hipR) fillQuad(cloud,J.shL,J.shR,J.hipR,J.hipL,210,rnd);
+    // 双臂(上臂略粗、前臂略细)
+    limb(J.shL,J.elL,7.5,52); limb(J.elL,J.wrL,6,44);
+    limb(J.shR,J.elR,7.5,52); limb(J.elR,J.wrR,6,44);
+    // 颈
+    if(neck) limb(neck[0],neck[1],5,24);
+    // 头:圆盘填充 + 轮廓环
+    if(J.nose&&J.headR){ fillDisc(cloud,J.nose.x,J.nose.y,J.headR*0.92,150,rnd); addArc(cloud,J.nose.x,J.nose.y,J.headR,48); }
+    // 手部小簇(动作端点,给一点密度)
+    if(J.wrL) fillDisc(cloud,J.wrL.x,J.wrL.y,7.5,36,rnd);
+    if(J.wrR) fillDisc(cloud,J.wrR.x,J.wrR.y,7.5,36,rnd);
+
     ctx.fillStyle=GOLD_DOT;
-    for(let i=0;i<dots.length;i++){ const j=((i*97)%5-2)*0.35; ctx.fillRect(dots[i][0]-0.6+j,dots[i][1]-0.6-j,1.5,1.5); }
+    for(let i=0;i<cloud.length;i++){ ctx.fillRect(cloud[i][0]-0.5,cloud[i][1]-0.5,1.4,1.4); }
 
-    // 骨线
-    ctx.strokeStyle=GOLD_LINE; ctx.lineWidth=1;
+    // ② 骨线:更细,叠在点云上勾勒结构
+    ctx.strokeStyle=GOLD_LINE; ctx.lineWidth=0.9;
     for(const [a,b] of bones){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
     if(neck){ ctx.beginPath(); ctx.moveTo(neck[0].x,neck[0].y); ctx.lineTo(neck[1].x,neck[1].y); ctx.stroke(); }
-    // 头圈
     if(J.nose&&J.headR){ ctx.beginPath(); ctx.arc(J.nose.x,J.nose.y,J.headR,0,Math.PI*2); ctx.stroke(); }
 
-    // 白关节:双肩 + 双腕(动作端点)+ 双肘(次要)
+    // ③ 白关节:双肩 + 双腕(动作端点)+ 双肘(次要)
     ctx.fillStyle=WHITE;
     for(const k of ['shL','shR','wrL','wrR']){ if(J[k]){ ctx.beginPath(); ctx.arc(J[k].x,J[k].y,2.4,0,Math.PI*2); ctx.fill(); } }
     ctx.fillStyle='rgba(255,255,255,0.6)';
