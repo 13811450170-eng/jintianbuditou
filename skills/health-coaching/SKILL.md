@@ -1,112 +1,127 @@
 ---
 name: health-coaching
-description: 颈肩练习指导 —— 基于 health-assessment 的分流与基线,给出今天能做、怎么做、练到哪的个性化低负荷方案:按分流开放动作、以个人有效 ROM 下调目标、注入统一安全规则、练中实时代偿提醒。是"评估—指导"闭环的后半段。
+description: 面向办公室人群的颈肩低负荷动作指导、练中提示与练后数据整理。仅消费 health-assessment 已通过的部位和动作，生成可解释的动作要点、代偿提醒、暂停条件和周报指标；不提供诊断或个体化治疗处方。
 ---
 
-# 颈肩练习指导 (health-coaching)
+# 颈肩练习指导（health-coaching）
 
-> 医学背书来源见《今天不低头-健康背书调研》。动作库**只作为产品玩法的理论来源和专业参考,
-> 不构成面向个体的诊疗处方**。所有动作均在舒适、无痛范围内缓慢完成;不得以疼痛、极限幅度或快速次数为目标。
+## 目标与依据
 
-## 定位
+将 `health-assessment` 的筛查结论转为“本次能做什么、动作时注意什么、练后记录什么”的低负荷方案。详细动作、安全和量化规则以[颈肩健康知识库](../../docs/颈肩健康知识库.md)为准，尤其使用第 1、5、6、7、8 节。
 
-把 [[health-assessment]] 的评估结论,转成"今天做什么、每个动作练到哪、怎么提醒"的可执行方案。
-评估负责判定,指导负责干预 —— 评估的产出(分流 + 基线)正是指导的准入与参数。
+仅在 `gate=available` 或 `gate=limited` 时工作，并且只使用 `availableActions` 中的动作。每个动作均用现有的 `part`（`neck` 或 `shoulder`）与 `axis` 表达；不得另建动作 ID。它不诊断疾病，不替代专业评估，也不以疼痛、极限幅度、快速次数或游戏得分为目标。
 
-## 何时触发
+## 运行态兼容
 
-- 评估通过、进入动作游戏时(选关卡 / 定灵敏度)。
-- 练习过程中(实时代偿提醒、节奏控制)。
-- 练后由 [[health-assessment]] 再次接手做安全闭环,形成"评估 → 指导 → 再评估"循环。
+`health-coaching` 的目标输入是下文的嵌套 `assessment`、`userIntent`、`sessionMetrics` 结构；它消费 `assessment.gate` 的四态结论和 `assessment.availableActions`。若直接传入 `/api/screen` 的兼容响应，适配层应先取其中的 `decision` 作为 `assessment`。
 
-## 输入 schema
+与 PR #4 对齐的服务端 `/api/coach` 尚接受旧结构 `{ flow, baseline, pain, answers }`。在前端迁移完成前，适配层应把 `assessment.gate=available | limited` 映射为可调用的旧输入；`assessment.gate=remeasure | stop` 不得调用关卡推荐。旧输出的 `level`、`suggestSensitivity`、`breaks` 继续保留给现有页面，新输出补充 `plan[].part`、`plan[].status`、`motionControl` 和 `metrics`。不得为了兼容旧界面而绕过四态闸门。
 
-来自 health-assessment 的输出,加上用户问诊回答:
+## 接收输入
 
 ```jsonc
 {
-  "flow": "both | neckOnly | shoulderOnly | none",  // 分流,决定开放哪套动作
-  "baseline": { "neck": { "flexion": {"effectiveRom":0,"status":"available"}, ... }, "shoulder": {...} },
-  "pain": { "level": 0, "region": "neck" },
-  "answers": { "feel": "酸胀 | 发紧 | 还好", "goal": "轻松放松 | 认真练一组" }  // 问诊
+  "assessment": {
+    "gate": "available | limited | remeasure | stop",
+    "flow": "both | neckOnly | shoulderOnly | none",
+    "availableActions": [{ "part": "neck", "axis": "flexion" }],
+    "blockedActions": [{ "part": "shoulder", "axis": "flexionL", "reason": "discomfort" }],
+    "baseline": {},
+    "metrics": { "discomfort": {}, "recognitionQuality": {} }
+  },
+  "userIntent": { "feel": "酸胀 | 发紧 | 还好", "goal": "轻松活动 | 完成一组" },
+  "sessionMetrics": {
+    "completedActions": 0,
+    "targetActions": 0,
+    "compensationEvents": [],
+    "validHoldSeconds": 0,
+    "sensorEvents": { "flingCount": 0, "rapidMovementDetected": false }
+  }
 }
 ```
 
-## 动作库(§2 理论来源)
+若输入缺少 `assessment`、`assessment.gate` 不是 `available`/`limited`，或 `flow=none`，不要自行补全筛查结果；返回“先完成安全自查或重测”的结果。
 
-**颈部**(NHS 一般人群资料 + 中国康复医学会《颈椎病诊治与康复指南 2010》缓慢屈伸侧屈旋转保健建议):
+## 选择动作
 
-| 动作 | 方向键 | 说明 |
-| --- | --- | --- |
-| 颈部屈曲 Flexion | `flexion` | 缓慢低头,下巴向胸前靠近至舒适范围,回中立 |
-| 颈部伸展 Extension | `extension` | 缓慢抬头向上看,回中立 |
-| 颈部侧弯 Lateral Flexion | `lateralL/R` | 耳朵靠向同侧肩,不耸肩 |
-| 头部转动 Rotation | `rotationL/R` | 头转向一侧,躯干不转 |
-| 头部前突 Protrusion | `protrusion` | MDT 8 向扩展动作,暂未匹配玩法 |
-| 头部后缩 Retraction | `retraction` | MDT 8 向扩展动作,暂未匹配玩法 |
+按 `availableActions` 逐项选择，使用与知识库相同的动作名称与控制原则：
 
-**肩部**(NHS 无器械坐/站姿动作):
+| `part` / `axis` | 动作名称 | 主要提示 | 常见代偿 |
+|---|---|---|---|
+| `neck` / `flexion` | 颈部屈曲 | 缓慢低头，舒适范围内回到中立位 | 躯干前屈 |
+| `neck` / `extension` | 颈部伸展 | 缓慢抬头，单一平面完成后回中立 | 躯干后仰 |
+| `neck` / `lateralL`、`lateralR` | 颈部侧屈 | 双肩放松，一侧耳朵向同侧肩靠近 | 耸肩、躯干侧倾、转头 |
+| `neck` / `rotationL`、`rotationR` | 颈部旋转 | 躯干稳定，缓慢转头后回中立 | 躯干跟转、耸肩 |
+| `neck` / `protrusion` | 头部前突（后期扩展） | 头部水平向前，避免低头或躯干前倾 | 低头、躯干前倾 |
+| `neck` / `retraction` | 头部后缩（后期扩展） | 头部水平向后，避免翘下巴或后仰 | 翘下巴、后仰、耸肩 |
+| `shoulder` / `flexionL`、`flexionR` | 坐姿肩关节前屈 | 手臂向前上方抬至可维持控制的舒适高度 | 耸肩、躯干后仰/侧倾 |
+| `shoulder` / `scapularRetraction` | 坐姿肩胛后缩 | 肩膀放松，肩胛轻轻向后下方靠拢后放松 | 耸肩、抬下巴、过度挺胸 |
 
-| 动作 | 键 | 说明 |
-| --- | --- | --- |
-| 坐姿肩关节前屈 | `flexionL/R` | 手臂缓慢向前上方抬起,只抬到能维持肩胛控制的高度,受控放回 |
-| 坐姿肩胛后缩 | `scapularRetraction` | 两侧肩胛轻轻后靠,短暂停留后放松;不耸肩、不夹紧 |
+对于 `limited` 动作，使用“减小幅度、放慢节奏、优先回中立位”的提示；不得生成目标角度、强制次数或以提高幅度为导向的指令。前突和后缩保留为后期扩展动作；除非评估明确开放且产品已有对应交互，否则不放入当前游戏动作清单。
 
-## 核心逻辑
+## 统一安全规则
 
-1. **按分流开放动作** — 严格遵循 `flow`,只从被开放的部位取动作:
-   | `flow` | 路径 |
-   | --- | --- |
-   | `both` | 颈 + 肩动作全开放 |
-   | `neckOnly` | 只开颈部,关闭肩部 |
-   | `shoulderOnly` | 只开肩部,关闭颈部 |
-   | `none` | 不进动作游戏,提示线下评估 |
-   `status=stop` 的具体方向即使在开放部位内也剔除;`limited` 保留但降级。
+对每个推荐动作附带以下规则：
 
-2. **以个人基线下调目标** — 用 `baseline.*.effectiveRom` 作为该方向目标角度的**上限**,`limited` 方向进一步下调;关闭 `discomfort` 方向的相关玩法。绝不以极限幅度为目标。
+1. 在舒适、无痛、缓慢且受控的范围内完成。
+2. 每次单一方向动作结束后回到自然中立位。
+3. 不做颈部绕圈、快速甩头、伸展叠加旋转或手部末端加压。
+4. 检测到 `sensorEvents.rapidMovementDetected` 或累计甩头达到当前关卡提醒阈值时，立即停止本次计分并提示“放慢、回中立位”；下一个动作只在重新稳定后开始。该事件进入 `motionControl` 与练后报告，不替代用户自报安全事件，也不单独触发医疗转介。
+5. 出现疼痛、眩晕、麻木、无力、明显不适或新的症状向上肢延伸时，立即停止本次练习，并交回 `health-assessment` 进行练后复核。
+6. 检测到耸肩、躯干跟转、躯干前倾/后仰或过度挺胸时，优先提示减小幅度、放慢动作或回中立位；不得将其记为健康异常。
 
-3. **注入统一安全规则**(§2.1)— 不做颈部绕圈;不做快速甩头;不将伸展与旋转叠加;不以疼痛、极限幅度或高频次数为目标;不自行用手加压;完成一个方向回中立位再做下一次。
+动作游戏外，同时提示规律短暂休息、改变体位和基础工位调整；不得暗示一次拉伸可以抵消长期静态久坐。
 
-4. **练中实时代偿提醒** — 检测到耸肩 / 躯干后仰 / 躯干旋转代偿时即时提示纠正;甩头(安全红线)是首要纠正项 —— 康复讲"慢而稳"。
+## 输出结果
 
-5. **组合而非单点** — 动作 + 规律间歇 + 工位/姿势提醒(CUH NHS 建议:电脑工作等加重不适的任务应拆分进行、规律休息;《指南 2010》建议久坐者约每小时改变体位)。证据显示组合优于单纯拉伸。
-
-## 输出 schema
-
-对齐后端 `recommend` 现有契约,并扩展当日方案:
+保留现有游戏调用所需的关卡字段，同时新增可解释的动作与数据字段。`level` 和 `suggestSensitivity` 仅服务交互体验，不表达医学强度或治疗剂量。
 
 ```jsonc
 {
-  "level": "walk | boxing | lunch | fireworks",  // 推荐关卡(现有关卡键)
-  "reason": "Joy 口吻的推荐理由",
-  "suggestSensitivity": 50,           // 灵敏度:酸胀/高疼痛 → 调低(省力)
+  "level": "walk | boxing | lunch | fireworks | null",
+  "reason": "简短、非医疗化的推荐说明",
+  "suggestSensitivity": 0,
   "tone": "gentle | cheer",
-  "plan": [                            // 当日动作清单(扩展字段)
-    { "axis": "flexion", "targetRom": 0, "safetyCap": 0, "cues": ["慢而稳","回中立"] }
+  "plan": [
+    {
+      "part": "shoulder",
+      "axis": "scapularRetraction",
+      "name": "坐姿肩胛后缩",
+      "status": "available | limited",
+      "cues": ["肩膀放松", "轻轻向后下方靠拢", "回到自然位置"],
+      "compensationHints": ["避免耸肩", "避免过度挺胸"],
+      "stopConditions": ["疼痛", "眩晕", "麻木", "无力"]
+    }
   ],
-  "breaks": "规律间歇 / 工位提醒建议"
+  "metrics": {
+    "completionRate": null,
+    "compensationRate": null,
+    "validHoldSeconds": 0,
+    "recognitionQuality": "usable | remeasure",
+    "sensorEvents": { "flingCount": 0, "rapidMovementDetected": false }
+  },
+  "motionControl": { "status": "normal | slowDown", "message": "" },
+  "breakReminder": "建议短暂活动或改变坐姿",
+  "reportHints": ["描述练习参与度、动作控制和自我报告变化，不作医疗结论"]
 }
 ```
 
-### 关卡映射(沿用现有 stub.recommend 规则)
+## 记录与周报口径
 
-| 问诊 | 关卡 | 灵敏度 | 取向 |
-| --- | --- | --- | --- |
-| 酸胀 | `walk` 散步(轻柔) | 35 | gentle |
-| 发紧(不酸) | `lunch` 喂饭(定向大幅活动) | 50 | cheer |
-| 认真练一组 | `boxing` 拳击(强度最高、颈椎覆盖全) | 55 | cheer |
-| 还好 + 轻松放松 | `walk` 散步 | 50 | cheer |
+按知识库第 8 节记录，优先输出：
 
-## 与工程的对接
+- **参与度**：练习天数、会话次数、有效完成数、目标动作数和完成率；
+- **动作控制**：代偿提示次数/代偿率、稳定停留时长、在相近条件下的个人相对表现；
+- **自我报告**：颈部、左肩、右肩练前后不适评分及中断原因；
+- **数据可信度**：有效识别帧率、关键点质量、遮挡和环境问题。
 
-对应后端 `server/adapters` 的 **`recommend`** 能力。现有 `stub.recommend` 已实现"问诊 → 关卡 + 灵敏度 + Joy 点评";
-本 skill 是它的**规则超集**:在 `recommend` 之上叠加 `flow` 门禁、基线 downscale 与当日 `plan` 生成。
+使用 `完成率 = 有效完成数 ÷ 目标动作数`；目标动作为 0 或识别不足时将完成率设为 `null`，不得显示为 0%。使用 `代偿率 = 出现代偿的有效尝试数 ÷ 有效尝试总数`；无有效尝试时同样设为 `null`。
 
-- 骨架实现见:`server/adapters/health-coaching.stub.js`(不覆盖现有 `stub.js`,带 TODO 留接口)。
-- 现有 `walk/boxing/lunch/fireworks` 关卡键、`suggestSensitivity`、`tone` 契约保持不变。
+周报只能表述为“动作完成能力、练习参与度、动作控制、识别质量和自我报告舒适度的个人变化”。不得输出“颈椎恢复正常”“功能改善 X%”“动作治疗有效”等临床结论。
 
-## 边界
+## 交接边界
 
-- 动作库仅为理论参考,不构成个体化诊疗处方。
-- 肩部动作不表述为对肩周炎、肩袖撕裂等具体疾病的治疗。
-- `flow=none` 时不给任何练习方案,只提示线下评估。
+- `assessment.gate=remeasure`：不生成计划，返回摄像头、光线、坐姿或遮挡的调整提示。
+- `assessment.gate=stop`：不生成计划或关卡推荐，仅保留安全提示与线下评估建议。
+- 练中或练后出现安全事件：中止计划，将事件和练前后主观不适交回 `health-assessment` 做安全复核。
+- 保持数据最小化：只传递结构化动作和会话数据，不传递或保存原始视频画面。
