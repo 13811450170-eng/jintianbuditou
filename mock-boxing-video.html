@@ -80,29 +80,18 @@
     stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 
   /* ==================== HUD ==================== */
-  .hud-title{
-    position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:30;
-    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
-    color:var(--title-txt);
-    padding:10px 32px;border-radius:var(--r-pill);
-    font-size:18px;font-weight:800;letter-spacing:1.5px;
-    box-shadow:var(--shadow-1);
-    display:flex;align-items:center;gap:10px;
-  }
-  .hud-title .ico{stroke:var(--title-txt);width:19px;height:19px;}
-
   /* ==================== 顶部动作队列(预告+当前+汇总 三合一,替代标题)==================== */
   /* 主旨「不低头」:核心信息全部上移到屏幕顶部 */
   .action-queue{
-    position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:30;
-    display:flex;align-items:center;gap:7px;
-    padding:9px 14px;border-radius:var(--r-pill);
+    position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:30;
+    display:flex;align-items:center;gap:10px;
+    padding:12px 20px;border-radius:var(--r-pill);
   }
   .aq-chip{
-    position:relative;width:38px;height:38px;border-radius:11px;
+    position:relative;width:58px;height:58px;border-radius:15px;
     display:flex;align-items:center;justify-content:center;
-    background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.14);
-    color:rgba(255,255,255,.5);font-size:19px;font-weight:900;line-height:1;
+    background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.14);
+    color:rgba(255,255,255,.5);font-size:30px;font-weight:900;line-height:1;
     transition:transform .2s, background .25s, border-color .25s, color .25s, box-shadow .25s;
   }
   /* 未到(预告态):暗淡 */
@@ -112,14 +101,14 @@
     opacity:1;color:var(--title-txt);
     background:linear-gradient(135deg,var(--gold-bright),var(--gold));
     border-color:var(--gold-bright);
-    box-shadow:0 0 14px rgba(255,214,107,.5);
-    transform:scale(1.28);
+    box-shadow:0 0 18px rgba(255,214,107,.55);
+    transform:scale(1.26);
     animation:aqBreath .6s ease-in-out infinite alternate;
   }
-  @keyframes aqBreath{from{transform:scale(1.22);}to{transform:scale(1.36);}}
+  @keyframes aqBreath{from{transform:scale(1.2);}to{transform:scale(1.34);}}
   /* 判定三态染色(汇总) */
-  .aq-chip.perfect{opacity:1;color:#0a2b18;background:var(--perfect);border-color:#eafff2;box-shadow:0 0 8px var(--perfect);}
-  .aq-chip.good{opacity:1;color:var(--title-txt);background:var(--good);border-color:#fff6de;box-shadow:0 0 7px var(--good);}
+  .aq-chip.perfect{opacity:1;color:#0a2b18;background:var(--perfect);border-color:#eafff2;box-shadow:0 0 10px var(--perfect);}
+  .aq-chip.good{opacity:1;color:var(--title-txt);background:var(--good);border-color:#fff6de;box-shadow:0 0 9px var(--good);}
   .aq-chip.miss{opacity:.5;color:rgba(255,255,255,.6);background:rgba(120,124,132,.35);border-color:rgba(255,255,255,.18);}
 
   .hud-left{position:absolute;top:16px;left:16px;z-index:30;
@@ -134,17 +123,23 @@
   .chip .val{color:#fff;font-size:22px;font-weight:900;min-width:22px;text-align:center;}
   .chip .unit{font-size:13px;opacity:.7;font-weight:700;}
 
-  .progress-wrap{
-    position:absolute;top:16px;right:16px;z-index:30;width:205px;
-    border-radius:var(--r-md);padding:14px 18px;
+  /* ===== 进度条:右上角紧凑版,与其他关卡一致,不挡动作 ===== */
+  .progress-bar-full{
+    position:absolute;top:18px;right:18px;z-index:30;width:180px;
+    display:flex;align-items:center;gap:9px;
   }
-  .progress-label{display:flex;justify-content:space-between;align-items:center;
-    font-size:13px;color:var(--gold-bright);font-weight:800;letter-spacing:1px;
-    margin-bottom:10px;}
-  .progress-label .pct{color:#fff;font-size:15px;font-weight:900;}
-  .progress-track{height:10px;background:rgba(255,255,255,.16);border-radius:var(--r-pill);overflow:hidden;}
-  .progress-fill{height:100%;width:0%;border-radius:var(--r-pill);
-    background:linear-gradient(90deg,var(--brand),var(--gold));transition:width .5s;}
+  .pbf-track{
+    position:relative;flex:1;height:7px;border-radius:var(--r-pill);
+    background:rgba(255,255,255,.16);overflow:hidden;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.3);
+  }
+  .pbf-fill{
+    position:absolute;left:0;top:0;height:100%;width:0%;border-radius:var(--r-pill);
+    background:linear-gradient(90deg,var(--brand),var(--gold));transition:width .5s ease;
+    box-shadow:0 0 8px rgba(255,214,107,.4);
+  }
+  .pbf-pct{font-size:13px;font-weight:900;color:var(--gold-bright);letter-spacing:.5px;min-width:34px;text-align:right;}
+  .pbf-ico{width:15px;height:15px;stroke:var(--gold-bright);flex-shrink:0;}
 
   /* 判定飘字 · 击打感 */
   .floater{
@@ -152,12 +147,12 @@
     text-align:center;pointer-events:none;font-weight:900;
   }
   .floater .big{
-    font-size:60px;letter-spacing:2px;
+    font-size:88px;letter-spacing:2px;
     background:linear-gradient(135deg,#fff,var(--gold-bright));
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    filter:drop-shadow(0 2px 10px rgba(0,0,0,.6)) drop-shadow(0 0 18px var(--brand));
+    filter:drop-shadow(0 3px 14px rgba(0,0,0,.7)) drop-shadow(0 0 24px var(--brand));
   }
-  .floater .sub{font-size:18px;color:#fff;margin-top:4px;font-weight:800;text-shadow:0 1px 6px rgba(0,0,0,.75);}
+  .floater .sub{font-size:26px;color:#fff;margin-top:6px;font-weight:900;text-shadow:0 2px 8px rgba(0,0,0,.8);}
   .floater.play{animation:floatHit 1.25s cubic-bezier(.2,.8,.2,1) forwards;}
   @keyframes floatHit{
     0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.5);}
@@ -172,19 +167,19 @@
   ============================================================ */
   .orb-field{position:absolute;inset:0;z-index:26;pointer-events:none;}
   .dodge-orb{
-    position:absolute;width:104px;height:104px;
+    position:absolute;width:132px;height:132px;
     transform:translate(-50%,-50%);
     display:flex;align-items:center;justify-content:center;
   }
   /* 外圈:逼近时从大缩到与内核重合(scale 由 element.animate 驱动)。细亮环,不堆辉光 */
   .orb-ring{
     position:absolute;inset:0;border-radius:50%;
-    border:1.5px solid rgba(255,230,150,.85);
+    border:2px solid rgba(255,230,150,.85);
     box-shadow:inset 0 0 8px rgba(255,214,107,.18);
   }
   /* 内核:醒目玻璃球 —— 实心提色 + 边缘亮光 + 顶部高光,金色系,静止也一眼可见 */
   .orb-core{
-    position:relative;width:78px;height:78px;border-radius:50%;
+    position:relative;width:102px;height:102px;border-radius:50%;
     background:
       radial-gradient(circle at 50% 34%, rgba(255,255,255,.55) 0%, rgba(255,224,140,.55) 34%, rgba(255,190,74,.42) 70%, rgba(210,140,30,.34) 100%);
     border:2px solid rgba(255,236,180,.9);
@@ -194,12 +189,12 @@
   }
   /* 顶部小高光点,强化玻璃感 */
   .orb-core::before{
-    content:"";position:absolute;top:9px;left:24px;width:18px;height:11px;border-radius:50%;
+    content:"";position:absolute;top:12px;left:32px;width:22px;height:13px;border-radius:50%;
     background:radial-gradient(circle, rgba(255,255,255,.85), rgba(255,255,255,0) 70%);
     pointer-events:none;
   }
-  .orb-core .arrow{font-size:36px;font-weight:900;line-height:1;color:#fff;text-shadow:0 1px 6px rgba(120,70,0,.7);}
-  .orb-core .tag{font-size:12px;font-weight:900;letter-spacing:.5px;margin-top:2px;color:#fff;opacity:1;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .orb-core .arrow{font-size:46px;font-weight:900;line-height:1;color:#fff;text-shadow:0 1px 6px rgba(120,70,0,.7);}
+  .orb-core .tag{font-size:14px;font-weight:900;letter-spacing:.5px;margin-top:3px;color:#fff;opacity:1;text-shadow:0 1px 3px rgba(0,0,0,.6);}
   /* 命中区可视化:活跃球外一圈虚线靶环,把判定窗变成看得见的靶心 */
   .hit-zone{
     position:absolute;inset:-16px;border-radius:50%;
@@ -244,32 +239,33 @@
   @keyframes orbBounce{0%{transform:scale(1);}42%{transform:scale(1.32);}100%{transform:scale(1);}}
   @keyframes orbMissShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
 
-  /* ===== 头部准星:玩家头姿实时位置,移到光球上=对准 ===== */
+  /* ===== 头部准星:显示玩家运动幅度,移到光球上=对准。强平滑+静止死区,不乱飘 ===== */
   #reticle{
-    position:absolute;left:50%;top:50%;width:56px;height:56px;z-index:27;
+    position:absolute;left:50%;top:50%;width:54px;height:54px;z-index:27;
     transform:translate(-50%,-50%);pointer-events:none;
-    transition:opacity .3s;will-change:transform;
+    transition:opacity .3s, border-color .2s;will-change:transform;
   }
   #reticle .ret-ring{
     position:absolute;inset:0;border-radius:50%;
-    border:2.5px solid rgba(255,255,255,.9);
-    box-shadow:0 0 8px rgba(0,0,0,.4), inset 0 0 6px rgba(255,255,255,.3);
+    border:2.5px solid rgba(255,255,255,.92);
+    box-shadow:0 0 8px rgba(0,0,0,.45), inset 0 0 6px rgba(255,255,255,.3);
   }
-  /* 十字线 */
-  #reticle .ret-cross{position:absolute;background:rgba(255,255,255,.9);box-shadow:0 0 4px rgba(0,0,0,.4);}
-  #reticle .ret-cross.h{top:50%;left:14px;right:14px;height:2px;transform:translateY(-50%);}
-  #reticle .ret-cross.v{left:50%;top:14px;bottom:14px;width:2px;transform:translateX(-50%);}
+  #reticle .ret-cross{position:absolute;background:rgba(255,255,255,.92);box-shadow:0 0 4px rgba(0,0,0,.45);}
+  #reticle .ret-cross.h{top:50%;left:13px;right:13px;height:2px;transform:translateY(-50%);}
+  #reticle .ret-cross.v{left:50%;top:13px;bottom:13px;width:2px;transform:translateX(-50%);}
   #reticle .ret-dot{position:absolute;top:50%;left:50%;width:6px;height:6px;border-radius:50%;
     background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 6px rgba(0,0,0,.5);}
-  #reticle.locked .ret-ring{border-color:var(--perfect);box-shadow:0 0 14px var(--perfect);}
+  /* 对准活跃球:准星整体变绿 */
+  #reticle.locked .ret-ring{border-color:var(--perfect);box-shadow:0 0 16px var(--perfect);}
   #reticle.locked .ret-cross,#reticle.locked .ret-dot{background:var(--perfect);}
-  #reticle.lost{opacity:.28;}
+  /* 无脸/键盘态:淡化并归中 */
+  #reticle.lost{opacity:.22;}
 
   /* 判定戳记(盖在光球上) */
   .orb-stamp{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
-    font-size:15px;font-weight:900;letter-spacing:.5px;white-space:nowrap;
-    padding:3px 9px;border-radius:6px;background:rgba(0,0,0,.78);
+    font-size:19px;font-weight:900;letter-spacing:.5px;white-space:nowrap;
+    padding:4px 12px;border-radius:8px;background:rgba(0,0,0,.78);
     text-shadow:0 1px 3px rgba(0,0,0,.8);z-index:2;opacity:0;
   }
   .dodge-orb.hit-perfect .orb-stamp{opacity:1;color:var(--perfect);animation:orbStampPop .5s cubic-bezier(.34,1.56,.64,1) both;}
@@ -463,9 +459,11 @@
     <div class="chip glass"><svg class="ico"><use href="#i-dodge"/></svg><span class="lb">闪避</span><span class="val" id="repVal">0</span><span class="unit">次</span></div>
     <div class="chip glass"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
   </div>
-  <div class="progress-wrap glass">
-    <div class="progress-label"><span>回合</span><span class="pct" id="progPct">0%</span></div>
-    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+  <!-- 全宽进度条:横跨屏幕,显示整局进度 -->
+  <div class="progress-bar-full">
+    <svg class="pbf-ico" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><use href="#i-boxglove"/></svg>
+    <div class="pbf-track"><div class="pbf-fill" id="progFill"></div></div>
+    <div class="pbf-pct" id="progPct">0%</div>
   </div>
 
   <!-- 闪避光球场:四方位光球 + 逼近缩圈 + 头部准星 -->
@@ -555,8 +553,7 @@ const repVal=document.getElementById('repVal');
 const comboVal=document.getElementById('comboVal');
 const progFill=document.getElementById('progFill');
 const progPct=document.getElementById('progPct');
-const beatTxt=document.getElementById('beatTxt');
-const beatPulse=document.getElementById('beatPulse');
+const actionQueue=document.getElementById('actionQueue');
 const toast=document.getElementById('toast');
 const orbField=document.getElementById('orbField');
 const reticle=document.getElementById('reticle');
@@ -587,8 +584,8 @@ const JUDGE = {
 };
 const VEL_SPIKE = 14;   // 度/帧 = 甩头护栏(略放宽,避免正常动作误判)
 
-// 四方位闪避 → 期望头姿轴向。cueX/cueY = 光球位置(往中心拉近,轻偏头就能够到,中央留给准星)
-// tag = 内核小标签;箭头 = 头往哪动
+// 四方位闪避 → 期望头姿轴向。cueX/cueY = 光球位置(球摆在头要去的方向)
+// tag = 内核小标签;箭头 = 头往哪动;头偏对方向→该球变绿锁定
 const PUNCHES=[
   {name:'左钩拳',dodge:'头向左倾',dir:'left', cue:'◀',tag:'左倾',cueX:26,cueY:50,expect:'roll-', key:'ArrowLeft'},
   {name:'右钩拳',dodge:'头向右倾',dir:'right',cue:'▶',tag:'右倾',cueX:74,cueY:50,expect:'roll+', key:'ArrowRight'},
@@ -596,17 +593,20 @@ const PUNCHES=[
   {name:'上勾拳',dodge:'收下巴',  dir:'down', cue:'▼',tag:'收下巴',cueX:50,cueY:72,expect:'pitch+',key:'ArrowDown'},
 ];
 
-// ===== 头部准星:头姿角度 → 屏幕百分比偏移 =====
-// kx/ky 越大准星越灵敏(头倾一点就走很远)。可用 URL 实时标定:?kx=4&ky=4&lock=16
-// 默认 3.8:MediaPipe 实测头倾角偏小,配合球拉近中心(±24%),让 ~7° 轻偏头就能推到球上并判过
+// URL 实时旋钮(真机标定用):?kx=&ky=&lock=&dead=
 const _q=new URLSearchParams(location.search);
 const _num=(k,d)=>{ const v=parseFloat(_q.get(k)); return isFinite(v)?v:d; };
+
+// ===== 头部准星:头姿角度 → 屏幕百分比偏移(显示运动幅度)=====
+// 治抖三招:①强平滑(慢跟随)②静止死区(小于阈值当没动)③无脸归中
 const RETICLE={
-  kx:_num('kx',3.8), ky:_num('ky',3.8),
-  maxX:40, maxY:40,
-  lockRadius:_num('lock',16),   // 单位 %,越大越容易锁定
+  kx:_num('kx',3.8), ky:_num('ky',3.8),   // 灵敏度:角度→屏幕%
+  maxX:40, maxY:40,                         // 最大偏移(不冲出屏幕)
+  smooth:_num('sm',0.18),                   // 平滑系数:越小越稳(治拖影/抖动的主开关)
+  dead:_num('dead',1.5),                    // 静止死区(度):小于此角度视为没动,准星回中
+  lockRadius:_num('lock',15),               // 准星距球心多近算对准(%)
 };
-let reticlePos={ x:50, y:50 };   // 准星当前屏幕百分比位置(50,50=中心)
+let reticlePos={ x:50, y:50 };              // 准星当前屏幕百分比(50,50=中心)
 
 // ===== 头姿检测桥接(内核 → 游戏侧,每帧 syncPose 刷新)=====
 let kernel=null, camOK=false;
@@ -681,16 +681,32 @@ function floatBig(big,sub){
 function clearOrbs(){ if(orbField) orbField.querySelectorAll('.dodge-orb,.shockwave').forEach(el=>el.remove()); }
 
 // ===== 汇总层:一拳一点 =====
-const pipRow=document.getElementById('pipRow');
-function buildPips(){
-  if(!pipRow) return;
-  pipRow.innerHTML='';
-  for(let i=0;i<TOTAL_PUNCHES;i++){ const d=document.createElement('div'); d.className='pip'; pipRow.appendChild(d); }
+// 顶部动作队列:一拳一个 chip,显示方向箭头。预告态/当前高亮/判定后三态染色三合一
+function buildQueue(){
+  if(!actionQueue) return;
+  actionQueue.innerHTML='';
+  for(let i=0;i<TOTAL_PUNCHES;i++){
+    const p=PUNCHES[i%PUNCHES.length];
+    const c=document.createElement('div');
+    c.className='aq-chip upcoming';
+    c.textContent=p.cue;   // 方向箭头 ◀▶▲▼
+    actionQueue.appendChild(c);
+  }
 }
-function markPip(idx,kind){
-  if(!pipRow) return;
-  const pip=pipRow.children[idx];
-  if(pip){ pip.className='pip '+kind; }
+// 当前拳高亮(其余保持各自态)
+function setActiveChip(idx){
+  if(!actionQueue) return;
+  [...actionQueue.children].forEach((c,i)=>{
+    if(c.classList.contains('perfect')||c.classList.contains('good')||c.classList.contains('miss')) return;
+    c.classList.toggle('active', i===idx);
+    c.classList.toggle('upcoming', i!==idx);
+  });
+}
+// 判定后给该 chip 染三态色
+function markChip(idx,kind){
+  if(!actionQueue) return;
+  const c=actionQueue.children[idx];
+  if(c) c.className='aq-chip '+kind;
 }
 
 // 在 appearAt 生成光球,外圈从大缩到与内核重合(缩到 scale(1) 那一刻 = hitTime 最佳躲避点)
@@ -705,7 +721,7 @@ function spawnOrb(beat){
     `<div class="orb-stamp"></div>`;
   orbField.appendChild(orb);
   beat._orb=orb;
-  if(pipRow && pipRow.children[beat.idx] && !beats[beat.idx]._judged) pipRow.children[beat.idx].classList.add('next');
+  setActiveChip(beat.idx);   // 顶部队列高亮当前拳
   // 逼近缩圈:appear → hit 期间外圈线性缩到贴合内核
   const dur=Math.max(300, beat.hitTime-(performance.now()-sessionStart));
   const ring=orb.querySelector('.orb-ring');
@@ -735,13 +751,6 @@ function spawnShockwave(xPct,yPct,kind){
   sw.style.left=xPct+'%'; sw.style.top=yPct+'%';
   orbField.appendChild(sw);
   T(()=>sw.remove(),520);
-}
-function beatPulseAnim(){
-  beatPulse.animate([
-    {transform:'scale(.7)',opacity:.6},
-    {transform:'scale(1.5)',opacity:1,offset:.3},
-    {transform:'scale(.9)',opacity:.7}
-  ],{duration:PUNCH_MS,easing:'ease-in-out'});
 }
 
 // ===== 运行时状态 =====
@@ -785,7 +794,6 @@ function resolve(beat,kind){
   if(kind==='perfect'||kind==='good'){
     dodges++; combo++; maxCombo=Math.max(maxCombo,combo);
     repVal.textContent=dodges; comboVal.textContent=combo;
-    beatTxt.textContent=beat.dodge;
     floatBig(kind==='perfect'?'PERFECT':'GOOD','完美闪避 · '+beat.dodge);
   } else {
     // 治愈不惩罚:只断连击,不扣闪避数,进度条照走
@@ -794,7 +802,7 @@ function resolve(beat,kind){
     else{ beat._soft='慢慢来'; floatBig('跟上','没关系 · 下一拳再来'); }
   }
   stampOrb(beat,kind);
-  markPip(beat.idx,kind);
+  markChip(beat.idx,kind);
   const pct=Math.min(100,Math.round(resolvedCount/TOTAL_PUNCHES*100));
   progFill.style.width=pct+'%'; progPct.textContent=pct+'%';
 }
@@ -812,39 +820,44 @@ function keyDodge(code){
   if(best) resolve(best, bestAbs<=JUDGE.windowPerfect?'perfect':'good');
 }
 
-// 头部准星:用判定同源的 rel(roll/pitch)驱动位置,并检测是否对准当前活跃球
+// 头部准星:显示玩家运动幅度。治抖=死区+强平滑;无脸/键盘态归中淡化
 function updateReticle(){
   if(!reticle) return;
   const rel=relAngle();
   const live = camOK && facePresent;
-  // 键盘模式/无脸:准星回中心并淡化
   if(!live){
-    reticlePos.x=50; reticlePos.y=50;
+    // 归中(慢慢回),淡化
+    reticlePos.x += (50-reticlePos.x)*0.15;
+    reticlePos.y += (50-reticlePos.y)*0.15;
     reticle.classList.add('lost'); reticle.classList.remove('locked');
-    reticle.style.transform='translate(-50%,-50%)';
+    applyReticleTransform();
+    for(const b of beats){ if(b._orb) b._orb.classList.remove('locked'); }
     return;
   }
   reticle.classList.remove('lost');
-  // roll<0 左倾→左移 / roll>0 右倾→右移;pitch<0 抬头→上移 / pitch>0 收下巴→下移
-  const tx=clamp(50 + rel.roll*RETICLE.kx, 50-RETICLE.maxX, 50+RETICLE.maxX);
-  const ty=clamp(50 - rel.pitch*RETICLE.ky, 50-RETICLE.maxY, 50+RETICLE.maxY);
-  // 轻平滑,跟手不抖
-  reticlePos.x += (tx-reticlePos.x)*0.5;
-  reticlePos.y += (ty-reticlePos.y)*0.5;
-  // 屏幕百分比 → 相对中心的像素偏移(orb-field 铺满 stage)
-  const fw=orbField.clientWidth||window.innerWidth, fh=orbField.clientHeight||window.innerHeight;
-  const px=(reticlePos.x-50)/100*fw, py=(reticlePos.y-50)/100*fh;
-  reticle.style.transform=`translate(calc(-50% + ${px}px), calc(-50% + ${py}px))`;
-  // 对准锁定:准星是否落在当前活跃球的命中范围内(纯 UI)
+  // 静止死区:角度小于 dead 视为没动(消除 MediaPipe 每帧噪声导致的抖)
+  const dz=v=>Math.abs(v)<RETICLE.dead ? 0 : v;
+  // roll<0 左倾→左移 / roll>0 右倾→右移;pitch<0 抬头→上移(球在上) / pitch>0 收下巴→下移(球在下)
+  const tx=clamp(50 + dz(rel.roll)*RETICLE.kx, 50-RETICLE.maxX, 50+RETICLE.maxX);
+  const ty=clamp(50 + dz(rel.pitch)*RETICLE.ky, 50-RETICLE.maxY, 50+RETICLE.maxY);
+  // 强平滑:慢跟随,消拖影抖动
+  reticlePos.x += (tx-reticlePos.x)*RETICLE.smooth;
+  reticlePos.y += (ty-reticlePos.y)*RETICLE.smooth;
+  applyReticleTransform();
+  // 对准:准星落在活跃球命中范围内 → 双方变绿(用屏幕距离判断锁定视觉,真判定另走 tickJudge)
   let lockedAny=false;
   for(const b of beats){
     if(!b._orb || b._judged) continue;
-    const dx=reticlePos.x-b.cueX, dy=reticlePos.y-b.cueY;
-    const near=Math.hypot(dx,dy) <= RETICLE.lockRadius;
+    const near=Math.hypot(reticlePos.x-b.cueX, reticlePos.y-b.cueY) <= RETICLE.lockRadius;
     b._orb.classList.toggle('locked', near);
     if(near) lockedAny=true;
   }
   reticle.classList.toggle('locked', lockedAny);
+}
+function applyReticleTransform(){
+  const fw=orbField.clientWidth||window.innerWidth, fh=orbField.clientHeight||window.innerHeight;
+  const px=(reticlePos.x-50)/100*fw, py=(reticlePos.y-50)/100*fh;
+  reticle.style.transform=`translate(calc(-50% + ${px}px), calc(-50% + ${py}px))`;
 }
 
 // 主循环:每帧刷新头姿 + 画点阵头 + 跑判定(全程常驻)
@@ -873,7 +886,7 @@ function runShow(){
   repVal.textContent=0;comboVal.textContent=0;
   progFill.style.width='0%';progPct.textContent='0%';
   clearOrbs();
-  buildPips();
+  buildQueue();
 
   showToast(camOK?'看光球缩圈,到位就躲':'摄像头没就绪 · 用方向键 ←→↑↓ 躲',2600);
 
@@ -886,7 +899,7 @@ function runShow(){
     const hitTime=appearAt+PUNCH_MS*0.5;      // 拳出现 ~2.15s 后是最佳躲避时刻
     const beat={ ...p, idx:i, hitTime, _judged:null, _reason:null, _maxAngleSeen:0, _peakVel:0, _orb:null };
     beats.push(beat);
-    T(()=>{ beatTxt.textContent=p.name; beatPulseAnim(); spawnOrb(beat); }, appearAt);
+    T(()=>spawnOrb(beat), appearAt);
   }
   T(endShow, clock+TOTAL_PUNCHES*PUNCH_MS+800);
 }
