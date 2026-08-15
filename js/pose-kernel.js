@@ -28,6 +28,12 @@ const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmark
 // 关键地标下标
 const NOSE_TIP = 1;
 const EYE_L = 263, EYE_R = 33;
+// 虹膜中心(478 refined landmarks):右眼虹膜 468,左眼虹膜 473
+const IRIS_R = 468, IRIS_L = 473;
+// 眼角(内/外):右眼 33(外)/133(内),左眼 263(外)/362(内)
+const EYE_R_OUT = 33, EYE_R_IN = 133, EYE_L_OUT = 263, EYE_L_IN = 362;
+// 眼睑上下(估垂直 gaze):右眼 159(上)/145(下),左眼 386(上)/374(下)
+const EYE_R_TOP = 159, EYE_R_BOT = 145, EYE_L_TOP = 386, EYE_L_BOT = 374;
 
 export function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 
@@ -75,6 +81,29 @@ export function createPoseKernel(opts = {}) {
   let smoothAngle = { yaw: 0, pitch: 0, roll: 0 };
   let angleBase = { yaw: 0, pitch: 0, roll: 0 };   // 校准中立基线
   let rawEyeDist = 0.12, smoothEyeDist = 0.12, baseEyeDist = 0.12;
+  // gaze:虹膜中心相对眼眶的归一化偏移,x/y ∈ 约 [-1,1](0=正视)。已随显示镜像。
+  let rawGaze = { x: 0, y: 0 };
+  let smoothGaze = { x: 0, y: 0 };
+
+  // 单眼归一化 gaze:虹膜中心相对(内外眼角、上下眼睑)的比例,映射到 [-1,1]
+  function eyeGaze(face, iris, outC, inC, top, bot) {
+    const I = face[iris], o = face[outC], i2 = face[inC], t = face[top], b = face[bot];
+    if (!I || !o || !i2 || !t || !b) return null;
+    const cx = (o.x + i2.x) / 2, cy = (t.y + b.y) / 2;
+    const wx = Math.abs(i2.x - o.x) || 1e-4, wy = Math.abs(b.y - t.y) || 1e-4;
+    // 水平:(虹膜x - 眼中心x)/半宽;垂直同理
+    return { x: (I.x - cx) / (wx / 2), y: (I.y - cy) / (wy / 2) };
+  }
+  function computeGaze(face) {
+    const gR = eyeGaze(face, IRIS_R, EYE_R_OUT, EYE_R_IN, EYE_R_TOP, EYE_R_BOT);
+    const gL = eyeGaze(face, IRIS_L, EYE_L_OUT, EYE_L_IN, EYE_L_TOP, EYE_L_BOT);
+    const both = [gR, gL].filter(Boolean);
+    if (!both.length) return null;
+    const ax = both.reduce((s, g) => s + g.x, 0) / both.length;
+    const ay = both.reduce((s, g) => s + g.y, 0) / both.length;
+    // 显示镜像(scaleX(-1)):水平取反,让"看左→gaze.x 负→屏幕左"与画面一致
+    return { x: -ax, y: ay };
+  }
   let facePresent = false;
   let haveMatrix = false;
   let latestLandmarks = null;   // 最新一帧原始 landmarks(可选,供点阵头等绘制)
@@ -167,6 +196,8 @@ export function createPoseKernel(opts = {}) {
           rawNose.x = 1 - lm.x; rawNose.y = lm.y;
           const el = face[EYE_L], er = face[EYE_R];
           rawEyeDist = Math.hypot(el.x - er.x, el.y - er.y);
+          const g = computeGaze(face);
+          if (g) rawGaze = g;
           facePresent = true;
           const mtx = res.facialTransformationMatrixes;
           if (mtx && mtx.length > 0 && mtx[0].data) {
@@ -191,6 +222,8 @@ export function createPoseKernel(opts = {}) {
       smoothAngle.yaw   += (rawAngle.yaw   - smoothAngle.yaw)   * SMOOTH;
       smoothAngle.pitch += (rawAngle.pitch - smoothAngle.pitch) * SMOOTH;
       smoothAngle.roll  += (rawAngle.roll  - smoothAngle.roll)  * SMOOTH;
+      smoothGaze.x += (rawGaze.x - smoothGaze.x) * SMOOTH;
+      smoothGaze.y += (rawGaze.y - smoothGaze.y) * SMOOTH;
 
       return {
         facePresent, haveMatrix,
@@ -200,6 +233,7 @@ export function createPoseKernel(opts = {}) {
         nose: { x: smoothNose.x, y: smoothNose.y },
         eyeDist: smoothEyeDist,
         baseEyeDist,
+        gaze: { ...smoothGaze },      // 眼球朝向归一化偏移(眼部测评用)
         landmarks: latestLandmarks,   // 原始 landmarks(供点阵头绘制;无脸时 null)
       };
     },
@@ -214,6 +248,7 @@ export function createPoseKernel(opts = {}) {
         angleBase: { ...angleBase },
         nose: { x: smoothNose.x, y: smoothNose.y },
         eyeDist: smoothEyeDist, baseEyeDist,
+        gaze: { ...smoothGaze },
       };
     },
   };

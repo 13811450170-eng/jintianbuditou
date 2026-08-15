@@ -118,4 +118,51 @@ export const stubAdapter = {
       meta: { totalActions, durationSec: Math.round(durationMs / 1000) },
     };
   },
+
+  // 练后指导(post-game coach):读本次逐轴结果,给「下一步重点练什么 + 安全提示」。
+  // 对应 skill: health-coaching(练后数据整理)。不诊断、不给强制次数/极限幅度目标。
+  // 无 session(拳击/喂饭等聚合关,或直接开报告)→ 给通用低负荷方案,不空手。
+  async coachFromSession({ session, profile } = {}) {
+    const SAFETY = '慢而稳、不甩头、每个方向做完回正,无痛范围内 —— 这是护颈椎最关键的一点。';
+    const BREAKS = '每练两三组歇一会;久坐的话约每小时起身活动、改变体位。';
+
+    if (!session || !session.byAxis) {
+      return {
+        focus: '这次没记录到逐轴数据,下次动作慢一点、幅度大一点,Joy 就能帮你看清练得怎么样。',
+        moves: [
+          { name: '转头', cue: '缓慢向左右转到舒适位,各停 2 秒再回正' },
+          { name: '抬头低头', cue: '缓慢抬头、缓慢低头,单一方向到位后回中立' },
+        ],
+        breaks: BREAKS,
+        safety: SAFETY,
+        tone: 'cheer',
+      };
+    }
+
+    const { byAxis, flingCount = 0 } = session;
+    // 逐轴打分:没练到 / 保持太短 = 下次重点;据此挑 1-2 个方向。
+    const weak = [];
+    for (const axis of ['yaw', 'pitch', 'roll']) {
+      const b = byAxis[axis]; const cn = AXIS_CN[axis];
+      if (!b || b.reps === 0) { weak.push({ axis: cn, why: '这次几乎没练到', priority: 2 }); continue; }
+      if (b.holdAvg && b.holdAvg < 150) { weak.push({ axis: cn, why: `保持时间偏短(约 ${b.holdAvg}ms)`, priority: 1 }); }
+    }
+    weak.sort((a, b) => b.priority - a.priority);
+
+    const CUE = {
+      '转头': '躯干稳住,缓慢转头到舒适位,停 2 秒再回正',
+      '抬头低头': '缓慢抬头、缓慢低头,到位后回到中立位再做下一次',
+      '侧屈': '双肩放松,耳朵轻轻靠向同侧肩,别耸肩、别转头',
+    };
+    const moves = (weak.length ? weak.slice(0, 2) : [{ axis: '转头' }, { axis: '侧屈' }])
+      .map(w => ({ name: w.axis, cue: CUE[w.axis] || '缓慢到位、回正', why: w.why }));
+
+    const focus = flingCount >= 3
+      ? '这次有点急,下次把动作放慢 —— 慢而稳才真正练到颈椎。'
+      : weak.length
+        ? `下次重点把「${weak[0].axis}」练到位:${weak[0].why},慢一点、多停一下。`
+        : '这一组各方向都练到位了,保持这个节奏,明天继续~';
+
+    return { focus, moves, breaks: BREAKS, safety: SAFETY, tone: flingCount >= 3 ? 'gentle' : 'cheer' };
+  },
 };

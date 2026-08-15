@@ -14,6 +14,13 @@ const KEY = 'health_profile_v1';
 const DEFAULT_PROFILE = {
   updatedAt: 0,
   totalSessions: 0,
+  // 基础个人/体检资料(onboarding 对话式录入写入)。null=未填。隐私:纯数值/文本,无画面。
+  profile: {
+    nickname: null, age: null, gender: null,
+    heightCm: null, weightKg: null, bmi: null,
+    occupation: null, sitHoursPerDay: null, screenHoursPerDay: null,
+    history: [], chiefComplaint: null, filledAt: 0,
+  },
   // 三部位画像。rating 0-100(由 ROM 达标率或关卡表现折算),null=未采集。
   zones: {
     neck:     { rating: null, romNeck: null, flow: null, lastAssessAt: 0 },
@@ -31,6 +38,28 @@ export function loadProfile() {
 
 function save(p) {
   try { localStorage.setItem(KEY, JSON.stringify(p)); } catch {}
+}
+
+// 基础资料录入写入(onboarding 对话式录入调用)。只覆盖传入的非空字段,自动算 BMI。
+// basics 形如 {nickname,age,gender,heightCm,weightKg,occupation,sitHoursPerDay,screenHoursPerDay,history,chiefComplaint}
+export function saveProfileBasics(basics = {}) {
+  const p = loadProfile();
+  const prof = { ...DEFAULT_PROFILE.profile, ...(p.profile || {}) };
+  for (const [k, v] of Object.entries(basics)) {
+    if (v == null) continue;
+    if (k === 'history') { prof.history = Array.isArray(v) ? v : prof.history; continue; }
+    prof[k] = v;
+  }
+  // BMI:两值齐了才算,保留一位小数
+  if (prof.heightCm > 0 && prof.weightKg > 0) {
+    const h = prof.heightCm / 100;
+    prof.bmi = Math.round((prof.weightKg / (h * h)) * 10) / 10;
+  }
+  prof.filledAt = Date.now();
+  p.profile = prof;
+  p.updatedAt = prof.filledAt;
+  save(p);
+  return p;
 }
 
 // 颈部ROM达标率 → rating(0-100)。目标角与后端 NECK_TARGET_ROM 对齐。
@@ -53,6 +82,18 @@ export function recordAssessment({ flow, baseline, romNeck, ts } = {}) {
   p.zones.neck.flow = flow ?? p.zones.neck.flow;
   p.zones.neck.rating = neckRatingFromRom(romNeck) ?? p.zones.neck.rating;
   p.zones.neck.lastAssessAt = ts || 0;
+  p.updatedAt = ts || 0;
+  save(p);
+  return p;
+}
+
+// 单部位 rating 写入(肩/眼摄像头测评调用)。zone: 'shoulder'|'eye'|'neck';raw 存原始测量(角度/覆盖度)
+export function recordZoneRating(zone, rating, raw = null, ts = 0) {
+  const p = loadProfile();
+  if (!p.zones[zone]) p.zones[zone] = {};
+  p.zones[zone].rating = rating;
+  if (raw != null) p.zones[zone].raw = raw;
+  p.zones[zone].lastAssessAt = ts || 0;
   p.updatedAt = ts || 0;
   save(p);
   return p;

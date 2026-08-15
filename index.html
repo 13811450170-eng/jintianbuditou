@@ -1064,7 +1064,7 @@ body::before {
 
   <!-- 顶部:头像 + 问候语 + streak + icon 组 -->
   <header class="topbar">
-    <div class="topbar-user">
+    <div class="topbar-user" onclick="location.href='mock-body-profile.html'" style="cursor:pointer" title="查看/编辑个人档案">
       <div class="avatar-user">
         <svg viewBox="0 0 24 24" fill="currentColor">
           <circle cx="12" cy="8" r="4"/>
@@ -1072,7 +1072,7 @@ body::before {
         </svg>
       </div>
       <div class="greeting">
-        <span class="hello">下午好，</span>刘四喜
+        <span class="hello" id="greetHello">下午好，</span><span id="greetName">刘四喜</span>
       </div>
     </div>
 
@@ -1144,7 +1144,7 @@ body::before {
       <div class="dp-zones">
         <div class="zone-cards">
           <!-- 颈部 · 偏紧 · 好转 -->
-          <div class="zone-card">
+          <div class="zone-card" data-zone="neck">
             <div class="zone-ring">
               <svg viewBox="0 0 72 72">
                 <circle class="zone-ring-track neck" cx="36" cy="36" r="26"/>
@@ -1161,7 +1161,7 @@ body::before {
           </div>
 
           <!-- 肩部 · 灵活 · 稳定 -->
-          <div class="zone-card">
+          <div class="zone-card" data-zone="shoulder">
             <div class="zone-ring">
               <svg viewBox="0 0 72 72">
                 <circle class="zone-ring-track shoulder" cx="36" cy="36" r="26"/>
@@ -1178,7 +1178,7 @@ body::before {
           </div>
 
           <!-- 眼部 · 疲劳 · 需注意 -->
-          <div class="zone-card">
+          <div class="zone-card" data-zone="eye">
             <div class="zone-ring">
               <svg viewBox="0 0 72 72">
                 <circle class="zone-ring-track eye" cx="36" cy="36" r="26"/>
@@ -1363,7 +1363,7 @@ body::before {
   </div>
   <div class="toast-body">
     <div class="toast-title">Joy 小提醒</div>
-    <div class="toast-text">已经 40 分钟没喝水啦,补一口吧~</div>
+    <div class="toast-text" id="joyToastText">已经 40 分钟没喝水啦,补一口吧~</div>
     <div class="toast-actions">
       <button class="toast-btn toast-btn-primary">好的</button>
       <button class="toast-btn toast-btn-ghost">5 分钟后</button>
@@ -1419,6 +1419,100 @@ document.querySelector('.toast-btn-ghost').addEventListener('click', () => toast
     rings.forEach(r => { r.style.strokeDashoffset = r.dataset.offset; });
   }, 400));
 })();
+</script>
+
+<!-- ========== 首页数据联动:读录入档案个性化(ES module) ========== -->
+<script type="module">
+// 填完 onboarding 录入后,首页读统一健康档案做个性化。无档案→完全不动,保持现有写死展示(降级铁律)。
+import { loadProfile } from './js/health-store.js';
+
+const COMPLAINT_CN = { neck: '颈部', shoulder: '肩部', eye: '眼部' };
+
+(function personalizeHome() {
+  const p = (loadProfile().profile) || {};
+  const filled = !!p.filledAt;
+  if (!filled) return;   // 没填过录入 → 首页保持原样
+
+  // ① 问候语:按时段 + 昵称
+  const setText = (id, txt) => { const el = document.getElementById(id); if (el && txt) el.textContent = txt; };
+  const h = new Date().getHours();
+  const period = h < 6 ? '凌晨好，' : h < 11 ? '上午好，' : h < 14 ? '中午好，' : h < 18 ? '下午好，' : '晚上好，';
+  setText('greetHello', period);
+  if (p.nickname) setText('greetName', p.nickname);
+
+  // ② 主诉部位:对应卡高亮 + 角标
+  if (p.chiefComplaint && COMPLAINT_CN[p.chiefComplaint]) {
+    injectFocusStyle();
+    const card = document.querySelector(`.zone-card[data-zone="${p.chiefComplaint}"]`);
+    if (card && !card.querySelector('.zone-focus-tag')) {
+      card.classList.add('zone-focus');
+      const tag = document.createElement('div');
+      tag.className = 'zone-focus-tag';
+      tag.textContent = '主诉';
+      card.appendChild(tag);
+    }
+  }
+
+  // ③ 真实评级覆盖状态词(有评估数据才覆盖,否则保留写死)
+  const zones = loadProfile().zones || {};
+  for (const [zone, z] of Object.entries(zones)) {
+    if (!z || z.rating == null) continue;
+    const card = document.querySelector(`.zone-card[data-zone="${zone}"]`);
+    if (!card) continue;
+    const word = card.querySelector('.st-word');
+    if (word) {
+      const good = z.rating >= 70, mid = z.rating >= 45;
+      word.textContent = good ? '灵活' : mid ? '偏紧' : '受限';
+      word.className = 'st-word ' + (good ? 'good' : 'warn');
+    }
+  }
+
+  // ④ 提醒句 + Joy toast:按主诉/久坐/屏幕个性化
+  const cn = COMPLAINT_CN[p.chiefComplaint] || '颈部';
+  const insightEl = document.getElementById('dpInsightText');
+  if (insightEl) {
+    let tip = `久坐后打套拳放松一下，眼睛也该远眺休息啦。`;
+    if (p.chiefComplaint === 'shoulder') tip = `扩胸展肩、别含胸圆肩，起身活动比久坐硬扛管用。`;
+    else if (p.chiefComplaint === 'eye') tip = `记得 20-20-20 法则，每 20 分钟看看远处 20 秒。`;
+    insightEl.innerHTML = `<strong>${cn}本周需重点关注</strong>，${tip}`;
+  }
+  const toastEl = document.getElementById('joyToastText');
+  if (toastEl) {
+    if (p.sitHoursPerDay >= 8) toastEl.textContent = `你说每天要坐 ${p.sitHoursPerDay} 小时，起来动一动，陪我练两下吧~`;
+    else if (p.screenHoursPerDay >= 8) toastEl.textContent = `盯屏幕 ${p.screenHoursPerDay} 小时啦，让眼睛和脖子歇一歇~`;
+    else toastEl.textContent = `${cn}该活动啦，来跟 Joy 练一组吧~`;
+  }
+})();
+
+function injectFocusStyle() {
+  if (document.getElementById('zoneFocusStyle')) return;
+  const s = document.createElement('style');
+  s.id = 'zoneFocusStyle';
+  s.textContent = `
+    .zone-card { position: relative; }
+    .zone-card.zone-focus {
+      padding: 16px 20px 14px;
+      margin: -8px -4px 0;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(0,163,255,0.08), rgba(0,163,255,0.02));
+      border: 1px solid rgba(0,163,255,0.22);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,163,255,0.10);
+    }
+    .zone-card.zone-focus .zone-ring,
+    .zone-card.zone-focus .zone-ring svg { width: 80px; height: 80px; }
+    .zone-card.zone-focus .zone-score { font-size: 24px; }
+    .zone-focus-tag {
+      position: absolute;
+      top: 10px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
+      color: #fff; background: var(--neck, #00A3FF);
+      padding: 3px 12px; border-radius: 100px;
+      box-shadow: 0 2px 8px rgba(0,163,255,0.35);
+      white-space: nowrap;
+    }`;
+  document.head.appendChild(s);
+}
 </script>
 
 </body>

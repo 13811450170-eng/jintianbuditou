@@ -15,11 +15,55 @@ import { stubAdapter } from './stub.js';
 import { jdGatewayAdapter } from './jd-gateway.js';
 import { healthAssessmentStub } from './health-assessment.stub.js';
 import { healthCoachingStub } from './health-coaching.stub.js';
+import { healthIntakeStub } from './health-intake.stub.js';
+import { productsAdapter } from './products.js';
 
-// 档案画像的 stub(规则化,基于档案里的部位评级)。DeepSeek 版由 jd-gateway.analyzeProfile 出。
+// 档案画像的 stub(规则化)。两种输入都支持:
+//   ① basics(录入即时画像):年龄/BMI/久坐/屏幕/职业/主诉/病史 → 生成"第一印象"
+//   ② zones(训练后档案画像):各部位 rating
+// DeepSeek 版由 jd-gateway.analyzeProfile 出。
 function profileStub({ profile } = {}) {
   const p = profile || {};
   const insights = [];
+
+  // —— ① 基于录入的基础资料出"第一印象" ——
+  const b = p.basics || null;
+  if (b) {
+    const COMPLAINT_CN = { neck: '颈椎', shoulder: '肩颈', eye: '眼部' };
+    if (b.sitHoursPerDay >= 8) {
+      insights.push({ dimension: 'sit', level: 'warn', text: `每天久坐约 ${b.sitHoursPerDay} 小时,颈肩长期处在静态负荷下,最容易僵和酸。` });
+    } else if (b.sitHoursPerDay >= 5) {
+      insights.push({ dimension: 'sit', level: 'warn', text: `每天坐着约 ${b.sitHoursPerDay} 小时,记得每小时起来动一动。` });
+    } else if (b.sitHoursPerDay != null) {
+      insights.push({ dimension: 'sit', level: 'good', text: `久坐时间控制得不错(约 ${b.sitHoursPerDay} 小时),继续保持~` });
+    }
+    if (b.screenHoursPerDay >= 8) {
+      insights.push({ dimension: 'eye', level: 'warn', text: `每天看屏幕约 ${b.screenHoursPerDay} 小时,眼睛和颈椎都在超负荷,试试 20-20-20 法则。` });
+    }
+    if (b.bmi != null) {
+      if (b.bmi >= 28) insights.push({ dimension: 'bmi', level: 'warn', text: `BMI ${b.bmi} 偏高,体重会加重颈肩腰的日常负担。` });
+      else if (b.bmi >= 24) insights.push({ dimension: 'bmi', level: 'todo', text: `BMI ${b.bmi} 略偏重,规律活动对颈肩和整体都有帮助。` });
+      else if (b.bmi < 18.5) insights.push({ dimension: 'bmi', level: 'todo', text: `BMI ${b.bmi} 偏低,注意营养和核心力量,支撑颈椎更省力。` });
+      else insights.push({ dimension: 'bmi', level: 'good', text: `BMI ${b.bmi} 在正常区间,身体基础不错。` });
+    }
+    if (Array.isArray(b.history) && b.history.length) {
+      insights.push({ dimension: 'history', level: 'todo', text: `你提到有${b.history.join('、')},Joy 会把训练难度调低、动作放缓,量力而行。` });
+    }
+    if (b.chiefComplaint && COMPLAINT_CN[b.chiefComplaint]) {
+      insights.push({ dimension: b.chiefComplaint, level: 'warn', text: `你最想缓解${COMPLAINT_CN[b.chiefComplaint]},Joy 会优先安排这个部位的关卡。` });
+    }
+    // 职业+年龄组合的一句人格化开场
+    const who = [b.age ? `${b.age} 岁` : '', b.occupation || ''].filter(Boolean).join('的');
+    const headline = who ? `${who},Joy 已经大概懂你了` : 'Joy 已经大概懂你了';
+    return {
+      headline,
+      insights: insights.slice(0, 4),
+      advice: '这些只是初步判断,待会儿实测你的活动度会更准。别担心,Joy 陪你慢慢来~',
+      tone: insights.some(i => i.level === 'warn') ? 'gentle' : 'cheer',
+    };
+  }
+
+  // —— ② 基于训练后档案的部位评级(原逻辑) ——
   const zones = p.zones || {};
   for (const [dim, z] of Object.entries(zones)) {
     if (!z || z.rating == null) continue;
@@ -44,10 +88,12 @@ const STUB = {
   recommend:(a) => stubAdapter.recommend(a),
   screen: (a) => healthAssessmentStub.screen(a),
   coach:  (a) => healthCoachingStub.recommend(a),      // coaching 的入口叫 recommend
+  coachFromSession: (a) => stubAdapter.coachFromSession(a),   // 练后指导(post-game)
   analyzeProfile: (a) => profileStub(a),
+  intake: (a) => healthIntakeStub.intake(a),
 };
 
-const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'analyzeProfile'];
+const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'coachFromSession', 'analyzeProfile', 'intake'];
 
 // 给 jd-gateway 包一层降级:调用失败自动回退 STUB 对应方法。
 function withFallback(primary, name) {
@@ -66,10 +112,25 @@ function withFallback(primary, name) {
   return wrapped;
 }
 
+// 编排 gameReport:一次请求把「结论 + 训练方案 + 商业化推荐」都拿到。
+// 复用传入 provider 的 analyze / coachFromSession(已自带降级),商品恒走本地目录。
+// 单块失败不拖垮整体:analyze/coach 各自 try,products 读本地 JSON 基本不失败。
+function attachGameReport(provider) {
+  provider.gameReport = async ({ session, level, profile } = {}) => {
+    let conclusion = null, plan = null, recommend = null;
+    try { conclusion = await provider.analyze({ session }); } catch (e) { /* 结论失败 → 前端隐藏结论卡 */ }
+    try { plan = await provider.coachFromSession({ session, profile }); } catch (e) { /* 方案失败 → 隐藏方案卡 */ }
+    try { recommend = await productsAdapter.recommend({ analysis: conclusion, session, profile, level }); }
+    catch (e) { /* 推荐失败 → 隐藏推荐卡 */ }
+    return { conclusion, plan, recommend };
+  };
+  return provider;
+}
+
 export function getProvider() {
   const name = process.env.LLM_PROVIDER || 'stub';
-  if (name === 'jd-gateway') return withFallback(jdGatewayAdapter, 'jd-gateway');
-  if (name === 'stub') return { name: 'stub', ...STUB };
+  if (name === 'jd-gateway') return attachGameReport(withFallback(jdGatewayAdapter, 'jd-gateway'));
+  if (name === 'stub') return attachGameReport({ name: 'stub', ...STUB });
   console.warn(`[provider] 未知 LLM_PROVIDER="${name}",回退 stub`);
-  return { name: 'stub', ...STUB };
+  return attachGameReport({ name: 'stub', ...STUB });
 }
