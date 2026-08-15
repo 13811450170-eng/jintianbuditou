@@ -1,13 +1,10 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>今天不低头 · 河道划船</title>
+<title>今天不低头 · Doga 餐厅</title>
 <style>
   /* ============================================================
-     关卡 HUD 设计系统 v1 · 划船皮肤(碧蓝金)
-     token + 液态玻璃 + 线性SVG图标,三关共用同一套,只换分支色
+     关卡 HUD 设计系统 v1 · 餐厅皮肤(暖琥珀金)
+     token + 液态玻璃 + 线性SVG图标,四关共用同一套,只换分支色
   ============================================================ */
   :root{
     --gold:#ffd66b;
@@ -15,33 +12,36 @@
     --r-sm:12px; --r-md:16px; --r-lg:22px; --r-pill:999px;
     --fs-display:60px; --fs-num:44px;
     --glass-blur:14px;
-    --glass-hi:inset 0 1px 0 rgba(255,255,255,.18);
     --shadow-1:0 2px 8px rgba(0,0,0,.18);
     --shadow-2:0 8px 24px rgba(0,0,0,.28);
     --ok:#6bff9d;
+    /* 餐厅 · 暖琥珀金皮肤 */
+    --brand:#f5a623;
+    --brand-deep:#5c3410;
+    --ink:#3a2a1a;
+    --glass-bg:rgba(42,24,16,.42);
+    --overlay-bg:radial-gradient(circle at 50% 42%, rgba(58,36,18,.74), rgba(20,12,4,.94));
+    --title-txt:#3a2a1a;
+    /* 狗狗气泡描边色 */
+    --bubble-bg:#fffdf7;
+    --joy:#ea3323; --max:#5c6470; --chill:#f39c1f;
+    --blink:#8a5a3c; --yummy:#6b6b6b; --snow:#eb7fa8;
     --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-
-    /* 划船 · 碧蓝金皮肤 */
-    --brand:#38b6ff;
-    --brand-deep:#0b3b52;
-    --ink:#0b3b52;
-    --glass-bg:rgba(11,45,64,.4);
-    --overlay-bg:radial-gradient(circle at 50% 42%, rgba(13,60,88,.74), rgba(3,14,22,.94));
-    --title-txt:#0b3b52;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
-  html,body{height:100%;overflow:hidden;font-family:var(--font);background:#8fd4ff;color:#fff;-webkit-font-smoothing:antialiased;}
-  #app{position:fixed;inset:0;overflow:hidden;background:#8fd4ff;}
-
-  /* ===== 底层视频 ===== */
-  #bgvid{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-    min-width:100%;min-height:100%;width:auto;height:auto;
-    object-fit:cover;z-index:1;background:#8fd4ff;
+  html,body{height:100%;background:#140d04;font-family:var(--font);overflow:hidden;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#140d04;}
+  .frame{
+    position:relative;
+    width:min(100vw, calc(100vh * 16 / 9));
+    height:min(100vh, calc(100vw * 9 / 16));
+    overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.55);
   }
+  video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+  .layer{position:absolute;inset:0;pointer-events:none;}
   .vignette{
     position:absolute;inset:0;z-index:2;pointer-events:none;
-    background:linear-gradient(180deg, rgba(4,25,40,.35) 0%, rgba(4,25,40,0) 18%, rgba(4,25,40,0) 82%, rgba(4,25,40,.30) 100%);
+    background:linear-gradient(180deg, rgba(20,12,4,.34) 0%, rgba(20,12,4,0) 18%, rgba(20,12,4,0) 80%, rgba(20,12,4,.32) 100%);
   }
 
   /* ============================================================
@@ -111,19 +111,9 @@
   .progress-fill{height:100%;width:0%;border-radius:var(--r-pill);
     background:linear-gradient(90deg,var(--brand),var(--gold));transition:width .5s;}
 
-  .metronome{
-    position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:30;
-    display:flex;align-items:center;gap:18px;
-    padding:13px 32px;border-radius:var(--r-pill);
-  }
-  .metronome .beat{font-size:20px;font-weight:800;letter-spacing:3px;
-    color:var(--gold-bright);min-width:68px;text-align:center;}
-  .metronome .pulse{width:18px;height:18px;border-radius:50%;
-    background:var(--brand);box-shadow:0 0 12px var(--brand);}
-
-  /* 判定飘字 · 击打感 */
+  /* 判定飘字 · 命中感 */
   .floater{
-    position:absolute;left:50%;top:26%;transform:translateX(-50%);z-index:28;
+    position:absolute;left:50%;top:24%;transform:translateX(-50%);z-index:28;
     text-align:center;pointer-events:none;font-weight:900;
   }
   .floater .big{
@@ -141,40 +131,37 @@
     100%{opacity:0;transform:translateX(-50%) translateY(-52px) scale(1);}
   }
 
-  /* 保持事件圈 */
-  .hold-ring{
-    position:absolute;left:50%;top:12%;transform:translateX(-50%);
-    width:140px;height:140px;z-index:29;opacity:0;transition:opacity .4s;
+  /* ---------- 狗狗说话气泡 ---------- */
+  .bubble{
+    position:absolute;transform:translate(-50%,-50%) scale(.5);z-index:20;
+    background:var(--bubble-bg);color:var(--ink);font-weight:800;
+    font-size:clamp(12px,1.9vw,24px);letter-spacing:1px;
+    padding:.45em .8em;border-radius:16px;white-space:nowrap;opacity:0;
+    box-shadow:0 6px 18px rgba(0,0,0,.28);border:2.5px solid var(--c,#fff);
+    transition:opacity .25s ease, transform .25s cubic-bezier(.34,1.56,.64,1);
   }
-  .hold-ring.show{opacity:1;}
-  .hold-ring svg{transform:rotate(-90deg);}
-  .hold-ring .track{fill:none;stroke:rgba(255,255,255,.3);stroke-width:9;}
-  .hold-ring .prog{fill:none;stroke:var(--gold);stroke-width:9;stroke-linecap:round;
-    stroke-dasharray:396;stroke-dashoffset:396;filter:drop-shadow(0 0 7px var(--gold-bright));}
-  .hold-ring .hold-txt{
-    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-    font-size:13px;font-weight:800;color:var(--gold-bright);text-align:center;
-    text-shadow:0 1px 3px rgba(0,0,0,.6);width:120px;
-  }
+  .bubble::after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
+    width:0;height:0;border:9px solid transparent;border-top-color:var(--bubble-bg);}
+  .bubble.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
 
-  /* 右下角 · 真人点阵脸小窗(与拳击关统一) */
-  .you-cam{
-    position:absolute;bottom:20px;right:20px;z-index:30;
-    width:168px;height:126px;
-    border:3px solid #ffcc00;border-radius:12px;overflow:hidden;
-    background:radial-gradient(ellipse at 50% 45%,#0b0512 0%,#000 100%);
-    box-shadow:0 0 22px rgba(255,204,0,.4),0 4px 20px rgba(0,0,0,.6);
-  }
-  .you-cam video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
-  .you-cam .you-mesh{width:100%;height:100%;display:block;}
-  .you-cam .you-label{
-    position:absolute;top:8px;right:8px;
-    display:flex;align-items:center;gap:5px;
-    color:#ff4d5e;font-size:11px;font-weight:900;letter-spacing:2px;
-    padding:3px 8px;background:rgba(0,0,0,.55);border-radius:5px;
-  }
-  .you-cam .you-dot{width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 8px #ff4d5e;animation:youBlink 1.2s infinite;}
-  @keyframes youBlink{50%{opacity:.3;}}
+  /* ---------- 金色倒计时环(套在盘子上,表示"正在喂") ---------- */
+  .ring{position:absolute;transform:translate(-50%,-50%);opacity:0;transition:opacity .2s;z-index:19;}
+  .ring.show{opacity:1;}
+  .ring svg{transform:rotate(-90deg);display:block;filter:drop-shadow(0 0 6px var(--gold-bright));}
+  .ring .track{fill:none;stroke:rgba(0,0,0,.18);stroke-width:6;}
+  .ring .prog{fill:none;stroke:var(--gold-bright);stroke-width:6;stroke-linecap:round;
+    stroke-dasharray:283;stroke-dashoffset:283;}
+
+  /* ---------- 飞入的菜 ---------- */
+  .food{position:absolute;transform:translate(-50%,-50%) scale(.4);opacity:0;z-index:18;
+    width:clamp(46px,7vw,96px);height:auto;pointer-events:none;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
+  .food img{width:100%;height:auto;display:block;}
+
+  /* ---------- 命中星光 ---------- */
+  .spark{position:absolute;transform:translate(-50%,-50%);pointer-events:none;z-index:21;
+    color:var(--gold-bright);font-weight:900;font-size:clamp(16px,2.4vw,30px);
+    opacity:0;text-shadow:0 2px 8px rgba(0,0,0,.5);}
 
   /* ==================== 开场 / 结算 ==================== */
   .overlay{
@@ -207,7 +194,6 @@
   }
   .how-item .ico{width:22px;height:22px;color:#fff;}
   .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
-  .how-item .sub2{font-size:10px;color:rgba(255,255,255,.6);}
   .btn{
     margin-top:8px;border:none;cursor:pointer;
     background:var(--brand);
@@ -251,7 +237,7 @@
   .toast .ico{width:16px;height:16px;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  /* ---- 3秒倒计时(参考老拳击版:超大弹跳数字 + 品牌辉光) ---- */
+  /* ---- 3秒倒计时(四关统一) ---- */
   .countdown{
     position:absolute;inset:0;z-index:70;
     display:flex;align-items:center;justify-content:center;
@@ -298,76 +284,55 @@
   .streak-days .big{font-size:26px;color:#FFD54F;}
   @keyframes daysIn{0%{opacity:0;transform:translateY(8px);}100%{opacity:1;transform:translateY(0);}}
   .streak-sub{font-size:12px;color:rgba(255,255,255,.6);opacity:0;animation:daysIn .5s ease-out 1.1s both;}
-  /* 触发前隐藏,加 .go 才播放 */
   .streak-win{visibility:hidden;}
   .streak-win.go{visibility:visible;}
 </style>
-</head>
-<body>
-<div id="app">
 
-  <!-- 线性 SVG 图标库 -->
-  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-    <symbol id="i-wave" viewBox="0 0 24 24"><path d="M3 8c2-2 4-2 6 0s4 2 6 0 4-2 6 0M3 14c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/></symbol>
-    <symbol id="i-chest" viewBox="0 0 24 24"><path d="M12 5v14M12 8H6a2 2 0 0 0-2 2v3M12 8h6a2 2 0 0 1 2 2v3M4 13l3 3M20 13l-3 3"/></symbol>
-    <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 3c1 3-1 4-1 6a3 3 0 0 0 3 3c1-1 1-2 1-3 2 2 3 4 3 6a6 6 0 1 1-12 0c0-3 2-5 3-7 .8 1 1 2 3 2z"/></symbol>
-    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
-    <symbol id="i-body-row" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.3"/><path d="M12 7v6M12 9l-5 2M12 9l5 2M12 13l-3 6M12 13l3 6"/></symbol>
-  </svg>
+<div id="stage">
+  <div class="frame" id="frame">
 
-  <!-- 底层视频 -->
-  <video id="bgvid" src="img/rowing.mp4" muted loop playsinline></video>
-  <div class="vignette"></div>
-
-  <!-- HUD -->
-  <div class="hud-title"><svg class="ico"><use href="#i-wave"/></svg>今天不低头 · 河道划船</div>
-  <div class="hud-left">
-    <div class="chip glass"><svg class="ico"><use href="#i-chest"/></svg><span class="lb">扩胸</span><span class="val" id="repVal">0</span><span class="unit">次</span></div>
-    <div class="chip glass"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
-  </div>
-  <div class="progress-wrap glass">
-    <div class="progress-label"><span>河程</span><span class="pct" id="progPct">0%</span></div>
-    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
-  </div>
-
-  <div class="metronome glass">
-    <div class="beat" id="beatTxt">拉</div>
-    <div class="pulse" id="beatPulse"></div>
-  </div>
-
-  <!-- 保持圈 -->
-  <div class="hold-ring" id="holdRing">
-    <svg width="140" height="140" viewBox="0 0 140 140">
-      <circle class="track" cx="70" cy="70" r="63"/>
-      <circle class="prog" id="holdProg" cx="70" cy="70" r="63"/>
+    <!-- 线性 SVG 图标库 -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <symbol id="i-bowl" viewBox="0 0 24 24"><path d="M3 11h18M5 11l1.4 6.2A2 2 0 0 0 8.3 19h7.4a2 2 0 0 0 1.9-1.8L19 11M8.5 8c0-1.6 1.6-2.5 3.5-2.5S15.5 6.4 15.5 8"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 3c1 3-1 4-1 6a3 3 0 0 0 3 3c1-1 1-2 1-3 2 2 3 4 3 6a6 6 0 1 1-12 0c0-3 2-5 3-7 .8 1 1 2 3 2z"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
     </svg>
-    <div class="hold-txt">双桨拉满<br>保持挺胸</div>
-  </div>
 
-  <!-- 右下角 · 真人点阵脸小窗 -->
-  <div class="you-cam" data-track="pose-row">
-    <video autoplay playsinline muted></video>
-    <canvas class="you-mesh" width="336" height="252"></canvas>
-    <div class="you-label"><span class="you-dot"></span>YOU</div>
-  </div>
+    <!-- 底层视频 -->
+    <video id="v" src="img/lunch.mp4" autoplay muted loop playsinline></video>
+    <div class="vignette"></div>
+    <div class="layer" id="layer"></div>
 
-  <!-- 开场 -->
-  <div class="overlay" id="intro">
-    <div class="brand"><svg class="ico"><use href="#i-wave"/></svg>JOY · 河道划船</div>
-    <div class="big-title">Joy 想去划船</div>
-    <div class="subtitle">坐直、挺胸，双桨对称往后拉<br>一拉一放，舒展你的肩膀，赶走圆肩驼背</div>
-    <div class="how-grid">
-      <div class="how-item"><svg class="ico"><use href="#i-body-row"/></svg><div class="lb">双桨后拉</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-chest"/></svg><div class="lb">肩胛后收</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-wave"/></svg><div class="lb">保持挺胸</div></div>
+    <!-- HUD -->
+    <div class="hud-title"><svg class="ico"><use href="#i-bowl"/></svg>今天不低头 · Doga 餐厅</div>
+    <div class="hud-left">
+      <div class="chip glass"><svg class="ico"><use href="#i-bowl"/></svg><span class="lb">喂食</span><span class="val" id="fedVal">0</span><span class="unit">只</span></div>
+      <div class="chip glass"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
     </div>
-    <button class="btn" id="startBtn"><svg class="ico"><use href="#i-wave"/></svg>开始划船 · ROW TIME!</button>
-    <div class="status">演示模式 · 自动播放</div>
-  </div>
+    <div class="progress-wrap glass">
+      <div class="progress-label"><span>喂饱进度</span><span class="pct" id="progPct">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+    </div>
 
-  <!-- 结算 -->
-  <div class="overlay hide" id="result">
-    <div class="streak-win" id="streakWin">
+    <!-- 开场 -->
+    <div class="overlay" id="intro">
+      <div class="brand"><svg class="ico"><use href="#i-bowl"/></svg>JOY · Doga 餐厅</div>
+      <div class="big-title">Doga 们饿啦</div>
+      <div class="subtitle">转头对准饿了的 Doga，让金勺<b>圈闭合 1 秒</b><br>一只只喂饱它们，顺便活动一下你的颈椎</div>
+      <div class="how-grid">
+        <div class="how-item"><svg class="ico"><use href="#i-target"/></svg><div class="lb">转头对准</div></div>
+        <div class="how-item"><svg class="ico"><use href="#i-clock"/></svg><div class="lb">保持一秒</div></div>
+        <div class="how-item"><svg class="ico"><use href="#i-bowl"/></svg><div class="lb">喂饱每只</div></div>
+      </div>
+      <button class="btn" id="startBtn"><svg class="ico"><use href="#i-bowl"/></svg>开始喂食 · FEED TIME!</button>
+      <div class="status">演示模式 · 自动播放</div>
+    </div>
+
+    <!-- 结算 -->
+    <div class="overlay hide" id="result">
+      <div class="streak-win" id="streakWin">
         <div class="flame-stage">
           <svg class="flame" viewBox="0 0 78 96">
             <defs>
@@ -390,132 +355,153 @@
         <div class="streak-sub">火苗更旺了 · 别断哦</div>
       </div>
 
-    <div class="result-card glass">
-      <div class="result-stat">
-        <div class="item"><div class="num" id="rStrokes">0</div><div class="lb">扩胸次数</div></div>
-        <div class="item"><div class="num" id="rHold">0</div><div class="lb">末端保持</div></div>
-        <div class="item"><div class="num">+5°</div><div class="lb">肩部活动度</div></div>
+      <div class="result-card glass">
+        <div class="result-stat">
+          <div class="item"><div class="num" id="rFed">0</div><div class="lb">喂饱只数</div></div>
+          <div class="item"><div class="num" id="rCombo">0</div><div class="lb">最高连击</div></div>
+          <div class="item"><div class="num">+6°</div><div class="lb">颈部转动度</div></div>
+        </div>
+        <div class="result-up"><svg class="ico"><use href="#i-spark"/></svg>转头追踪 +6° · 颈部更灵活了</div>
       </div>
-      <div class="result-up"><svg class="ico"><use href="#i-spark"/></svg>比上周舒展 5°，圆肩缓解中</div>
+      <button class="btn" id="againBtn"><svg class="ico"><use href="#i-bowl"/></svg>再喂一次</button>
+      <button class="btn-ghost" onclick="location.href='zone.html?zone=neck'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回颈部训练营</button>
+      <div class="status">今天不低头 · 关注你的颈椎健康</div>
     </div>
-    <button class="btn" id="againBtn">再划一程</button>
-    <button class="btn-ghost" onclick="location.href='zone.html?zone=shoulder'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回肩部训练营</button>
-    <div class="status">今天不低头 · 关注你的肩颈健康</div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- 3秒倒计时 -->
+    <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+
   </div>
-
-  <div class="toast" id="toast"></div>
-
-  <!-- 3秒倒计时 -->
-  <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
 </div>
 
 <script>
-const vid=document.getElementById('bgvid');
-const repVal=document.getElementById('repVal');
-const comboVal=document.getElementById('comboVal');
-const progFill=document.getElementById('progFill');
-const progPct=document.getElementById('progPct');
-const beatTxt=document.getElementById('beatTxt');
-const beatPulse=document.getElementById('beatPulse');
-const toast=document.getElementById('toast');
-const holdRing=document.getElementById('holdRing');
-const holdProg=document.getElementById('holdProg');
-const intro=document.getElementById('intro');
-const result=document.getElementById('result');
+// 6 只狗:头顶(气泡+环)位置 + 面前盘子位置(百分比,基于 1382x768 帧构图)
+const DOGS = [
+  { key:'max',   name:'Max',   c:'var(--max)',   head:[12,30], plate:[15,58], line:'我饿啦' },
+  { key:'yummy', name:'Yummy', c:'var(--yummy)', head:[27,22], plate:[26,50], line:'还行吧' },
+  { key:'joy',   name:'Joy',   c:'var(--joy)',   head:[41,20], plate:[40,47], line:'我也要！' },
+  { key:'chill', name:'Chill', c:'var(--chill)', head:[59,17], plate:[58,47], line:'我饿啦' },
+  { key:'snow',  name:'Snow',  c:'var(--snow)',  head:[75,22], plate:[72,50], line:'人家也想吃…' },
+  { key:'blink', name:'Blink', c:'var(--blink)', head:[90,30], plate:[85,58], line:'我请客！' },
+];
+const FOODS = ['food-bone.png','food-chicken.png','food-fish.png','food-cake.png'];
+const FOOD_DIR = 'img/lunch/';
+const TOTAL_FEEDS = DOGS.length;   // 喂饱每一只 = 6 次
 
-let reps=0, combo=0, holds=0, playing=false;
-let timers=[];
-function T(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id;}
-function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+const layer   = document.getElementById('layer');
+const v       = document.getElementById('v');
+const frame   = document.getElementById('frame');
+const intro   = document.getElementById('intro');
+const result  = document.getElementById('result');
+const toast   = document.getElementById('toast');
+const fedVal  = document.getElementById('fedVal');
+const comboVal= document.getElementById('comboVal');
+const progFill= document.getElementById('progFill');
+const progPct = document.getElementById('progPct');
 
-const STROKE_MS=3000;   // 一桨 3 秒（舒缓，贴合视频节奏 + 医学慢节奏）
-const TOTAL_STROKES=8;  // 演示划 8 桨
-const GATE_AT=5;        // 第 5 桨后触发水闸保持事件
+let foodIdx = 0, dogIdx = 0, fed = 0, combo = 0, maxCombo = 0, roundCount = 0;
+let timers = [];
+
+const pct = (arr)=>({left:arr[0]+'%', top:arr[1]+'%'});
+function el(cls){ const d=document.createElement('div'); d.className=cls; return d; }
+function later(fn,ms){ const t=setTimeout(fn,ms); timers.push(t); return t; }
+function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
 
 function showToast(txt,dur=2200){
-  toast.innerHTML=`<svg class="ico"><use href="#i-wave"/></svg>${txt}`;toast.classList.add('show');
-  T(()=>toast.classList.remove('show'),dur);
+  toast.innerHTML=`<svg class="ico"><use href="#i-bowl"/></svg>${txt}`;
+  toast.classList.add('show');
+  later(()=>toast.classList.remove('show'),dur);
 }
 function floatBig(big,sub){
-  const f=document.createElement('div');
-  f.className='floater play';
+  const f=el('floater play');
   f.innerHTML=`<div class="big">${big}</div><div class="sub">${sub}</div>`;
-  document.getElementById('app').appendChild(f);
-  T(()=>f.remove(),1300);
+  frame.appendChild(f);
+  later(()=>f.remove(),1300);
 }
 
-/* 节拍脉冲：拉—放 */
-function beatPulseAnim(){
-  beatPulse.animate([
-    {transform:'scale(.7)',opacity:.6},
-    {transform:'scale(1.5)',opacity:1,offset:.3},
-    {transform:'scale(.9)',opacity:.7}
-  ],{duration:STROKE_MS,easing:'ease-in-out'});
+// 一轮喂食:气泡"我饿啦" -> 金环倒计时(保持) -> 菜飞入盘 -> 命中计数 -> 收尾
+function feedRound(dog, food){
+  // 1) 我饿啦气泡
+  const b = el('bubble'); b.textContent = dog.line; b.style.setProperty('--c',dog.c);
+  Object.assign(b.style, pct(dog.head)); layer.appendChild(b);
+  requestAnimationFrame(()=> b.classList.add('show'));
+
+  // 2) 金色倒计时环(1.4s)—— 套在狗面前的盘子上,表示"正在喂这只(保持)"
+  const HOLD=1400;
+  const ring = el('ring'); Object.assign(ring.style, pct(dog.plate));
+  ring.innerHTML = `<svg viewBox="0 0 100 100">
+    <circle class="track" cx="50" cy="50" r="45"/>
+    <circle class="prog"  cx="50" cy="50" r="45"/></svg>`;
+  const rsz = Math.round(Math.min(frame.clientWidth*0.07, 96));
+  const svg = ring.querySelector('svg'); svg.setAttribute('width',rsz); svg.setAttribute('height',rsz);
+  layer.appendChild(ring);
+  later(()=>{
+    ring.classList.add('show');
+    const prog = ring.querySelector('.prog');
+    prog.style.transition = `stroke-dashoffset ${HOLD}ms linear`;
+    requestAnimationFrame(()=> prog.style.strokeDashoffset = '0');
+  }, 260);
+
+  // 3) 环走完 -> 菜从下方飞入盘子 + 命中计数
+  later(()=>{
+    ring.classList.remove('show');
+    const f = el('food'); f.innerHTML = `<img src="${FOOD_DIR}${food}" alt="">`;
+    f.style.left = dog.plate[0]+'%'; f.style.top = '110%';
+    layer.appendChild(f);
+    requestAnimationFrame(()=>{
+      f.style.transition = 'top .5s cubic-bezier(.22,1,.36,1), opacity .3s, transform .5s cubic-bezier(.22,1,.36,1)';
+      f.style.opacity = '1';
+      f.style.top = dog.plate[1]+'%';
+      f.style.transform = 'translate(-50%,-50%) scale(1)';
+    });
+    // 命中:星光 + 计数 + 飘字 + 气泡变谢谢
+    later(()=>{
+      const s = el('spark'); s.textContent='✦'; Object.assign(s.style, pct(dog.plate));
+      layer.appendChild(s);
+      s.style.transition='opacity .4s, transform .6s ease-out';
+      requestAnimationFrame(()=>{ s.style.opacity='1'; s.style.transform='translate(-50%,-90%) scale(1.4)'; });
+      later(()=>{ s.style.opacity='0'; }, 500);
+
+      fed++; combo++; if(combo>maxCombo) maxCombo=combo;
+      fedVal.textContent=fed; comboVal.textContent=combo;
+      const p=Math.min(100,Math.round(fed/TOTAL_FEEDS*100));
+      progFill.style.width=p+'%'; progPct.textContent=p+'%';
+      floatBig('喂饱啦！', combo>1?`连击 ×${combo}`:'转头命中 +1');
+
+      b.textContent = '谢谢！'; b.classList.remove('show'); void b.offsetWidth; b.classList.add('show');
+    }, 520);
+  }, 260+HOLD);
+
+  // 4) 收尾:淡出气泡和菜
+  later(()=>{
+    b.classList.remove('show');
+    const f = layer.querySelector('.food:last-of-type');
+    if(f){ f.style.opacity='0'; f.style.transform='translate(-50%,-50%) scale(1.15)'; }
+    later(()=>{ layer.querySelectorAll('.bubble,.ring,.food,.spark').forEach(n=>n.remove()); }, 500);
+  }, 260+HOLD+1400);
 }
 
-function doStroke(idx){
-  beatTxt.textContent='拉';
-  beatPulseAnim();
-  T(()=>{beatTxt.textContent='放';},STROKE_MS*0.42);
-  // 后拉发力点：计数 + PERFECT
-  T(()=>{
-    reps++;combo++;
-    repVal.textContent=reps;
-    comboVal.textContent=combo;
-    const pct=Math.min(100,Math.round((idx+1)/TOTAL_STROKES*100));
-    progFill.style.width=pct+'%';progPct.textContent=pct+'%';
-    floatBig('PERFECT','扩胸 +1 · 肩胛后收');
-  },STROKE_MS*0.32);
-}
+const ROUND_MS = 260+1400+1400+700; // 一轮总时长 ~3.76s
 
-function startHoldEvent(onDone){
-  showToast('前方水闸 · 双桨拉满保持 2 秒！',2400);
-  beatTxt.textContent='保持';
-  holdRing.classList.add('show');
-  const DUR=2000,C=396,t0=performance.now();
-  function tick(now){
-    const p=Math.min(1,(now-t0)/DUR);
-    holdProg.style.strokeDashoffset=C*(1-p);
-    if(p<1)requestAnimationFrame(tick);
-    else{
-      floatBig('保持达标！','末端扩胸 +10° 活动度');
-      holdRing.classList.remove('show');
-      holdProg.style.strokeDashoffset=C;
-      holds++;
-      onDone&&onDone();
-    }
-  }
-  requestAnimationFrame(tick);
+function loop(){
+  const dog = DOGS[dogIdx % DOGS.length];
+  const food = FOODS[foodIdx % FOODS.length];
+  feedRound(dog, food);
+  dogIdx++; foodIdx++; roundCount++;
+  if(roundCount < TOTAL_FEEDS) later(loop, ROUND_MS);
+  else later(endShow, ROUND_MS+400);
 }
 
 function runShow(){
-  playing=true;
-  reps=0;combo=0;holds=0;
-  repVal.textContent=0;comboVal.textContent=0;
-  progFill.style.width='0%';progPct.textContent='0%';
-
-  T(()=>showToast('坐直挺胸，跟着节拍一拉一放'),400);
-
-  let clock=1500;
-  // 第一段：GATE_AT 桨
-  for(let i=0;i<GATE_AT;i++){
-    T(()=>doStroke(i),clock+i*STROKE_MS);
-  }
-  clock+=GATE_AT*STROKE_MS;
-
-  // 水闸保持
-  T(()=>{
-    startHoldEvent(()=>{
-      // 继续划到结束
-      let c=400;
-      for(let i=GATE_AT;i<TOTAL_STROKES;i++){
-        T(()=>doStroke(i),c+(i-GATE_AT)*STROKE_MS);
-      }
-      T(()=>endShow(),c+(TOTAL_STROKES-GATE_AT)*STROKE_MS+900);
-    });
-  },clock+300);
+  fed=0; combo=0; maxCombo=0; roundCount=0; dogIdx=0; foodIdx=0;
+  fedVal.textContent=0; comboVal.textContent=0;
+  progFill.style.width='0%'; progPct.textContent='0%';
+  layer.innerHTML='';
+  later(()=>showToast('转头对准饿了的 Doga，喂饱它'),400);
+  later(loop, 1400);
 }
-
 
 /* ============ 结算页 streak 火苗 +1(数据出现后延迟触发) ============ */
 function playStreakFlame(){
@@ -528,15 +514,13 @@ function playStreakFlame(){
 }
 
 function endShow(){
-  playing=false;
-  document.getElementById('rStrokes').textContent=reps;
-  document.getElementById('rHold').textContent=holds+' 次';
+  document.getElementById('rFed').textContent = fed + '/' + TOTAL_FEEDS;
+  document.getElementById('rCombo').textContent = '×' + maxCombo;
   result.classList.remove('hide');
-  setTimeout(playStreakFlame,800);   // 数据出现后再点燃火苗
+  setTimeout(playStreakFlame,800);
 }
 
-
-/* ============ 3秒倒计时(三关统一) ============ */
+/* ============ 3秒倒计时(四关统一) ============ */
 function runCountdown(done){
   const cd=document.getElementById('countdown');
   const cdNum=document.getElementById('cdNum');
@@ -554,28 +538,23 @@ function runCountdown(done){
 function start(){
   intro.classList.add('hide');
   result.classList.add('hide');
+  document.getElementById('streakWin').classList.remove('go');
   clearTimers();
-  vid.currentTime=0;
-  vid.play().catch(()=>{});
-  runCountdown(runShow);   // 先 3 秒倒计时,再开始
+  v.currentTime=0; v.play().catch(()=>{});
+  runCountdown(runShow);   // 先 3 秒倒计时,再开始喂食
 }
+
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();start();}});
 
-/* 截图/自动演示 */
-if(location.search.indexOf('auto=1')>=0){ T(start,300); }
-// end=1 调试入口:直接看结算页火苗+1
-if(location.search.indexOf('end=1')>=0){
+// 调试/演示入口:?end=1 直接看结算火苗;?auto=1 自动跑完整流程
+const params = new URLSearchParams(location.search);
+v.play().catch(()=>{});
+if(params.get('end')==='1'){
+  fed=TOTAL_FEEDS; maxCombo=TOTAL_FEEDS;
   intro.classList.add('hide');
-  document.getElementById('rStrokes').textContent=8;
-  document.getElementById('rHold').textContent='1 次';
-  result.classList.remove('hide');
-  setTimeout(playStreakFlame,600);
+  endShow();
+}else if(params.get('auto')==='1'){
+  start();
 }
-
 </script>
-<!-- 右下角「● YOU」点阵脸小窗:载入即装饰脸保底,摄像头就绪后自动升级为真脸点云 -->
-<script src="js/you-facecam.js"></script>
-</body>
-</html>

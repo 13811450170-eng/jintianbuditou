@@ -560,7 +560,7 @@ html, body {
             <span class="hero-badge-dot"></span>
             训练完成
           </span>
-          <span class="hero-branch" id="heroBreadcrumb">颈椎训练营 · 下午拳击</span>
+          <span class="hero-branch" id="heroBreadcrumb">颈部训练营 · 拳击派对</span>
         </div>
 
         <div class="hero-middle">
@@ -662,7 +662,7 @@ html, body {
         <div class="accumulate-list">
           <div class="acc-item">
             <span class="acc-dot d1"></span>
-            <span id="accBadge">颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章</span>
+            <span id="accBadge">颈部训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章</span>
           </div>
           <div class="acc-item">
             <span class="acc-dot d2"></span>
@@ -723,8 +723,8 @@ html, body {
 // ========================================================================
 const BRANCH_CONFIG = {
   boxing: {
-    breadcrumb: '颈椎训练营 · 下午拳击',
-    levelUrl:   'mock-joy-boxing.html',
+    breadcrumb: '颈部训练营 · 拳击派对',
+    levelUrl:   'mock-boxing-video.html',
     accent:     '#00A3FF',
     accent2:    '#FF6B4A',
     accentBg:   '#E1F2FF',
@@ -740,8 +740,8 @@ const BRANCH_CONFIG = {
     },
   },
   lunch: {
-    breadcrumb: '颈椎训练营 · 中午餐厅',
-    levelUrl:   'mock-lunch-restaurant.html',
+    breadcrumb: '颈部训练营 · Doga 餐厅',
+    levelUrl:   'mock-lunch-video.html',
     accent:     '#00A3FF',
     accent2:    '#FFB800',
     accentBg:   '#E1F2FF',
@@ -756,38 +756,38 @@ const BRANCH_CONFIG = {
       C: '你把餐厅端了么?人都跑了。',
     },
   },
-  night: {
-    breadcrumb: '颈椎训练营 · 夜晚派对',
-    levelUrl:   'mock-night-fireworks.html',
-    accent:     '#00A3FF',
-    accent2:    '#7C5AFF',
-    accentBg:   '#E1F2FF',
-    accentBg2:  '#EBE5FF',
-    specialLbl: '接住流星',
-    medTitle:   '今天练的是「颈部大范围转动」',
-    medDesc:    '仰头 + 转头组合动作,舒缓一天低头造成的颈后紧张。睡前 1 小时练完,不要练太激烈。',
+  rowing: {
+    breadcrumb: '肩部训练营 · 河道划船',
+    levelUrl:   'mock-rowing-video.html',
+    accent:     '#7C5AFF',
+    accent2:    '#38B6FF',
+    accentBg:   '#EBE5FF',
+    accentBg2:  '#E1F2FF',
+    specialLbl: '扩胸次数',
+    medTitle:   '今天练的是「肩胛后收与扩胸」',
+    medDesc:    '双桨对称后拉 = 肩胛后收 + 挺胸,专门强化被久坐拉长的菱形肌和中下斜方肌,是对治圆肩驼背最直接的动作。每天 1-2 组即可。',
     lines: {
-      S: '满天星屑都是你接的。',
-      A: '大流星你没错过几颗。',
-      B: '流星飞过去了你还在发呆。',
-      C: '你抬头了吗?流星以为你睡了。',
+      S: '桨桨到位,整条河都是你的。',
+      A: '划得挺稳,肩膀打开了。',
+      B: '有几桨没拉满,再挺胸一点。',
+      C: '船还在原地,你是在划水吗?',
     },
   },
-  walk: {
-    breadcrumb: '颈椎训练营 · 森林散步',
-    levelUrl:   'index.html',
-    accent:     '#00A3FF',
-    accent2:    '#4CAF88',
-    accentBg:   '#E1F2FF',
-    accentBg2:  '#E1F5EC',
-    specialLbl: '收到礼物',
-    medTitle:   '今天练的是「颈部动态活动度」',
-    medDesc:    '低强度多方向转头,是晨间唤醒颈椎最温和的方式。空腹或饭后 30 分钟内都能练。',
+  star: {
+    breadcrumb: '肩部训练营 · 举臂摘星',
+    levelUrl:   'mock-shoulder-star.html',
+    accent:     '#7C5AFF',
+    accent2:    '#FFB800',
+    accentBg:   '#EBE5FF',
+    accentBg2:  '#FFF6DA',
+    specialLbl: '点亮烟花',
+    medTitle:   '今天练的是「肩关节上举活动度」',
+    medDesc:    '举手伸向天空 = 肩关节屈曲上举,改善久坐造成的过顶活动度受限。上举到耳侧即可,不必逼到极限,避免肩袖冲击。',
     lines: {
-      S: 'Joy 说下次还想跟你走。',
-      A: '走得挺舒服嘛。',
-      B: 'Joy 一直在等你追上来。',
-      C: 'Joy 走完一圈你还没出门。',
+      S: '满天烟花都是你点的。',
+      A: '够到了大半的星星,漂亮。',
+      B: '还有几颗星没够着,手再高一点。',
+      C: '手举起来了吗?星星等急了。',
     },
   },
 };
@@ -799,7 +799,7 @@ const DEFAULT_RUN = {
   stats:  { time: 30, completion: 87, maxCombo: 8, special: 12 },
   streak: { prev: 12, now: 13 },
   accumulate: {
-    badge: '颈椎训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
+    badge: '颈部训练营完成 <strong>6/12</strong> 次,再练 6 次点亮徽章',
     joy:   '你和 <strong>Joy</strong> 已经见了 <strong>18 次</strong>面啦',
     total: '累计训练 <strong>23 次 · 12 小时 30 分</strong>',
   },
