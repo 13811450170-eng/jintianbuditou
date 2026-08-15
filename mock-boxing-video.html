@@ -19,6 +19,10 @@
     --shadow-1:0 2px 8px rgba(0,0,0,.18);
     --shadow-2:0 8px 24px rgba(0,0,0,.28);
     --ok:#6bff9d;
+    /* 判定三态(光球命中反馈) */
+    --perfect:#6bff9d;
+    --good:#ffd66b;
+    --miss:#8a8f99;
     --font:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
 
     /* 拳击 · 黑红金皮肤 */
@@ -110,6 +114,13 @@
   .progress-track{height:10px;background:rgba(255,255,255,.16);border-radius:var(--r-pill);overflow:hidden;}
   .progress-fill{height:100%;width:0%;border-radius:var(--r-pill);
     background:linear-gradient(90deg,var(--brand),var(--gold));transition:width .5s;}
+  /* 汇总层:一拳一点,判定后按三态染色 */
+  .pip-row{display:flex;gap:4px;margin-top:10px;justify-content:space-between;}
+  .pip{flex:1;height:5px;border-radius:var(--r-pill);background:rgba(255,255,255,.16);transition:background .25s,box-shadow .25s;}
+  .pip.next{background:rgba(255,214,107,.5);}
+  .pip.perfect{background:var(--perfect);box-shadow:0 0 6px var(--perfect);}
+  .pip.good{background:var(--good);box-shadow:0 0 5px var(--good);}
+  .pip.miss{background:var(--miss);}
 
   .metronome{
     position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:30;
@@ -141,19 +152,95 @@
     100%{opacity:0;transform:translateX(-50%) translateY(-52px) scale(1);}
   }
 
-  /* 来拳方向指示 */
-  .punch-cue{
-    position:absolute;top:50%;left:50%;
-    z-index:27;font-size:60px;font-weight:900;color:var(--brand);
-    text-shadow:0 0 20px var(--brand),0 0 40px rgba(255,59,59,.6);
-    opacity:0;pointer-events:none;
+  /* ============================================================
+     闪避光球场:四方位光球 + 逼近缩圈(有氧拳击式动作引导)
+     箭头 = 你的头往哪边动(◀左倾 ▶右倾 ▲抬头 ▼收下巴)
+  ============================================================ */
+  .orb-field{position:absolute;inset:0;z-index:26;pointer-events:none;}
+  .dodge-orb{
+    position:absolute;width:104px;height:104px;
+    transform:translate(-50%,-50%);
+    display:flex;align-items:center;justify-content:center;
   }
-  .punch-cue.play{animation:cuePop .8s ease-out forwards;}
-  @keyframes cuePop{
-    0%{opacity:0;transform:translate(-50%,-50%) scale(.4);}
-    30%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}
-    100%{opacity:0;transform:translate(-50%,-50%) scale(1.3);}
+  /* 外圈:逼近时从大缩到与内核重合(scale 由 element.animate 驱动)。细亮环,不堆辉光 */
+  .orb-ring{
+    position:absolute;inset:0;border-radius:50%;
+    border:1.5px solid rgba(255,230,150,.85);
+    box-shadow:inset 0 0 8px rgba(255,214,107,.18);
   }
+  /* 内核:通透玻璃球 —— 透出背景 + 边缘一圈细亮光 + 顶部高光,金色系 */
+  .orb-core{
+    position:relative;width:66px;height:66px;border-radius:50%;
+    background:
+      radial-gradient(circle at 50% 32%, rgba(255,255,255,.35) 0%, rgba(255,255,255,.06) 30%, rgba(255,214,107,.10) 62%, rgba(255,214,107,.03) 100%);
+    border:1px solid rgba(255,235,170,.55);
+    box-shadow:inset 0 1px 3px rgba(255,255,255,.6), inset 0 -6px 12px rgba(255,180,60,.10);
+    backdrop-filter:blur(2px) saturate(140%);
+    -webkit-backdrop-filter:blur(2px) saturate(140%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#fff;
+  }
+  /* 顶部小高光点,强化玻璃感 */
+  .orb-core::before{
+    content:"";position:absolute;top:8px;left:20px;width:16px;height:10px;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.75), rgba(255,255,255,0) 70%);
+    pointer-events:none;
+  }
+  .orb-core .arrow{font-size:30px;font-weight:900;line-height:1;color:var(--gold-bright);text-shadow:0 1px 5px rgba(120,70,0,.6);}
+  .orb-core .tag{font-size:10px;font-weight:800;letter-spacing:.5px;margin-top:1px;color:#fff;opacity:.95;text-shadow:0 1px 3px rgba(0,0,0,.55);}
+  /* 当前活跃球:呼吸放大,和未激活/已判定区分 */
+  .dodge-orb.active .orb-core{animation:orbBreath .6s ease-in-out infinite alternate;}
+  @keyframes orbBreath{from{transform:scale(1);}to{transform:scale(1.08);}}
+
+  /* 命中三态(挂在 resolve,砸在对应光球上)—— 通透玻璃,命中才提亮 */
+  .dodge-orb.hit-perfect .orb-core{
+    background:radial-gradient(circle at 50% 32%, rgba(255,255,255,.5), rgba(107,255,157,.28) 60%, rgba(107,255,157,.08) 100%);
+    border-color:rgba(200,255,220,.8);box-shadow:inset 0 1px 3px rgba(255,255,255,.7), 0 0 18px rgba(107,255,157,.45);
+    animation:orbBounce .5s ease-out both;
+  }
+  .dodge-orb.hit-perfect .orb-core .arrow{color:#eafff2;}
+  .dodge-orb.hit-good .orb-core{
+    background:radial-gradient(circle at 50% 32%, rgba(255,255,255,.5), rgba(255,214,107,.30) 60%, rgba(255,214,107,.08) 100%);
+    border-color:rgba(255,240,190,.8);box-shadow:inset 0 1px 3px rgba(255,255,255,.7), 0 0 14px rgba(255,214,107,.4);
+    animation:orbBounce .5s ease-out both;
+  }
+  .dodge-orb.hit-miss{opacity:.5;}
+  .dodge-orb.hit-miss .orb-core{
+    background:radial-gradient(circle at 50% 32%, rgba(255,255,255,.16), rgba(138,143,153,.14) 100%);
+    border-color:rgba(255,255,255,.22);box-shadow:none;animation:orbMissShake .4s ease-in-out both;
+  }
+  .dodge-orb.hit-miss .orb-core .arrow{color:rgba(255,255,255,.6);}
+  .dodge-orb.hit-perfect .orb-ring,.dodge-orb.hit-good .orb-ring,.dodge-orb.hit-miss .orb-ring{opacity:0;transition:opacity .3s;}
+  @keyframes orbBounce{0%{transform:scale(1);}42%{transform:scale(1.32);}100%{transform:scale(1);}}
+  @keyframes orbMissShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  /* 判定戳记(盖在光球上) */
+  .orb-stamp{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+    font-size:15px;font-weight:900;letter-spacing:.5px;white-space:nowrap;
+    padding:3px 9px;border-radius:6px;background:rgba(0,0,0,.78);
+    text-shadow:0 1px 3px rgba(0,0,0,.8);z-index:2;opacity:0;
+  }
+  .dodge-orb.hit-perfect .orb-stamp{opacity:1;color:var(--perfect);animation:orbStampPop .5s cubic-bezier(.34,1.56,.64,1) both;}
+  .dodge-orb.hit-good .orb-stamp{opacity:1;color:var(--good);animation:orbStampPop .5s cubic-bezier(.34,1.56,.64,1) both;}
+  .dodge-orb.hit-miss .orb-stamp{opacity:1;color:#c9cdd6;animation:orbStampPop .5s cubic-bezier(.34,1.56,.64,1) both;}
+  @keyframes orbStampPop{
+    0%{transform:translate(-50%,-50%) scale(0) rotate(-16deg);}
+    60%{transform:translate(-50%,-50%) scale(1.25) rotate(5deg);}
+    100%{transform:translate(-50%,-50%) scale(1) rotate(-3deg);}
+  }
+
+  /* 命中冲击波(判定点扩散,搬自老拳击版)—— 细环,克制 */
+  .shockwave{
+    position:absolute;transform:translate(-50%,-50%);
+    width:20px;height:20px;border-radius:50%;border:2px solid;
+    pointer-events:none;z-index:26;
+    animation:shockwaveExpand .5s ease-out both;
+  }
+  .shockwave.perfect{border-color:var(--perfect);}
+  .shockwave.good{border-color:var(--good);}
+  .shockwave.miss{border-color:var(--miss);}
+  @keyframes shockwaveExpand{0%{width:20px;height:20px;opacity:.9;}100%{width:200px;height:200px;opacity:0;}}
 
   /* 右下角 · 真人点阵脸小窗(与拳击关统一) */
   .you-cam{
@@ -327,6 +414,7 @@
   <div class="progress-wrap glass">
     <div class="progress-label"><span>回合</span><span class="pct" id="progPct">0%</span></div>
     <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+    <div class="pip-row" id="pipRow"></div>
   </div>
 
   <div class="metronome glass">
@@ -334,8 +422,8 @@
     <div class="pulse" id="beatPulse"></div>
   </div>
 
-  <!-- 来拳方向指示 -->
-  <div class="punch-cue" id="punchCue">◀</div>
+  <!-- 闪避光球场:四方位光球 + 逼近缩圈 -->
+  <div class="orb-field" id="orbField"></div>
 
   <!-- 右下角 · 真人点阵脸小窗 -->
   <div class="you-cam">
@@ -401,9 +489,14 @@
 
   <!-- 3秒倒计时 -->
   <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+
+  <!-- 调试读数(?debug=1 显示,真机核对轴向用) -->
+  <div id="dbgAngle" style="position:absolute;left:10px;bottom:10px;z-index:80;font:12px monospace;color:#6bff9d;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;display:none;"></div>
 </div>
 
-<script>
+<script type="module">
+import { createPoseKernel } from "./js/pose-kernel.js";
+
 const vid=document.getElementById('bgvid');
 const repVal=document.getElementById('repVal');
 const comboVal=document.getElementById('comboVal');
@@ -412,25 +505,100 @@ const progPct=document.getElementById('progPct');
 const beatTxt=document.getElementById('beatTxt');
 const beatPulse=document.getElementById('beatPulse');
 const toast=document.getElementById('toast');
-const punchCue=document.getElementById('punchCue');
+const orbField=document.getElementById('orbField');
 const intro=document.getElementById('intro');
 const result=document.getElementById('result');
+const dbgAngle=document.getElementById('dbgAngle');
 
 let dodges=0, combo=0, maxCombo=0, playing=false;
 let timers=[];
 function T(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id;}
 function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+function clamp(v,a,b){return v<a?a:v>b?b:v;}
 
 const PUNCH_MS=4300;      // 每拳间隔 4.3s（配合视频 0.7 倍速，3000/0.7≈4300）
 const TOTAL_PUNCHES=10;   // 演示 10 拳
 
-// 四种来拳 → 对应躲避方向
+// 头姿轴向 —— 实测结论,勿改(与 mock-joy-boxing.html 一致)
+// 应用 AX 后约定: yaw<0=向左转 / pitch<0=抬头 / pitch>0=收下巴 / roll<0=向左倾 / roll>0=向右倾
+const AX = { yaw:-1, pitch:1, roll:1 };
+const SMOOTH = 0.35;
+// 判定阈值(舒缓版,搬自老拳击版)
+const JUDGE = {
+  windowPerfect: 500,   // ±500ms 内到位 = Perfect(视频版节拍更慢,窗口放宽)
+  windowGood: 1000,     // ±1000ms = Good;超时 = Miss
+  angleGood: 12,        // ≥12° = Good
+  anglePerfect: 18,     // ≥18° = Perfect
+  angleMax: 30,         // >30° = Miss(过头护栏)
+};
+const VEL_SPIKE = 12;   // 度/帧 = 甩头护栏
+
+// 四方位闪避 → 期望头姿轴向。cueX/cueY = 光球位置(球摆在头要去的方向)
+// tag = 内核小标签;箭头 = 头往哪动
 const PUNCHES=[
-  {name:'左钩拳',dodge:'头向左倾',cue:'◀',cueX:32,cueY:42},
-  {name:'右钩拳',dodge:'头向右倾',cue:'▶',cueX:68,cueY:42},
-  {name:'上勾拳',dodge:'收下巴',  cue:'▼',cueX:50,cueY:30},
-  {name:'下勾拳',dodge:'抬起头',  cue:'▲',cueX:50,cueY:55},
+  {name:'左钩拳',dodge:'头向左倾',dir:'left', cue:'◀',tag:'左倾',cueX:18,cueY:46,expect:'roll-', key:'ArrowLeft'},
+  {name:'右钩拳',dodge:'头向右倾',dir:'right',cue:'▶',tag:'右倾',cueX:82,cueY:46,expect:'roll+', key:'ArrowRight'},
+  {name:'下勾拳',dodge:'抬起头',  dir:'up',   cue:'▲',tag:'抬头',cueX:50,cueY:20,expect:'pitch-',key:'ArrowUp'},
+  {name:'上勾拳',dodge:'收下巴',  dir:'down', cue:'▼',tag:'收下巴',cueX:50,cueY:70,expect:'pitch+',key:'ArrowDown'},
 ];
+
+// ===== 头姿检测桥接(内核 → 游戏侧,每帧 syncPose 刷新)=====
+let kernel=null, camOK=false;
+let pose={ facePresent:false, haveMatrix:false, rel:{yaw:0,pitch:0,roll:0}, angle:{yaw:0,pitch:0,roll:0}, landmarks:null };
+let prevRel={ yaw:0, pitch:0, roll:0 };
+let angleVel=0;
+let facePresent=false, latestLandmarks=null;
+function syncPose(p){
+  if(!p) return;
+  pose=p; facePresent=p.facePresent; latestLandmarks=p.landmarks;
+}
+function relAngle(){ return pose.rel; }
+function axisValue(rel,expect){
+  if(expect==='roll+')  return  rel.roll;
+  if(expect==='roll-')  return -rel.roll;
+  if(expect==='pitch+') return  rel.pitch;
+  if(expect==='pitch-') return -rel.pitch;
+  return 0;
+}
+const DEBUG = location.search.indexOf('debug=1')>=0;
+if(DEBUG && dbgAngle) dbgAngle.style.display='block';
+
+// ---- 右下角点阵头 mesh:每帧把 MediaPipe 478 landmarks 画成金色点云(搬自老拳击版)----
+const faceMeshCanvas=document.querySelector('.you-cam .you-mesh');
+const faceMeshCtx=faceMeshCanvas?faceMeshCanvas.getContext('2d'):null;
+const FACE_MESH_TRIS=[
+  [10,338,297,332,284,251,389,356,454,323,361,288,397,365,379,378,400,377,152,148,176,149,150,136,172,58,132,93,234,127,162,21,54,103,67,109,10],
+  [70,63,105,66,107],
+  [336,296,334,293,300],
+  [33,7,163,144,145,153,154,155,133,173,157,158,159,160,161,246,33],
+  [263,249,390,373,374,380,381,382,362,398,384,385,386,387,388,466,263],
+  [168,6,197,195,5,4],
+  [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185,61],
+];
+function drawFaceMesh(){
+  if(!faceMeshCtx||!faceMeshCanvas) return;
+  const w=faceMeshCanvas.width, h=faceMeshCanvas.height;
+  faceMeshCtx.clearRect(0,0,w,h);
+  faceMeshCtx.fillStyle='rgba(255,204,0,0.03)'; faceMeshCtx.fillRect(0,0,w,h);
+  if(!facePresent||!latestLandmarks||latestLandmarks.length===0){
+    faceMeshCtx.fillStyle='rgba(255,204,0,0.35)';
+    faceMeshCtx.font='11px -apple-system, sans-serif';
+    faceMeshCtx.textAlign='center';
+    faceMeshCtx.fillText(camOK?'SEARCHING…':'键盘模式 ←→↑↓',w/2,h/2);
+    return;
+  }
+  const project=p=>({ x:(1-p.x)*w, y:p.y*h });   // 镜像 x,与用户视觉一致
+  faceMeshCtx.fillStyle='rgba(255,204,0,0.55)';
+  for(let i=0;i<latestLandmarks.length;i++){ const p=project(latestLandmarks[i]); faceMeshCtx.fillRect(p.x-0.5,p.y-0.5,1.4,1.4); }
+  faceMeshCtx.strokeStyle='rgba(255,230,120,0.9)'; faceMeshCtx.lineWidth=1;
+  for(const path of FACE_MESH_TRIS){
+    faceMeshCtx.beginPath();
+    for(let i=0;i<path.length;i++){ const idx=path[i]; if(idx>=latestLandmarks.length)continue; const p=project(latestLandmarks[idx]); i?faceMeshCtx.lineTo(p.x,p.y):faceMeshCtx.moveTo(p.x,p.y); }
+    faceMeshCtx.stroke();
+  }
+  faceMeshCtx.fillStyle='rgba(255,255,255,0.95)';
+  for(const idx of [1,33,263]){ if(idx>=latestLandmarks.length)continue; const p=project(latestLandmarks[idx]); faceMeshCtx.beginPath(); faceMeshCtx.arc(p.x,p.y,1.8,0,Math.PI*2); faceMeshCtx.fill(); }
+}
 
 function showToast(txt,dur=2200){
   toast.innerHTML=`<svg class="ico"><use href="#i-boxglove"/></svg>${txt}`;toast.classList.add('show');
@@ -443,12 +611,64 @@ function floatBig(big,sub){
   document.getElementById('app').appendChild(f);
   T(()=>f.remove(),1200);
 }
-function showCue(p){
-  punchCue.textContent=p.cue;
-  punchCue.style.left=p.cueX+'%';
-  punchCue.style.top=p.cueY+'%';
-  punchCue.classList.remove('play');void punchCue.offsetWidth;
-  punchCue.classList.add('play');
+// ===== 光球场:生成/命中/清理 =====
+function clearOrbs(){ if(orbField) orbField.innerHTML=''; }
+
+// ===== 汇总层:一拳一点 =====
+const pipRow=document.getElementById('pipRow');
+function buildPips(){
+  if(!pipRow) return;
+  pipRow.innerHTML='';
+  for(let i=0;i<TOTAL_PUNCHES;i++){ const d=document.createElement('div'); d.className='pip'; pipRow.appendChild(d); }
+}
+function markPip(idx,kind){
+  if(!pipRow) return;
+  const pip=pipRow.children[idx];
+  if(pip){ pip.className='pip '+kind; }
+}
+
+// 在 appearAt 生成光球,外圈从大缩到与内核重合(缩到 scale(1) 那一刻 = hitTime 最佳躲避点)
+function spawnOrb(beat){
+  if(!orbField) return;
+  const orb=document.createElement('div');
+  orb.className='dodge-orb active';
+  orb.style.left=beat.cueX+'%';
+  orb.style.top=beat.cueY+'%';
+  orb.innerHTML=`<div class="orb-ring"></div>`+
+    `<div class="orb-core"><span class="arrow">${beat.cue}</span><span class="tag">${beat.tag}</span></div>`+
+    `<div class="orb-stamp"></div>`;
+  orbField.appendChild(orb);
+  beat._orb=orb;
+  if(pipRow && pipRow.children[beat.idx] && !beats[beat.idx]._judged) pipRow.children[beat.idx].classList.add('next');
+  // 逼近缩圈:appear → hit 期间外圈线性缩到贴合内核
+  const dur=Math.max(300, beat.hitTime-(performance.now()-sessionStart));
+  const ring=orb.querySelector('.orb-ring');
+  ring.animate(
+    [{transform:'scale(2.6)',opacity:.25},{transform:'scale(1)',opacity:.95}],
+    {duration:dur,easing:'linear',fill:'forwards'}
+  );
+}
+
+// 判定后把结果砸在对应光球上:变色 + 弹跳/抖 + 戳记 + 冲击波
+function stampOrb(beat,kind){
+  const orb=beat._orb;
+  if(!orb) return;
+  orb.classList.remove('active');
+  orb.classList.add('hit-'+kind);
+  const stamp=orb.querySelector('.orb-stamp');
+  if(stamp) stamp.textContent = kind==='perfect'?'JUST!' : kind==='good'?'GOOD' : (beat._soft||'跟上');
+  if(kind!=='miss') spawnShockwave(beat.cueX, beat.cueY, kind);
+  T(()=>{ orb.style.transition='opacity .4s'; orb.style.opacity='0'; }, 550);
+  T(()=>orb.remove(), 1000);
+}
+
+function spawnShockwave(xPct,yPct,kind){
+  if(!orbField) return;
+  const sw=document.createElement('div');
+  sw.className='shockwave '+kind;
+  sw.style.left=xPct+'%'; sw.style.top=yPct+'%';
+  orbField.appendChild(sw);
+  T(()=>sw.remove(),520);
 }
 function beatPulseAnim(){
   beatPulse.animate([
@@ -458,38 +678,115 @@ function beatPulseAnim(){
   ],{duration:PUNCH_MS,easing:'ease-in-out'});
 }
 
-function doPunch(idx){
-  const p=PUNCHES[idx%PUNCHES.length];
-  // 预判：来拳方向提示 + 节拍
-  beatTxt.textContent=p.name;
-  beatPulseAnim();
-  showCue(p);
-  // 命中判定：0.9s 后玩家"躲开" → 完美闪避
-  T(()=>{
-    dodges++;combo++;maxCombo=Math.max(maxCombo,combo);
-    repVal.textContent=dodges;
-    comboVal.textContent=combo;
-    const pct=Math.min(100,Math.round((idx+1)/TOTAL_PUNCHES*100));
-    progFill.style.width=pct+'%';progPct.textContent=pct+'%';
-    beatTxt.textContent=p.dodge;
-    const grade=Math.random()<.7?'PERFECT':'GOOD';
-    floatBig(grade, '完美闪避 · '+p.dodge);
-  },PUNCH_MS*0.42);
+// ===== 运行时状态 =====
+let beats=[];            // 本局 10 拳的判定状态
+let resolvedCount=0;     // 已判定拳数(进度条按此推进)
+let sessionStart=0;      // 本局起点(beat.hitTime 相对它)
+
+// ===== 判定核心(搬自 mock-joy-boxing.html)=====
+function tickJudge(now){
+  const t=now-sessionStart;
+  const rel=relAngle();
+  for(const beat of beats){
+    if(beat._judged) continue;
+    const dt=t-beat.hitTime;
+    if(dt < -JUDGE.windowGood) continue;                 // 未进窗
+    if(dt >  JUDGE.windowGood){ beat._reason='timeout'; resolve(beat,'miss'); continue; }  // 超时
+    // 摄像头未就绪 / 无脸:交给键盘或超时,不做角度判定
+    if(!camOK || !facePresent) continue;
+
+    const signedAngle=axisValue(rel,beat.expect);
+    beat._maxAngleSeen=Math.max(beat._maxAngleSeen||0,signedAngle);
+    beat._peakVel=Math.max(beat._peakVel||0,angleVel);
+
+    // 护栏一:过头(医学安全,别拧断脖子)
+    if(signedAngle>JUDGE.angleMax){ beat._reason='over-rotation'; resolve(beat,'miss'); continue; }
+    // 护栏二:甩头
+    if(beat._peakVel>VEL_SPIKE && signedAngle>JUDGE.angleGood*0.7){ beat._reason='whiplash'; resolve(beat,'miss'); continue; }
+    // 达标
+    if(signedAngle>=JUDGE.angleGood){
+      const inPerfectWin=Math.abs(dt)<=JUDGE.windowPerfect;
+      const isPerfectAngle=signedAngle>=JUDGE.anglePerfect && signedAngle<=JUDGE.angleMax;
+      resolve(beat,(inPerfectWin && isPerfectAngle)?'perfect':'good');
+    }
+  }
 }
+
+function resolve(beat,kind){
+  if(beat._judged) return;
+  beat._judged=kind;
+  resolvedCount++;
+  if(kind==='perfect'||kind==='good'){
+    dodges++; combo++; maxCombo=Math.max(maxCombo,combo);
+    repVal.textContent=dodges; comboVal.textContent=combo;
+    beatTxt.textContent=beat.dodge;
+    floatBig(kind==='perfect'?'PERFECT':'GOOD','完美闪避 · '+beat.dodge);
+  } else {
+    // 治愈不惩罚:只断连击,不扣闪避数,进度条照走
+    combo=0; comboVal.textContent=0;
+    if(beat._reason==='over-rotation' || beat._reason==='whiplash'){ beat._soft='轻一点'; floatBig('轻一点','慢慢躲 · 别甩头'); }
+    else{ beat._soft='慢慢来'; floatBig('跟上','没关系 · 下一拳再来'); }
+  }
+  stampOrb(beat,kind);
+  markPip(beat.idx,kind);
+  const pct=Math.min(100,Math.round(resolvedCount/TOTAL_PUNCHES*100));
+  progFill.style.width=pct+'%'; progPct.textContent=pct+'%';
+}
+
+// 键盘兜底:按对应方向键 = 手动躲对当前活跃拳(走同一判定入口)
+function keyDodge(code){
+  if(!playing) return;
+  const t=performance.now()-sessionStart;
+  let best=null, bestAbs=Infinity;
+  for(const beat of beats){
+    if(beat._judged || beat.key!==code) continue;
+    const d=Math.abs(t-beat.hitTime);
+    if(d<=JUDGE.windowGood && d<bestAbs){ best=beat; bestAbs=d; }
+  }
+  if(best) resolve(best, bestAbs<=JUDGE.windowPerfect?'perfect':'good');
+}
+
+// 主循环:每帧刷新头姿 + 画点阵头 + 跑判定(全程常驻)
+function loop(now){
+  requestAnimationFrame(loop);
+  now=now||performance.now();
+  if(kernel && kernel.ready()){
+    syncPose(kernel.tick(now));
+    const rel=relAngle();
+    angleVel=Math.max(Math.abs(rel.yaw-prevRel.yaw),Math.abs(rel.pitch-prevRel.pitch),Math.abs(rel.roll-prevRel.roll));
+    prevRel={...rel};
+  }
+  drawFaceMesh();
+  if(playing) tickJudge(now);
+  if(DEBUG && dbgAngle){
+    const rel=relAngle();
+    dbgAngle.textContent=`roll:${rel.roll.toFixed(0)}° pitch:${rel.pitch.toFixed(0)}° yaw:${rel.yaw.toFixed(0)}° vel:${angleVel.toFixed(1)} face:${facePresent?1:0}`;
+  }
+}
+requestAnimationFrame(loop);
 
 function runShow(){
   playing=true;
-  dodges=0;combo=0;maxCombo=0;
+  dodges=0;combo=0;maxCombo=0;resolvedCount=0;
   repVal.textContent=0;comboVal.textContent=0;
   progFill.style.width='0%';progPct.textContent='0%';
+  clearOrbs();
+  buildPips();
 
-  T(()=>showToast('看 Joy 的拳，转头躲开它'),400);
+  showToast(camOK?'看光球缩圈,到位就躲':'摄像头没就绪 · 用方向键 ←→↑↓ 躲',2600);
 
-  let clock=1600;
+  sessionStart=performance.now();
+  beats=[];
+  const clock=1600;
   for(let i=0;i<TOTAL_PUNCHES;i++){
-    T(()=>doPunch(i),clock+i*PUNCH_MS);
+    const p=PUNCHES[i%PUNCHES.length];
+    const appearAt=clock+i*PUNCH_MS;
+    const hitTime=appearAt+PUNCH_MS*0.5;      // 拳出现 ~2.15s 后是最佳躲避时刻
+    const beat={ ...p, idx:i, hitTime, _judged:null, _reason:null, _maxAngleSeen:0, _peakVel:0, _orb:null };
+    beats.push(beat);
+    T(()=>{ beatTxt.textContent=p.name; beatPulseAnim(); spawnOrb(beat); }, appearAt);
   }
-  T(()=>endShow(),clock+TOTAL_PUNCHES*PUNCH_MS+600);
+  T(endShow, clock+TOTAL_PUNCHES*PUNCH_MS+800);
 }
 
 
@@ -505,6 +802,9 @@ function playStreakFlame(){
 
 function endShow(){
   playing=false;
+  if(kernel) kernel.stopCamera();   // 隐私红线:关卡结束立即释放摄像头
+  camOK=false; facePresent=false; latestLandmarks=null;
+  clearOrbs();
   document.getElementById('rDodge').textContent=dodges;
   document.getElementById('rCombo').textContent=maxCombo;
   result.classList.remove('hide');
@@ -527,18 +827,44 @@ function runCountdown(done){
   })();
 }
 
-function start(){
+async function start(){
   intro.classList.add('hide');
   result.classList.add('hide');
   clearTimers();
+  clearOrbs();
   vid.currentTime=0;
   vid.playbackRate=0.7;    // 放慢到 0.7 倍速
   vid.play().catch(()=>{});
-  runCountdown(runShow);   // 先 3 秒倒计时,再开始
+
+  // 唤起摄像头 + 头姿检测(失败则降级为纯键盘,不阻断游戏)
+  camOK=false;
+  const statusEl=document.querySelector('#intro .status');
+  try{
+    if(!kernel){
+      kernel=createPoseKernel({ video:document.querySelector('.you-cam video'), axis:AX, smooth:SMOOTH });
+      await kernel.loadModel(txt=>{ if(statusEl && txt) statusEl.textContent=txt; });
+    }
+    await kernel.startCamera();
+    kernel.beginCalibration();          // 用倒计时这几秒采基线(坐直看屏幕)
+    camOK=true;
+  }catch(e){
+    camOK=false;                        // 摄像头被拒/无设备 → 键盘兜底
+  }
+
+  runCountdown(()=>{                     // 3 秒倒计时结束后:结束校准 → 开打
+    if(camOK && kernel) kernel.endCalibration();
+    prevRel={ yaw:0, pitch:0, roll:0 };
+    runShow();
+  });
 }
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();start();}});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); start(); return; }
+  if(e.code==='ArrowLeft'||e.code==='ArrowRight'||e.code==='ArrowUp'||e.code==='ArrowDown'){
+    e.preventDefault(); keyDodge(e.code);
+  }
+});
 
 if(location.search.indexOf('auto=1')>=0){ T(start,300); }
 // end=1 调试入口:直接看结算页火苗+1
@@ -551,7 +877,8 @@ if(location.search.indexOf('end=1')>=0){
 }
 
 </script>
-<!-- 右下角「● YOU」点阵脸小窗:载入即装饰脸保底,摄像头就绪后自动升级为真脸点云 -->
-<script src="js/you-facecam.js"></script>
+<!-- 右下角「● YOU」点阵脸小窗:由 pose-kernel 内核统一供帧,drawFaceMesh 每帧绘制真脸点云 -->
+<!-- 右下角小窗:实写⇄点阵开关(默认实写,悬停黑蒙版,点击切点阵) -->
+<script src="js/facecam-toggle.js"></script>
 </body>
 </html>

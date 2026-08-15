@@ -1,0 +1,98 @@
+// ============================================================================
+// facecam-toggle.js —— 右下角「● YOU」小窗的「实写 ⇄ 点阵」开关(演示页共用)
+//
+//   默认显示真实摄像头画面(镜像);鼠标悬停时盖黑色蒙版并出现「关闭人脸影像」,
+//   点击切成点阵形象(you-mesh canvas 由 you-facecam.js / 各关自绘脚本负责渲染),
+//   再次点击切回实写。摄像头未就绪 / 未授权时自动退回点阵,直到画面到位。
+//
+//   不改各关 CSS:video 的显隐用 inline style 覆盖(优先级最高),
+//   canvas 的显隐用 opacity 切换(绘制不停,零改动)。
+//
+//   用法:各关 body 末尾 <script src="js/facecam-toggle.js"></script>(放在
+//         you-facecam.js / 关卡脚本之后即可,只依赖 .you-cam > video + .you-mesh)。
+// ============================================================================
+(function () {
+  const boxes = document.querySelectorAll('.you-cam');
+  if (!boxes.length) return;
+
+  const EYE_ON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  const style = document.createElement('style');
+  style.textContent = `
+  .you-cam .you-label{ z-index:3; }
+  .fc-toggle{
+    position:absolute; inset:0; z-index:4;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    margin:0; padding:0; border:0; cursor:pointer; white-space:nowrap;
+    background:rgba(0,0,0,0); color:#fff;
+    font:900 12px/1 -apple-system,system-ui,sans-serif; letter-spacing:1px;
+    transition:background .18s ease;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .fc-toggle .fc-ico, .fc-toggle .fc-txt{ opacity:0; transition:opacity .18s ease; }
+  .fc-toggle .fc-ico{ display:inline-flex; }
+  .fc-toggle .fc-ico svg{ width:15px; height:15px; display:block; }
+  .fc-toggle:hover, .fc-toggle:focus-visible{ background:rgba(0,0,0,.55); outline:none; }
+  .fc-toggle:hover .fc-ico, .fc-toggle:hover .fc-txt,
+  .fc-toggle:focus-visible .fc-ico, .fc-toggle:focus-visible .fc-txt{ opacity:1; }
+  `;
+  document.head.appendChild(style);
+
+  boxes.forEach(setup);
+
+  function setup(camBox) {
+    const video = camBox.querySelector('video');
+    const mesh = camBox.querySelector('.you-mesh');
+    if (!video || !mesh) return;
+
+    // video 覆盖成全窗镜像铺满(默认先藏,camAlive 后再亮),优先级压过各关 CSS 的 1px 隐藏
+    video.style.position = 'absolute';
+    video.style.left = '0';
+    video.style.top = '0';
+    video.style.width = '100%';
+    video.style.height = '100%';
+    video.style.objectFit = 'cover';
+    video.style.transform = 'scaleX(-1)';
+    video.style.pointerEvents = 'none';
+    video.style.opacity = '0';
+    video.style.zIndex = '1';
+    // canvas 叠在 video 之上,靠 opacity 显隐
+    mesh.style.position = 'relative';
+    mesh.style.zIndex = '2';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fc-toggle';
+    btn.innerHTML = '<span class="fc-ico"></span><span class="fc-txt"></span>';
+    camBox.appendChild(btn);
+
+    let mode = 'camera'; // 'camera'(实写) | 'mesh'(点阵)
+    function syncLabel() {
+      const cam = mode === 'camera';
+      btn.querySelector('.fc-txt').textContent = cam ? '关闭人脸影像' : '开启人脸影像';
+      btn.querySelector('.fc-ico').innerHTML = cam ? EYE_OFF : EYE_ON;
+      btn.setAttribute('aria-label', cam ? '关闭人脸影像,改用点阵形象' : '开启人脸影像');
+    }
+    syncLabel();
+
+    btn.addEventListener('click', () => {
+      mode = mode === 'camera' ? 'mesh' : 'camera';
+      syncLabel();
+    });
+
+    let shown = null;
+    (function loop() {
+      const camAlive = video.readyState >= 2 && video.videoWidth > 0 && !video.paused;
+      const showCam = mode === 'camera' && camAlive;
+      if (showCam !== shown) {
+        shown = showCam;
+        video.style.opacity = showCam ? '1' : '0';
+        mesh.style.opacity = showCam ? '0' : '1';
+      }
+      requestAnimationFrame(loop);
+    })();
+  }
+})();
