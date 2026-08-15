@@ -1490,14 +1490,25 @@ function injectFocusStyle() {
   s.textContent = `
     .zone-card { position: relative; }
     .zone-card.zone-focus {
-      box-shadow: 0 0 0 2px var(--neck, #00A3FF) inset, 0 8px 24px rgba(0,163,255,0.12);
-      border-radius: 18px;
+      padding: 16px 20px 14px;
+      margin: -8px -4px 0;
+      gap: 12px;
+      background: linear-gradient(180deg, rgba(0,163,255,0.08), rgba(0,163,255,0.02));
+      border: 1px solid rgba(0,163,255,0.22);
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,163,255,0.10);
     }
+    .zone-card.zone-focus .zone-ring,
+    .zone-card.zone-focus .zone-ring svg { width: 80px; height: 80px; }
+    .zone-card.zone-focus .zone-score { font-size: 24px; }
     .zone-focus-tag {
-      position: absolute; top: 8px; right: 8px;
-      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      position: absolute;
+      top: 10px; left: 50%; transform: translateX(-50%);
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
       color: #fff; background: var(--neck, #00A3FF);
-      padding: 2px 8px; border-radius: 100px;
+      padding: 3px 12px; border-radius: 100px;
+      box-shadow: 0 2px 8px rgba(0,163,255,0.35);
+      white-space: nowrap;
     }`;
   document.head.appendChild(s);
 }
