@@ -1,106 +1,100 @@
 ---
 name: health-assessment
-description: 颈肩健康评估 —— 把用户的红旗问卷、疼痛自评与传感器采集的 8 向颈部 ROM / 肩部基线,转成可判定的健康状态与分流结论(可用 / 受限 / 重测 / 停止)。是"评估—指导"闭环的前半段,产出即 health-coaching 的准入参数。
+description: 面向办公室人群的颈肩动作游戏前筛查、基线记录与练后安全复核。根据安全自查、主观不适、颈肩动作表现和摄像头识别质量，输出可练范围、限制、重测或停止结论；供 health-coaching 生成低负荷动作方案时使用。
 ---
 
-# 颈肩健康评估 (health-assessment)
+# 颈肩健康评估（health-assessment）
 
-> 医学背书来源见《今天不低头-健康背书调研》。本 skill 只做**状态判定与分级**,
-> **不确诊、不宣称任何方向"治疗有效"**。中心化/外周化等 MDT 反应须由合格临床人员解读,不作为面向普通用户的结论。
+## 目标与依据
 
-## 定位
+将“本次是否可进入颈肩动作游戏、可练哪个部位、哪些数据可信”转为可解释的结构化结果。详细动作、安全和量化规则以[颈肩健康知识库](../../docs/颈肩健康知识库.md)为准，尤其使用第 1、3、4、7、8 节。
 
-把"用户现在能不能练、有没有异常"转成机器可判定的结论。它是整个安全闭环的**准入闸门**:
-练习前决定放不放行,每个动作前给出目标上限,练习后判断是否需要停止或转介。
+- 将 MDT 仅用于多方向重复动作和个人表现的观察逻辑；不得自动进行 MDT 分类、方向偏好判断或处方。
+- 将 NHS 资料仅用于动作及舒适范围的基础参考；不得承诺对具体疾病的治疗效果。
+- 将 JOSPT/APTA 指南仅用于安全边界和线下评估提示；不得根据游戏数据判断疾病。
 
-产出的 `flow`(分流结论)正是 [[health-coaching]] 的输入。
+本 Skill 是“进入练习前的闸门”，不作远程诊断，也不输出临床 ROM 或康复结论。
 
-## 何时触发
+## 接收输入
 
-- **练习前筛查**:进入任何颈/肩动作游戏之前,必须先跑一次。
-- **动作前基线校准**:每个方向以本次有效 ROM 作为个人基线。
-- **练习后反馈**:收集主观感受与异常信号,做安全闭环判定。
-
-## 输入 schema
+在练习前使用 `phase: pre`，在练后安全复核使用 `phase: post`。接收下列信息；未采集到的字段必须明确标记为缺失，不得以默认正常替代。
 
 ```jsonc
 {
-  "phase": "pre | post",              // 练习前筛查 / 练习后反馈
-  "redFlags": {                        // 安全门槛(任一 true = 硬拦截)
-    "neck":     ["近期头颈外伤", "进行性剧烈症状", "手脚无力/笨拙", "走路不稳", "吞咽或呼吸困难", "大小便功能新变化"],
-    "shoulder": ["近期肩部外伤", "肩/臂明显变形或肿胀", "无法正常抬臂", "持续麻木或无力", "发热不适", "胸痛或呼吸困难"]
-    // 实际传入为 { key: boolean } 或命中项数组,命中任意一项即触发线下转介
+  "phase": "pre | post",
+  "safety": {
+    "common": ["近期外伤、疼痛快速或持续加重、发热不适、胸痛或呼吸困难等命中项"],
+    "neck": ["明显无力或笨拙、走路不稳、吞咽/呼吸困难、异常剧烈头痛或眩晕、大小便功能新变化等命中项"],
+    "shoulder": ["明显变形或肿胀、急性受伤后剧痛、无法正常抬臂、持续麻木或无力等命中项"]
   },
-  "pain": { "level": 0, "region": "neck | shoulder | arm | none" },  // NPRS/VAS 0–10
-  "cnfds": 0,                          // 哥本哈根颈部功能障碍量表,可选
-  "calib": { "keypointQuality": 0.0, "shoulderLine": true, "trunkRef": true },  // 中立位校准
-  "romNeck": {                         // 8 向主动 ROM,方向键见下
-    "protrusion": { "value": 0, "compensation": [], "confidence": 0.0, "discomfort": false }
-    // flexion / retraction / extension / lateralL / lateralR / rotationL / rotationR 同构
+  "discomfort": { "neck": 0, "shoulderLeft": 0, "shoulderRight": 0 },
+  "reportedEvents": ["练后出现的新麻木、无力、眩晕或症状向上肢延伸等"],
+  "recognitionQuality": {
+    "validFrameRate": 0,
+    "keypointConfidence": 0,
+    "occlusion": false,
+    "environmentIssue": ["逆光、出框、多人入镜等"]
   },
-  "baselineShoulder": {                // 肩部轻量基线
-    "flexionL": { "reach": 0, "compensation": [], "confidence": 0.0, "discomfort": false },
-    "flexionR": { ... }, "scapularRetraction": { ... }
+  "baseline": {
+    "neck": {
+      "protrusion": {}, "flexion": {}, "retraction": {}, "extension": {},
+      "lateralL": {}, "lateralR": {}, "rotationL": {}, "rotationR": {}
+    },
+    "shoulder": { "flexionL": {}, "flexionR": {}, "scapularRetraction": {} }
   }
 }
 ```
 
-## 核心逻辑(判定顺序)
+每个动作基线记录应尽量包含：是否完成、是否主观不适、代偿类型、个人相对表现、动作追踪置信度。不得要求或虚构摄像头临床角度值。
 
-严格按序,前一层否决则不进入后一层:
+## 按顺序判定
 
-1. **红旗硬门槛** — `redFlags.neck` 或 `redFlags.shoulder` 命中任意一项 → 直接 `stop`,提示线下医疗评估,**不进游戏**。
-2. **疼痛与功能基线** — 记录 NPRS/VAS(0–10)与疼痛区域;CNFDS 量化对日常的干扰。高疼痛不直接拦截,但会下调目标并倾向 `gentle`。
-3. **中立位校准** — 关键点质量/肩线/躯干参考系不达标 → 该次 `remeasure`(重测),不产出基线。
-4. **逐方向 ROM 判定 + 代偿识别** — 每个方向独立打标,识别耸肩 / 躯干旋转 / 躯干前倾后仰等代偿;`discomfort=true` 的方向直接降级。
-5. **练后异常信号**(phase=post)— 症状向肩/上肢/手指延伸、新麻木区、明显无力、眩晕、练后活动度下降或疼痛持续加重 → `stop` 并转介。
+1. **先检查安全警示信号。** 任一 `safety.common`、`safety.neck` 或 `safety.shoulder` 命中，或练后出现新的麻木、无力、眩晕、症状向上肢延伸、明显活动受限或持续加重不适时，返回 `stop`；停止本次游戏，并提示线下医疗评估。
+2. **再检查识别条件。** 上半身出框、关键点持续不稳定、遮挡、逆光或无法建立头部/肩部/躯干参照时，相关部位返回 `remeasure`；说明需要调整摄像头、坐姿或光线，不输出该部位基线结论。
+3. **按部位和动作检查舒适完成情况。** 无安全事件且能在舒适范围内完成、识别稳定的动作标记 `available`；有明显代偿、仅能较小范围完成或报告既有轻度不适的动作标记 `limited`。`limited` 仅允许低负荷、较小目标的动作提示。
+4. **汇总可练范围。** 颈部、肩部各自至少有一个 `available` 或 `limited` 动作，且该部位不存在停止事件时，才可开放该部位。
 
-### 逐方向四态判定
+不要用未经过试测验证的固定医学阈值判定“活动度异常”或“疼痛过高”。主观不适评分用于个人前后趋势和低负荷提示；安全事件才是停止的依据。
 
-| 判定 | 触发条件 | 对 coaching 的含义 |
-| --- | --- | --- |
-| `available` 可用 | 舒适完成、无 `discomfort`、代偿轻微、`confidence` 足够 | 开放该方向玩法 |
-| `limited` 受限 | 幅度不足或代偿明显但无痛 | 开放但**下调目标角度** |
-| `remeasure` 重测 | 追踪置信度低 / 校准不达标 | 要求复测,暂不产出基线 |
-| `stop` 停止 | 该方向 `discomfort=true` 或触发红旗 | 关闭该方向玩法 |
+## 输出结果
 
-## 输出 schema
+始终返回以下结构。字段为空时使用空数组或 `null`，不得省略安全结论。
 
 ```jsonc
 {
-  "gate": "pass | refer",              // refer = 触发红旗,不进游戏
-  "flow": "both | neckOnly | shoulderOnly | none",  // 分流结论(见下表)
-  "baseline": {                        // 每方向有效 ROM,coaching 用它 downscale
-    "neck":     { "flexion": { "effectiveRom": 0, "status": "available" }, ... },
-    "shoulder": { "flexionL": { "status": "available" }, ... }
+  "gate": "available | limited | remeasure | stop",
+  "flow": "both | neckOnly | shoulderOnly | none",
+  "availableActions": [{ "part": "neck", "axis": "flexion" }, { "part": "shoulder", "axis": "scapularRetraction" }],
+  "blockedActions": [{ "part": "neck", "axis": "extension", "reason": "discomfort | safety | lowRecognition" }],
+  "baseline": {
+    "neck": { "flexion": { "status": "available", "relativeComfortRange": null, "compensations": [] } },
+    "shoulder": { "flexionL": { "status": "limited", "relativeComfortRange": null, "compensations": ["shrug"] } }
   },
-  "pain": { "level": 0, "region": "neck" },
-  "referReasons": [],                  // gate=refer 或 phase=post 触发停止时,列具体信号
-  "tone": "gentle | cheer"             // 高疼痛/触发信号 → gentle
+  "metrics": {
+    "discomfort": { "neck": 0, "shoulderLeft": 0, "shoulderRight": 0 },
+    "recognitionQuality": { "state": "usable | remeasure", "issues": [] }
+  },
+  "safetyMessage": "",
+  "remeasureReason": [],
+  "reportHints": []
 }
 ```
 
-### 分流规则(§1.5)
+### 状态与分流
 
-| 筛查与基线结果 | `flow` | 系统处理 |
-| --- | --- | --- |
-| 颈部、肩部均通过 | `both` | 开放通过筛查和基线的颈/肩动作 |
-| 仅颈部通过 | `neckOnly` | 关闭肩部,仅开放通过基线的颈部动作 |
-| 仅肩部通过 | `shoulderOnly` | 关闭颈部,仅开放通过基线的肩部动作 |
-| 均未通过 / 触发共同安全门槛 | `none` | 不进入动作游戏,提示线下医疗评估 |
+| 情况 | `gate` | `flow` | 产品处理 |
+|---|---|---|---|
+| 颈部、肩部均可用 | `available` 或 `limited` | `both` | 仅开放通过的动作 |
+| 仅颈部可用 | `available` 或 `limited` | `neckOnly` | 关闭肩部动作 |
+| 仅肩部可用 | `available` 或 `limited` | `shoulderOnly` | 关闭颈部动作 |
+| 识别不足，不能可靠判断 | `remeasure` | `none` | 提示调整环境后重测，不作基线结论 |
+| 安全警示信号或练后异常 | `stop` | `none` | 不进入或结束游戏，建议线下评估 |
 
-## 与工程的对接
+若一个部位因识别不足而无法判定，优先让该部位重测；只有另一个部位已可靠通过，才可将其单独开放。
 
-对应后端 `server/adapters` 的 **`analyze`** 能力(练习后)与筛查前置。现有 `stub.analyze` 已实现逐轴点评
-(`insights[].level` = good/warn/todo)与甩头(`flingCount`)安全红线判定 —— 本 skill 是它的**规则超集**:
-把"红旗硬门槛 + 8 向 ROM 四态分流"补齐到评估侧。
+## 记录边界
 
-- 骨架实现见:`server/adapters/health-assessment.stub.js`(不覆盖现有 `stub.js`,带 TODO 留接口)。
-- 前端契约保持不变:`insights[].level` ∈ {good, warn, todo};报告页 `mock-report.html` 已消费该结构。
-- 隐私红线:后端只接收数值化 session,**绝不接收任何画面**(见 `server/index.js` 注释)。
-
-## 边界
-
-- 不做诊断,不给个体化诊疗处方。
-- 不依据单次练习后的疼痛/活动度变化向普通用户宣称某方向"治疗有效"。
-- 输出的 `refer` 只提示"建议线下评估",不指明具体疾病。
+- 仅记录数值化会话数据、动作标签和环境质量；不得上传、保存或在报告中展示原始摄像头画面。
+- 将前突、后缩、屈曲、伸展、左右侧屈、左右旋转作为产品的 8 个记录维度；不得称作 MDT 官方“标准八向处方”。
+- 将相对舒适范围、代偿、完成情况和识别质量作为个人追踪数据；不得解释为临床活动度、肌力或康复疗效。
+- 将本次评估输出原样传给 `health-coaching`；`gate=remeasure` 或 `stop` 时不得生成动作方案。
