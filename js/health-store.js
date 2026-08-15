@@ -87,6 +87,18 @@ export function recordAssessment({ flow, baseline, romNeck, ts } = {}) {
   return p;
 }
 
+// 单部位 rating 写入(肩/眼摄像头测评调用)。zone: 'shoulder'|'eye'|'neck';raw 存原始测量(角度/覆盖度)
+export function recordZoneRating(zone, rating, raw = null, ts = 0) {
+  const p = loadProfile();
+  if (!p.zones[zone]) p.zones[zone] = {};
+  p.zones[zone].rating = rating;
+  if (raw != null) p.zones[zone].raw = raw;
+  p.zones[zone].lastAssessAt = ts || 0;
+  p.updatedAt = ts || 0;
+  save(p);
+  return p;
+}
+
 // 关卡结算写入(mock-walk 等关卡调用,传 lastRun.session 摘要)
 export function recordSession({ level, byAxis, flingCount, durationMs, ts } = {}) {
   const p = loadProfile();

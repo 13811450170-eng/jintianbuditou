@@ -1061,6 +1061,67 @@ body::before {
 .intake-preview-list li { display: flex; gap: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.55; }
 .intake-preview-list li .bar { flex-shrink: 0; width: 3px; border-radius: 2px; background: var(--accent); }
 
+/* ========== STEP5 颈部真摄像头测评层 ========== */
+.cam-stage {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 3;
+}
+.cam-stage video {
+  width: 78%; max-width: 420px; aspect-ratio: 4/3;
+  object-fit: cover; border-radius: 24px;
+  transform: scaleX(-1);   /* 镜像,像照镜子 */
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  background: #000;
+}
+.cam-ring {
+  position: absolute; width: 78%; max-width: 420px; height: auto;
+  pointer-events: none;
+}
+.cam-ring-track { fill: none; stroke: rgba(255,255,255,0.15); stroke-width: 4; }
+.cam-ring-fill {
+  fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round;
+  stroke-dasharray: 339.29; stroke-dashoffset: 339.29;   /* 2πr, r=54 */
+  transform: rotate(-90deg); transform-origin: 60px 60px;
+  transition: stroke-dashoffset 0.15s;
+}
+.cam-cue {
+  position: absolute; bottom: 8%;
+  background: rgba(10,10,15,0.7); backdrop-filter: blur(8px);
+  color: #fff; font-size: 15px; font-weight: 700;
+  padding: 10px 22px; border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.12);
+}
+
+/* ========== STEP8 AI 综合评估报告 ========== */
+.assess-report { width: min(92vw, 680px); margin: 0 auto; padding: 40px 0; }
+.ar-head { text-align: center; margin-bottom: 28px; }
+.ar-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; font-weight: 700; letter-spacing: 1px;
+  color: var(--accent); background: var(--accent-dim, rgba(255,184,0,0.12));
+  padding: 6px 16px; border-radius: 100px; margin-bottom: 18px;
+}
+.ar-spin { width: 12px; height: 12px; border: 2px solid var(--accent); border-right-color: transparent; border-radius: 50%; animation: arSpin 0.8s linear infinite; }
+@keyframes arSpin { to { transform: rotate(360deg); } }
+.ar-title { font-size: 30px; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 10px; }
+.ar-sub { font-size: 15px; color: var(--ink-2); line-height: 1.6; }
+.ar-zones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.ar-zone { background: var(--card); border: 1px solid var(--line-hard); border-radius: 18px; padding: 18px 16px; text-align: center; }
+.ar-zone-name { font-size: 13px; color: var(--ink-3); font-weight: 700; margin-bottom: 8px; }
+.ar-zone-score { font-size: 32px; font-weight: 900; letter-spacing: -0.02em; }
+.ar-zone-score .u { font-size: 14px; color: var(--ink-3); font-weight: 700; }
+.ar-zone-tag { font-size: 12px; font-weight: 700; margin-top: 6px; }
+.ar-insights { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.ar-insight { display: flex; gap: 12px; background: var(--card); border-radius: 14px; padding: 14px 18px; font-size: 14px; color: var(--ink-2); line-height: 1.55; }
+.ar-insight .bar { flex-shrink: 0; width: 3px; border-radius: 2px; }
+.ar-safety { background: rgba(255,107,74,0.1); border: 1px solid rgba(255,107,74,0.3); border-radius: 16px; padding: 16px 20px; margin-bottom: 18px; font-size: 14px; color: var(--fire); line-height: 1.6; }
+.ar-reco { background: linear-gradient(135deg, rgba(0,163,255,0.1), rgba(124,90,255,0.1)); border: 1px solid rgba(0,163,255,0.25); border-radius: 18px; padding: 18px 20px; margin-bottom: 22px; }
+.ar-reco-tag { font-size: 11px; font-weight: 700; color: var(--neck); letter-spacing: 1px; margin-bottom: 8px; }
+.ar-reco-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+.ar-reco-desc { font-size: 13px; color: var(--ink-3); }
+
+
 </style>
 </head>
 <body>
@@ -1083,6 +1144,7 @@ body::before {
       <div class="pdot" data-p="5"></div>
       <div class="pdot" data-p="6"></div>
       <div class="pdot" data-p="7"></div>
+      <div class="pdot" data-p="8"></div>
     </div>
 
     <a class="skip-link" id="skipLink">跳过自查 →</a>
@@ -1147,7 +1209,7 @@ body::before {
       </div>
     </section>
 
-    <!-- STEP 1: 身体识别授权(不启动摄像头) -->
+    <!-- STEP 1: 身体识别授权(颈部环节会启动摄像头做骨架识别) -->
     <section class="step" data-step="1">
       <div class="permission">
         <div class="permission-visual">
@@ -1169,8 +1231,8 @@ body::before {
             感知你的动作
           </h2>
           <p class="perm-desc">
-            Joy 使用先进的姿态识别技术,<br>
-            只提取骨架关键点,不采集任何影像。
+            接下来颈部环节会用到摄像头,<br>
+            只在本地提取骨架关键点,不存储、不上传任何画面。
           </p>
 
           <ul class="perm-list">
@@ -1330,12 +1392,21 @@ body::before {
       </div>
     </section>
 
-    <!-- STEP 5: 颈部校准 -->
+    <!-- STEP 5: 颈部校准(真摄像头 6 向 ROM 采集) -->
     <section class="step cal-neck" data-step="5">
       <div class="calibration">
         <div class="cal-visual">
           <div class="mesh-halo" style="background: radial-gradient(circle, var(--neck-glow), transparent 70%);"></div>
           <svg class="body-mesh" viewBox="0 0 460 580" id="neckMeshSvg"></svg>
+          <!-- 真摄像头层(默认隐藏,点开始测量后显示) -->
+          <div class="cam-stage" id="neckCamStage" style="display:none;">
+            <video id="neckVideo" playsinline muted></video>
+            <svg class="cam-ring" viewBox="0 0 120 120">
+              <circle class="cam-ring-track" cx="60" cy="60" r="54"/>
+              <circle class="cam-ring-fill" id="neckRing" cx="60" cy="60" r="54"/>
+            </svg>
+            <div class="cam-cue" id="neckCue">坐正,收下巴</div>
+          </div>
         </div>
 
         <div class="cal-content">
@@ -1343,36 +1414,41 @@ body::before {
             <span class="cal-tag-dot"></span>
             STEP 05 · 颈部灵活度
           </div>
-          <h2 class="cal-title">
+          <h2 class="cal-title" id="neckTitle">
             慢慢<br>
             左右转头
           </h2>
-          <p class="cal-instruction">
-            像看两侧的窗户一样,慢慢转到你的极限,<br>
-            不用勉强。Joy 会记录你舒适的活动范围。
+          <p class="cal-instruction" id="neckInstruction">
+            打开摄像头,跟着提示慢慢转到舒适的极限,不用勉强。<br>
+            Joy 会记录你颈部各方向的活动范围。
           </p>
 
-          <div class="rom-display">
+          <div class="rom-display" id="neckRomDisplay">
             <div class="rom-row">
-              <span class="rom-label">← 左转极限</span>
+              <span class="rom-label" id="neckCurLabel">当前动作</span>
               <div class="rom-value">
-                <span class="num" id="neckLeft">52</span>
+                <span class="num" id="neckCurVal">—</span>
                 <span class="unit">°</span>
               </div>
             </div>
             <div class="rom-row">
-              <span class="rom-label">右转极限 →</span>
+              <span class="rom-label">已测方向</span>
               <div class="rom-value">
-                <span class="num" id="neckRight">48</span>
-                <span class="unit">°</span>
+                <span class="num" id="neckDone">0</span>
+                <span class="unit" style="font-size:14px;">/ 6</span>
               </div>
             </div>
           </div>
 
-          <button class="btn-primary" onclick="goStep(6)">
+          <button class="btn-primary" id="neckStartBtn">
+            打开摄像头,开始测量
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn-primary" id="neckNextBtn" style="display:none;" onclick="goStep(6)">
             下一步
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
           </button>
+          <button class="btn-ghost" id="neckSkipBtn" style="margin-top:10px;">摄像头不方便?跳过这步</button>
         </div>
       </div>
     </section>
@@ -1383,6 +1459,14 @@ body::before {
         <div class="cal-visual">
           <div class="mesh-halo" style="background: radial-gradient(circle, var(--shoulder-glow), transparent 70%);"></div>
           <svg class="body-mesh" viewBox="0 0 460 580" id="shoulderMeshSvg"></svg>
+          <div class="cam-stage" id="shoulderCamStage" style="display:none;">
+            <video id="shoulderVideo" playsinline muted></video>
+            <svg class="cam-ring" viewBox="0 0 120 120">
+              <circle class="cam-ring-track" cx="60" cy="60" r="54"/>
+              <circle class="cam-ring-fill" id="shoulderRing" cx="60" cy="60" r="54" style="stroke:var(--shoulder);"/>
+            </svg>
+            <div class="cam-cue" id="shoulderCue">站远一点,让肩膀入镜</div>
+          </div>
         </div>
 
         <div class="cal-content">
@@ -1390,36 +1474,41 @@ body::before {
             <span class="cal-tag-dot"></span>
             STEP 06 · 肩部活动度
           </div>
-          <h2 class="cal-title">
+          <h2 class="cal-title" id="shoulderTitle">
             双手上举<br>
             过头顶
           </h2>
-          <p class="cal-instruction">
-            像伸懒腰一样,双手慢慢上举,<br>
-            不要用力,只到自然的最高位置。
+          <p class="cal-instruction" id="shoulderInstruction">
+            打开摄像头,像伸懒腰一样双手慢慢向上举,<br>
+            举到舒适的最高位。Joy 会记录你的肩部活动范围。
           </p>
 
           <div class="rom-display">
             <div class="rom-row">
-              <span class="rom-label">↑ 上举角度</span>
+              <span class="rom-label" id="shoulderCurLabel">上举角度</span>
               <div class="rom-value">
-                <span class="num" id="shoulderAngle">148</span>
+                <span class="num" id="shoulderCurVal">—</span>
                 <span class="unit">°</span>
               </div>
             </div>
             <div class="rom-row">
-              <span class="rom-label">左右对称度</span>
+              <span class="rom-label">测量进度</span>
               <div class="rom-value">
-                <span class="num" id="shoulderSym">96</span>
-                <span class="unit">%</span>
+                <span class="num" id="shoulderProg">0</span>
+                <span class="unit" style="font-size:14px;">%</span>
               </div>
             </div>
           </div>
 
-          <button class="btn-primary" onclick="goStep(7)">
+          <button class="btn-primary" id="shoulderStartBtn">
+            打开摄像头,开始测量
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn-primary" id="shoulderNextBtn" style="display:none;" onclick="goStep(7)">
             下一步
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
           </button>
+          <button class="btn-ghost" id="shoulderSkipBtn" style="margin-top:10px;">摄像头不方便?跳过这步</button>
         </div>
       </div>
     </section>
@@ -1430,6 +1519,17 @@ body::before {
         <div class="cal-visual">
           <div class="mesh-halo" style="background: radial-gradient(circle, var(--eye-glow), transparent 70%);"></div>
           <svg class="body-mesh" viewBox="0 0 460 580" id="eyeMeshSvg"></svg>
+          <div class="cam-stage" id="eyeCamStage" style="display:none;">
+            <!-- 8 字轨迹 + 移动光点 + gaze 指示 -->
+            <svg class="eye-track" viewBox="0 0 400 300" id="eyeTrackSvg" style="width:82%;max-width:440px;">
+              <path id="eyeFig8" d="M200,150 C200,60 340,60 340,150 C340,240 200,240 200,150 C200,60 60,60 60,150 C60,240 200,240 200,150 Z"
+                    fill="none" stroke="rgba(76,175,136,0.25)" stroke-width="3" stroke-dasharray="6 8"/>
+              <circle id="eyeDot" r="16" fill="var(--eye)" opacity="0.95"/>
+              <circle id="eyeGaze" r="9" fill="#fff" opacity="0.5"/>
+            </svg>
+            <video id="eyeVideo" playsinline muted style="position:absolute;width:96px;height:72px;right:8%;bottom:8%;border-radius:12px;object-fit:cover;transform:scaleX(-1);opacity:0.55;"></video>
+            <div class="cam-cue" id="eyeCue">头别动,只用眼睛跟着光点</div>
+          </div>
         </div>
 
         <div class="cal-content">
@@ -1437,42 +1537,70 @@ body::before {
             <span class="cal-tag-dot"></span>
             STEP 07 · 眼球追踪
           </div>
-          <h2 class="cal-title">
+          <h2 class="cal-title" id="eyeTitle">
             眼睛跟着<br>
             光点绕 8 字
           </h2>
-          <p class="cal-instruction">
-            头保持不动,只用眼睛跟着屏幕上的光点,<br>
-            慢慢画 8 字。这是眼外肌的基础训练。
+          <p class="cal-instruction" id="eyeInstruction">
+            打开摄像头,头保持不动,只用眼睛跟着<br>
+            绿色光点慢慢画 8 字,放松眼外肌。
           </p>
 
           <div class="rom-display">
             <div class="rom-row">
-              <span class="rom-label">追踪流畅度</span>
+              <span class="rom-label" id="eyeCurLabel">跟随度</span>
               <div class="rom-value">
-                <span class="num" id="eyeSmooth">88</span>
+                <span class="num" id="eyeCurVal">—</span>
                 <span class="unit">%</span>
               </div>
             </div>
             <div class="rom-row">
-              <span class="rom-label">眨眼频次(基线)</span>
+              <span class="rom-label">测量进度</span>
               <div class="rom-value">
-                <span class="num" id="eyeBlink">12</span>
-                <span class="unit">/分钟</span>
+                <span class="num" id="eyeProg">0</span>
+                <span class="unit" style="font-size:14px;">%</span>
               </div>
             </div>
           </div>
 
-          <button class="btn-primary" onclick="goStep(8)">
+          <button class="btn-primary" id="eyeStartBtn">
+            打开摄像头,开始测量
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn-primary" id="eyeNextBtn" style="display:none;" onclick="goStep(8)">
             完成校准
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+          <button class="btn-ghost" id="eyeSkipBtn" style="margin-top:10px;">摄像头不方便?跳过这步</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 8: AI 综合评估报告 -->
+    <section class="step" data-step="8">
+      <div class="assess-report" id="assessReport">
+        <div class="ar-head">
+          <div class="ar-badge" id="arBadge">
+            <span class="ar-spin"></span> Joy 正在综合评估…
+          </div>
+          <h2 class="ar-title" id="arTitle">正在为你生成健康评估</h2>
+          <p class="ar-sub" id="arSub">结合你的资料和刚才的测评,稍等几秒~</p>
+        </div>
+        <div class="ar-body" id="arBody" style="display:none;">
+          <div class="ar-zones" id="arZones"></div>
+          <div class="ar-insights" id="arInsights"></div>
+          <div class="ar-safety" id="arSafety" style="display:none;"></div>
+          <div class="ar-reco" id="arReco" style="display:none;"></div>
+          <button class="btn-primary" id="arNextBtn" onclick="goStep(9)">
+            查看我的专属方案
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
     </section>
 
-    <!-- STEP 8: 完成页 -->
-    <section class="step" data-step="8">
+    <!-- STEP 9: 完成页 -->
+    <section class="step" data-step="9">
       <div class="done">
         <div class="done-badge">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" width="14" height="14"><path d="M20 6L9 17l-5-5"/></svg>
@@ -1578,7 +1706,11 @@ const pdotEls = document.querySelectorAll('.pdot');
 
 /* ========== step 切换 ========== */
 function goStep(n) {
-  if (n < 0 || n > 8) return;
+  if (n < 0 || n > 9) return;
+  // 离开颈部测评步时释放摄像头(隐私红线)
+  if (currentStep === 5 && n !== 5 && window.__neckStopCam) window.__neckStopCam();
+  if (currentStep === 6 && n !== 6 && window.__shoulderStopCam) window.__shoulderStopCam();
+  if (currentStep === 7 && n !== 7 && window.__eyeStopCam) window.__eyeStopCam();
   currentStep = n;
 
   stepEls.forEach(el => {
@@ -1595,7 +1727,8 @@ function goStep(n) {
   if (n === 5) renderBodyMesh('neckMeshSvg', 'neck');
   if (n === 6) renderBodyMesh('shoulderMeshSvg', 'shoulder');
   if (n === 7) renderBodyMesh('eyeMeshSvg', 'eye');
-  if (n === 8 && window.personalizeDone) window.personalizeDone();
+  if (n === 8 && window.__runAssess) window.__runAssess();
+  if (n === 9 && window.personalizeDone) window.personalizeDone();
 
   document.querySelectorAll('#demoJump button').forEach(b => {
     b.classList.toggle('on', +b.dataset.n === n);
@@ -1613,7 +1746,7 @@ function updateProgress() {
     if (i === currentStep) d.classList.add('active');
   });
   document.getElementById('navBack').disabled = currentStep === 0;
-  document.getElementById('navStatus').textContent = `STEP ${String(currentStep + 1).padStart(2,'0')} / 08`;
+  document.getElementById('navStatus').textContent = `STEP ${String(currentStep + 1).padStart(2,'0')} / 09`;
 }
 
 /* ========== Q1 选择 ========== */
@@ -2412,6 +2545,451 @@ function mergeFields(base, next) {
   return out;
 }
 
+</script>
+
+
+<!-- ========== STEP5 颈部真摄像头 6 向 ROM 采集(复用 pose-kernel + assessment 算法) ========== -->
+<script type="module">
+import { createPoseKernel } from './js/pose-kernel.js';
+import { recordAssessment } from './js/health-store.js';
+
+// 与 assessment.js 一致的 6 向定义;target 仅用于进度环,判定用达标比例
+const ROM_STEPS = [
+  { key: 'rotationL', name: '慢慢向左转头', axis: 'yaw',   sign: -1, target: 60, cue: '👈 向左转头' },
+  { key: 'rotationR', name: '慢慢向右转头', axis: 'yaw',   sign: +1, target: 60, cue: '👉 向右转头' },
+  { key: 'flexion',   name: '缓缓低头',     axis: 'pitch', sign: +1, target: 40, cue: '⬇️ 缓缓低头' },
+  { key: 'extension', name: '轻轻抬头',     axis: 'pitch', sign: -1, target: 30, cue: '⬆️ 轻轻抬头' },
+  { key: 'lateralL',  name: '左耳靠左肩',   axis: 'roll',  sign: -1, target: 35, cue: '↙️ 左耳靠左肩' },
+  { key: 'lateralR',  name: '右耳靠右肩',   axis: 'roll',  sign: +1, target: 35, cue: '↘️ 右耳靠右肩' },
+];
+const HOLD_MS = 800;
+const RING_LEN = 339.29;   // 2π·54
+
+const $ = id => document.getElementById(id);
+let kernel = null, video = null, running = false, started = false;
+
+function setCue(t) { const el = $('neckCue'); if (el) el.textContent = t; }
+function setRing(pct) { const el = $('neckRing'); if (el) el.style.strokeDashoffset = RING_LEN * (1 - Math.min(1, pct)); }
+
+// 采集单方向峰值:读 rel[axis]*sign 的最大值,达 target×0.6 且保持 HOLD_MS 完成;8s 超时兜底
+function captureAxisPeak(step) {
+  return new Promise(resolve => {
+    let peak = 0, holdStart = 0;
+    const t0 = performance.now();
+    (function poll() {
+      const snap = kernel.snapshot ? kernel.snapshot() : null;
+      const rel = (snap && snap.rel) ? snap.rel : { yaw:0, pitch:0, roll:0 };
+      let v = rel[step.axis] * step.sign;
+      if (v < 0) v = 0;
+      if (v > peak) peak = v;
+      setRing(peak / step.target);
+      $('neckCurVal').textContent = Math.round(peak);
+      if (peak >= step.target * 0.6) {
+        if (!holdStart) holdStart = performance.now();
+        else if (performance.now() - holdStart >= HOLD_MS) { resolve(peak); return; }
+      } else holdStart = 0;
+      if (performance.now() - t0 > 8000) { resolve(peak); return; }
+      if (running) requestAnimationFrame(poll);
+    })();
+  });
+}
+
+function waitCenter() {
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    (function poll() {
+      const snap = kernel.snapshot ? kernel.snapshot() : null;
+      const rel = (snap && snap.rel) ? snap.rel : { yaw:0, pitch:0, roll:0 };
+      const centered = Math.abs(rel.yaw) < 8 && Math.abs(rel.pitch) < 8 && Math.abs(rel.roll) < 8;
+      if (centered || performance.now() - t0 > 2500 || !running) { resolve(); return; }
+      requestAnimationFrame(poll);
+    })();
+  });
+}
+
+function stopCam() {
+  running = false;
+  try { kernel && kernel.stopCamera && kernel.stopCamera(); } catch (e) {}
+}
+window.__neckStopCam = stopCam;   // 供 goStep 离开 STEP5 时释放摄像头
+
+async function runNeckAssessment() {
+  if (started) return; started = true;
+  const startBtn = $('neckStartBtn'), skipBtn = $('neckSkipBtn'), meshSvg = $('neckMeshSvg');
+  startBtn.style.display = 'none';
+
+  video = $('neckVideo');
+  kernel = createPoseKernel({ video });
+  try {
+    setCue('正在唤醒 Joy…');
+    $('neckCamStage').style.display = 'flex';
+    if (meshSvg) meshSvg.style.opacity = '0.15';
+    await kernel.loadModel();
+    await kernel.startCamera();
+  } catch (e) {
+    // 无摄像头 / 拒绝授权 / 模型失败 → 降级:不卡死,直接放行到下一步
+    stopCam();
+    $('neckCamStage').style.display = 'none';
+    if (meshSvg) meshSvg.style.opacity = '';
+    $('neckInstruction').innerHTML = '摄像头没能打开,没关系~ 这步先跳过,进关卡时 Joy 再陪你测。';
+    $('neckNextBtn').style.display = '';
+    return;
+  }
+
+  running = true;
+  (function tickLoop() { if (!running) return; kernel.tick(performance.now()); requestAnimationFrame(tickLoop); })();
+
+  // 校准中立位
+  setCue('坐正,收下巴,看向屏幕');
+  await new Promise(r => setTimeout(r, 500));
+  kernel.beginCalibration();
+  await new Promise(r => setTimeout(r, 1400));
+  kernel.endCalibration();
+
+  // 依次采集 6 向
+  const romNeck = {};
+  for (let i = 0; i < ROM_STEPS.length; i++) {
+    if (!running) break;
+    const step = ROM_STEPS[i];
+    $('neckTitle').innerHTML = step.name;
+    $('neckCurLabel').textContent = step.name;
+    setCue(step.cue);
+    setRing(0);
+    const peak = await captureAxisPeak(step);
+    romNeck[step.key] = { value: Math.round(peak), confidence: 0.85 };
+    $('neckDone').textContent = i + 1;
+    setCue('回到正中,放松一下');
+    await waitCenter();
+  }
+
+  stopCam();
+  $('neckCamStage').style.display = 'none';
+  if (meshSvg) meshSvg.style.opacity = '';
+
+  // 折算 rating:与 health-store.neckRatingFromRom 一致(各向达标比例均值),保证档案与此处显示同值
+  const ratios = ROM_STEPS.map(s => Math.min(1, (romNeck[s.key]?.value || 0) / s.target));
+  const rating = ratios.length ? Math.round(ratios.reduce((a, b) => a + b, 0) / ratios.length * 100) : 0;
+
+  // 写统一档案(隐私:只存角度数值;rating 由 health-store 内部按同一公式折算)
+  try { recordAssessment({ flow: 'neckOnly', baseline: { neck: {} }, romNeck, ts: Date.now() }); } catch (e) {}
+
+  $('neckTitle').innerHTML = '颈部测量完成!';
+  $('neckInstruction').innerHTML = `Joy 记录了你颈部 6 个方向的活动范围,综合灵活度 <strong style="color:var(--accent)">${rating} 分</strong>。稍后可以在身体档案里查看。`;
+  $('neckCurLabel').textContent = '综合灵活度';
+  $('neckCurVal').textContent = rating;
+  $('neckDone').textContent = 6;
+  $('neckNextBtn').style.display = '';
+}
+
+$('neckStartBtn').addEventListener('click', runNeckAssessment);
+$('neckSkipBtn').addEventListener('click', () => { stopCam(); goStep(6); });
+
+// 离开 STEP5(切到别的 step)时释放摄像头 —— 监听 goStep 已在别处;这里兜底页面隐藏时释放
+window.addEventListener('pagehide', stopCam);
+document.addEventListener('visibilitychange', () => { if (document.hidden) { /* 保持采集,仅隐藏不停 */ } });
+</script>
+
+
+<!-- ========== STEP6 肩部真摄像头上举采集(PoseLandmarker) ========== -->
+<script type="module">
+import { createPoseBodyKernel } from './js/pose-body-kernel.js';
+import { recordZoneRating } from './js/health-store.js';
+
+const TARGET_ELEV = 150;   // 上举角目标(度):举过头附近
+const HOLD_MS = 1500;      // 到位后需稳住的时长(放慢,别让用户草草略过)
+const MIN_MS = 5000;       // 最短测量时长:即使很快举到位,也至少停留这么久
+const MAX_MS = 20000;      // 超时兜底
+const RING_LEN = 339.29;
+
+const $s = id => document.getElementById(id);
+let bk = null, bvideo = null, brunning = false, bstarted = false;
+
+function bStop() { brunning = false; try { bk && bk.stopCamera && bk.stopCamera(); } catch (e) {} }
+window.__shoulderStopCam = bStop;
+
+async function runShoulderAssessment() {
+  if (bstarted) return; bstarted = true;
+  const startBtn = $s('shoulderStartBtn'), meshSvg = $s('shoulderMeshSvg');
+  startBtn.style.display = 'none';
+  bvideo = $s('shoulderVideo');
+
+  try {
+    $s('shoulderCue').textContent = '正在唤醒 Joy…';
+    $s('shoulderCamStage').style.display = 'flex';
+    if (meshSvg) meshSvg.style.opacity = '0.15';
+    bk = createPoseBodyKernel({ video: bvideo });
+    await bk.loadModel(t => { if (t) $s('shoulderCue').textContent = t; });
+    await bk.startCamera();
+  } catch (e) {
+    bStop();
+    $s('shoulderCamStage').style.display = 'none';
+    if (meshSvg) meshSvg.style.opacity = '';
+    $s('shoulderInstruction').innerHTML = '摄像头没能打开,没关系~ 这步先跳过,进关卡时 Joy 再陪你测。';
+    $s('shoulderNextBtn').style.display = '';
+    return;
+  }
+
+  brunning = true;
+  let peak = 0, holdStart = 0;
+  const t0 = performance.now();
+  $s('shoulderCue').textContent = '站远一点,双手慢慢向上举';
+  $s('shoulderTitle').innerHTML = '双手上举<br>过头顶';
+
+  await new Promise(resolve => {
+    (function poll(now) {
+      if (!brunning) { resolve(); return; }
+      const snap = bk.tick(now || performance.now());
+      const elev = snap ? snap.elevationMax : 0;
+      if (elev > peak) peak = elev;
+      const pct = Math.min(1, peak / TARGET_ELEV);
+      $s('shoulderRing').style.strokeDashoffset = RING_LEN * (1 - pct);
+      $s('shoulderCurVal').textContent = Math.round(peak);
+      $s('shoulderProg').textContent = Math.round(pct * 100);
+      if (snap && !snap.present) $s('shoulderCue').textContent = '让肩膀和手臂都进画面~';
+      else if (peak < TARGET_ELEV * 0.5) $s('shoulderCue').textContent = '双手继续往上举 💪';
+      else if (peak < TARGET_ELEV * 0.7) $s('shoulderCue').textContent = '再高一点,举过头顶~';
+      else $s('shoulderCue').textContent = '很好!保持住,别放下 💪';
+      const elapsed = performance.now() - t0;
+      // 达标:峰值达 70% 目标并稳住 HOLD_MS,且总时长过了最短 MIN_MS(不让用户草草略过)
+      if (peak >= TARGET_ELEV * 0.7) {
+        if (!holdStart) holdStart = performance.now();
+        else if (performance.now() - holdStart >= HOLD_MS && elapsed >= MIN_MS) { resolve(); return; }
+      } else holdStart = 0;
+      if (elapsed > MAX_MS) { resolve(); return; }   // 超时兜底
+      requestAnimationFrame(poll);
+    })();
+  });
+
+  bStop();
+  $s('shoulderCamStage').style.display = 'none';
+  if (meshSvg) meshSvg.style.opacity = '';
+
+  const rating = Math.round(Math.min(1, peak / TARGET_ELEV) * 100);
+  try { recordZoneRating('shoulder', rating, { elevMaxDeg: Math.round(peak) }, Date.now()); } catch (e) {}
+
+  $s('shoulderTitle').innerHTML = '肩部测量完成!';
+  $s('shoulderInstruction').innerHTML = `上举最高约 <strong style="color:var(--shoulder)">${Math.round(peak)}°</strong>,肩部灵活度 <strong style="color:var(--shoulder)">${rating} 分</strong>。`;
+  $s('shoulderCurLabel').textContent = '肩部灵活度';
+  $s('shoulderCurVal').textContent = rating;
+  $s('shoulderProg').textContent = 100;
+  $s('shoulderNextBtn').style.display = '';
+}
+
+$s('shoulderStartBtn').addEventListener('click', runShoulderAssessment);
+$s('shoulderSkipBtn').addEventListener('click', () => { bStop(); goStep(7); });
+</script>
+
+
+<!-- ========== STEP7 眼部真摄像头 gaze 跟随采集(FaceLandmarker 虹膜) ========== -->
+<script type="module">
+import { createPoseKernel } from './js/pose-kernel.js';
+import { recordZoneRating } from './js/health-store.js';
+
+const $e = id => document.getElementById(id);
+const DURATION_MS = 12000;   // 光点绕 8 字总时长
+let ek = null, evideo = null, erunning = false, estarted = false;
+
+function eStop() { erunning = false; try { ek && ek.stopCamera && ek.stopCamera(); } catch (e) {} }
+window.__eyeStopCam = eStop;
+
+// 8 字参数方程(Lissajous):x=sin(2t), y=sin(t),映射到 SVG 400×300
+function fig8(t) {
+  return { x: 200 + Math.sin(2 * t) * 140, y: 150 + Math.sin(t) * 90 };
+}
+
+async function runEyeAssessment() {
+  if (estarted) return; estarted = true;
+  const startBtn = $e('eyeStartBtn'), meshSvg = $e('eyeMeshSvg');
+  startBtn.style.display = 'none';
+  evideo = $e('eyeVideo');
+
+  try {
+    $e('eyeCue').textContent = '正在唤醒 Joy…';
+    $e('eyeCamStage').style.display = 'flex';
+    if (meshSvg) meshSvg.style.opacity = '0.12';
+    ek = createPoseKernel({ video: evideo });
+    await ek.loadModel();
+    await ek.startCamera();
+  } catch (e) {
+    eStop();
+    $e('eyeCamStage').style.display = 'none';
+    if (meshSvg) meshSvg.style.opacity = '';
+    $e('eyeInstruction').innerHTML = '摄像头没能打开,没关系~ 这步先跳过,进关卡时 Joy 再陪你测。';
+    $e('eyeNextBtn').style.display = '';
+    return;
+  }
+
+  erunning = true;
+  (function tickLoop() { if (!erunning) return; ek.tick(performance.now()); requestAnimationFrame(tickLoop); })();
+
+  // 短校准:先让用户正视
+  $e('eyeCue').textContent = '先看屏幕中央的光点';
+  await new Promise(r => setTimeout(r, 1200));
+  $e('eyeCue').textContent = '头别动,只用眼睛跟着光点';
+
+  const dot = $e('eyeDot'), gazeDot = $e('eyeGaze');
+  let followSum = 0, followN = 0;
+  const t0 = performance.now();
+
+  await new Promise(resolve => {
+    (function poll() {
+      if (!erunning) { resolve(); return; }
+      const now = performance.now();
+      const prog = Math.min(1, (now - t0) / DURATION_MS);
+      const t = prog * Math.PI * 2;          // 走一整圈 8 字
+      const p = fig8(t);
+      dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+
+      const snap = ek.snapshot ? ek.snapshot() : null;
+      const gaze = snap && snap.gaze ? snap.gaze : { x: 0, y: 0 };
+      // gaze(-1~1)映射到 SVG:中心 200,150,幅度放大到轨迹范围
+      const gx = 200 + gaze.x * 140, gy = 150 + gaze.y * 90;
+      gazeDot.setAttribute('cx', gx); gazeDot.setAttribute('cy', gy);
+
+      // 跟随度:光点方向与 gaze 方向的一致性(相对中心的单位向量点积)
+      const dv = { x: p.x - 200, y: p.y - 150 };
+      const dm = Math.hypot(dv.x, dv.y) || 1;
+      const gm = Math.hypot(gaze.x, gaze.y);
+      if (gm > 0.08) {   // gaze 有明显偏移才计入,避免噪声
+        const dot2 = (dv.x / dm) * (gaze.x / gm) + (dv.y / dm) * (gaze.y / gm);
+        followSum += Math.max(0, dot2); followN++;
+      }
+      const follow = followN ? Math.round(followSum / followN * 100) : 0;
+      $e('eyeCurVal').textContent = follow;
+      $e('eyeProg').textContent = Math.round(prog * 100);
+
+      if (prog >= 1) { resolve(); return; }
+      requestAnimationFrame(poll);
+    })();
+  });
+
+  eStop();
+  $e('eyeCamStage').style.display = 'none';
+  if (meshSvg) meshSvg.style.opacity = '';
+
+  const rating = followN ? Math.round(followSum / followN * 100) : 60;   // 无有效样本给个中性值
+  try { recordZoneRating('eye', rating, { followN }, Date.now()); } catch (e) {}
+
+  $e('eyeTitle').innerHTML = '眼部测量完成!';
+  $e('eyeInstruction').innerHTML = `眼球跟随度 <strong style="color:var(--eye)">${rating} 分</strong>。眼外肌放松一下,继续保持~`;
+  $e('eyeCurLabel').textContent = '眼球跟随度';
+  $e('eyeCurVal').textContent = rating;
+  $e('eyeProg').textContent = 100;
+  $e('eyeNextBtn').style.display = '';
+}
+
+$e('eyeStartBtn').addEventListener('click', runEyeAssessment);
+$e('eyeSkipBtn').addEventListener('click', () => { eStop(); goStep(8); });
+</script>
+
+
+<!-- ========== STEP8 AI 综合评估(串 /api/screen + /api/profile + /api/recommend) ========== -->
+<script type="module">
+import { loadProfile } from './js/health-store.js';
+
+const $a = id => document.getElementById(id);
+const ZONE_CN = { neck: '颈部', shoulder: '肩部', eye: '眼部' };
+const LEVEL_CN = { walk: '轻松散步', boxing: '拳击派对', lunch: '中午餐厅', fireworks: '星光派对' };
+let assessRan = false;
+
+async function postJSON(path, body, ms = 9000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
+    clearTimeout(timer);
+    return await res.json();
+  } catch (e) { clearTimeout(timer); return null; }
+}
+
+function scoreTag(r) {
+  if (r == null) return { t: '未测', c: 'var(--ink-4)' };
+  if (r >= 70) return { t: '灵活', c: 'var(--eye)' };
+  if (r >= 45) return { t: '偏紧', c: 'var(--fire-2, #FFA726)' };
+  return { t: '需关注', c: 'var(--fire)' };
+}
+
+async function runAssessment() {
+  if (assessRan) return; assessRan = true;
+  const p = loadProfile();
+  const prof = p.profile || {}, zones = p.zones || {};
+  let handoff = {}; try { handoff = JSON.parse(sessionStorage.getItem('intakeHandoff') || '{}'); } catch {}
+
+  // 汇总送评估的载荷
+  const bmi = prof.bmi ?? null;
+  const screenPayload = {
+    redFlags: { neck: [] },
+    pain: { level: 0, region: prof.chiefComplaint || 'neck' },
+    calib: { keypointQuality: 0.85, shoulderLine: true, trunkRef: true },
+    romNeck: zones.neck?.romNeck || null,
+  };
+  const profilePayload = { profile: { basics: {
+    age: prof.age, gender: prof.gender, bmi, occupation: prof.occupation,
+    sitHoursPerDay: prof.sitHoursPerDay, screenHoursPerDay: prof.screenHoursPerDay,
+    history: prof.history || [], chiefComplaint: prof.chiefComplaint,
+  }, zones } };
+
+  // 并行三端点
+  const [screen, profile, reco] = await Promise.all([
+    postJSON('/api/screen', screenPayload),
+    postJSON('/api/profile', profilePayload),
+    postJSON('/api/recommend', { answers: { complaint: prof.chiefComplaint, feel: '发紧', goal: '放松' } }),
+  ]);
+
+  renderReport({ prof, zones, screen, profile, reco });
+}
+
+function renderReport({ prof, zones, screen, profile, reco }) {
+  // 部位分数卡
+  const zoneHtml = ['neck', 'shoulder', 'eye'].map(z => {
+    const r = zones[z]?.rating;
+    const tag = scoreTag(r);
+    return `<div class="ar-zone"><div class="ar-zone-name">${ZONE_CN[z]}</div>
+      <div class="ar-zone-score" style="color:${tag.c}">${r ?? '—'}<span class="u">${r != null ? '分' : ''}</span></div>
+      <div class="ar-zone-tag" style="color:${tag.c}">${tag.t}</div></div>`;
+  }).join('');
+  $a('arZones').innerHTML = zoneHtml;
+
+  // AI 画像洞察(profile.insights),降级用本地
+  const barColor = { good: '#4CAF88', warn: '#FFA726', todo: '#8B8B95' };
+  let insights = (profile && !profile.degraded && profile.insights) ? profile.insights : localInsights(prof, zones);
+  $a('arInsights').innerHTML = insights.slice(0, 4).map(i =>
+    `<div class="ar-insight"><span class="bar" style="background:${barColor[i.level] || '#8B8B95'}"></span><span>${i.text || ''}</span></div>`).join('');
+
+  // 安全提示(screen.gate=refer/stop 或 safetyMessage)
+  if (screen && !screen.degraded && (screen.gate === 'refer' || screen.gate === 'stop' || screen.safetyMessage)) {
+    $a('arSafety').style.display = '';
+    $a('arSafety').innerHTML = `⚠️ ${screen.safetyMessage || '你的部分情况建议先做线下评估,别用游戏代替就医哦。'}`;
+  }
+
+  // 推荐关卡
+  const lv = (reco && !reco.degraded && reco.level) ? reco.level : (prof.chiefComplaint === 'shoulder' ? 'boxing' : prof.chiefComplaint === 'eye' ? 'walk' : 'lunch');
+  $a('arReco').style.display = '';
+  $a('arReco').innerHTML = `<div class="ar-reco-tag">JOY 推荐 · 从这个开始</div>
+    <div class="ar-reco-name">${LEVEL_CN[lv] || '轻松散步'}</div>
+    <div class="ar-reco-desc">${(reco && reco.reason) || '循序渐进,先从轻松的开始,给身体一点适应时间。'}</div>`;
+
+  // 头部整体结论
+  const headline = (profile && profile.headline) || 'Joy 已经了解你的身体状况';
+  $a('arTitle').textContent = headline;
+  $a('arSub').textContent = (profile && profile.advice) || '下面是综合你的资料和测评得到的评估,仅供健康促进参考,不替代专业诊断。';
+  $a('arBadge').innerHTML = '✓ 评估完成';
+  $a('arBody').style.display = '';
+}
+
+// 后端全挂时的本地兜底洞察
+function localInsights(prof, zones) {
+  const out = [];
+  if (zones.neck?.rating != null) out.push({ level: zones.neck.rating >= 70 ? 'good' : 'warn', text: `颈部灵活度 ${zones.neck.rating} 分。` });
+  if (zones.shoulder?.rating != null) out.push({ level: zones.shoulder.rating >= 70 ? 'good' : 'warn', text: `肩部灵活度 ${zones.shoulder.rating} 分。` });
+  if (zones.eye?.rating != null) out.push({ level: 'todo', text: `眼球跟随 ${zones.eye.rating} 分,注意用眼休息。` });
+  if (prof.sitHoursPerDay >= 8) out.push({ level: 'warn', text: `每天久坐约 ${prof.sitHoursPerDay} 小时,记得多起身活动。` });
+  if (!out.length) out.push({ level: 'todo', text: '先动起来,Joy 会陪你慢慢记录身体的变化。' });
+  return out;
+}
+
+window.__runAssess = runAssessment;
+</script>
 </script>
 
 
