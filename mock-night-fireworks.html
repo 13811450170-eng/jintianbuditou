@@ -690,7 +690,8 @@
 </div>
 
 <script type="module">
-import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+import { createPoseKernel } from "./js/pose-kernel.js";
+let kernel = null;
 
 // ============ 常量 ============
 const AX = { yaw: -1, pitch: 1, roll: 1 };  // 镜像修正(来自 index.html 实测)
@@ -707,18 +708,20 @@ const MAP_PITCH_DOWN = 15;
 const DEBUG = new URLSearchParams(location.search).has('debug');
 
 // ============ 状态 ============
-let faceLandmarker = null;
-let camStream = null;
 let running = false;
 
-let rawAngle = { yaw: 0, pitch: 0, roll: 0 };
+// —— 头姿检测改由 js/pose-kernel.js 接管;下面为桥接变量,loop 里 syncPose 每帧刷新 ——
+let pose = { facePresent:false, haveMatrix:false, rel:{yaw:0,pitch:0,roll:0}, angle:{yaw:0,pitch:0,roll:0}, nose:{x:0.5,y:0.5}, eyeDist:0.12, baseEyeDist:0.12, landmarks:null };
+let facePresent = false, haveMatrix = false;
+let smoothNose = { x:0.5, y:0.5 };
 let smoothAngle = { yaw: 0, pitch: 0, roll: 0 };
 let angleBase = { yaw: 0, pitch: 0, roll: 0 };
+let smoothEyeDist = 0.12, baseEyeDist = 0.12;
 let baseInit = false;
 let baseFrames = 0;
+function syncPose(p){ if(!p) return; pose=p; facePresent=p.facePresent; haveMatrix=p.haveMatrix; smoothNose=p.nose; smoothAngle=p.angle; smoothEyeDist=p.eyeDist; baseEyeDist=p.baseEyeDist; }
 
 let ddX = 50, ddY = 40;   // DD 屏幕位置(百分比)
-let lastVideoTime = -1;
 
 let meteors = [];  // { el, x, y, vx, vy, startTime, life, hit }
 let lastMeteorSpawn = 0;
@@ -785,56 +788,25 @@ if (DEBUG) debugEl.classList.add('show');
   }
 })();
 
-// ============ MediaPipe 加载 ============
+// ============ MediaPipe 加载(改由 js/pose-kernel.js 接管) ============
 async function loadModel() {
-  statusEl.textContent = '正在加载 AI 模型…（首次约需几秒）';
-  const resolver = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
-  faceLandmarker = await FaceLandmarker.createFromOptions(resolver, {
-    baseOptions: {
-      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-      delegate: "GPU",
-    },
-    runningMode: "VIDEO",
-    numFaces: 1,
-    outputFacialTransformationMatrixes: true,
-  });
+  kernel = createPoseKernel({ video: camEl, axis: AX, smooth: SMOOTH });
+  await kernel.loadModel(txt => { statusEl.textContent = txt || '模型就绪 ✓'; });
   statusEl.textContent = '模型就绪 ✓';
 }
 
 // ============ 摄像头 ============
 async function startCamera() {
   statusEl.textContent = '正在打开摄像头…';
-  camStream = await navigator.mediaDevices.getUserMedia({
-    video: { width: { ideal: 960 }, height: { ideal: 720 }, facingMode: 'user' },
-    audio: false,
-  });
-  camEl.srcObject = camStream;
-  await camEl.play();
-  await new Promise(res => {
-    if (camEl.readyState >= 2) res();
-    else camEl.onloadeddata = () => res();
-  });
+  await kernel.startCamera();
   statusEl.textContent = '摄像头就绪 ✓';
 }
 
 function stopCamera() {
-  if (camStream) {
-    camStream.getTracks().forEach(t => t.stop());
-    camStream = null;
-  }
+  if (kernel) kernel.stopCamera();
 }
 
-// ============ 头姿计算(复用 index.html) ============
-function matrixToEuler(m) {
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const r00 = m[0], r10 = m[1], r20 = m[2], r21 = m[6], r22 = m[10];
-  const yaw = Math.asin(clamp(-r20, -1, 1));
-  const pitch = Math.atan2(r21, r22);
-  const roll = Math.atan2(r10, r00);
-  const D = 180 / Math.PI;
-  return { yaw: yaw * D, pitch: pitch * D, roll: roll * D };
-}
-
+// ============ 头姿计算(矩阵解算已移入内核;此处保留本关自有的中立基线逻辑) ============
 function relAngle() {
   return {
     yaw:   AX.yaw   * (smoothAngle.yaw   - angleBase.yaw),
@@ -1145,28 +1117,18 @@ function loop(now) {
     fpsFrames = 0; fpsLast = now;
   }
 
-  // 头姿检测
-  if (faceLandmarker && camEl.readyState >= 2 && camEl.currentTime !== lastVideoTime) {
-    lastVideoTime = camEl.currentTime;
-    let res = null;
-    try { res = faceLandmarker.detectForVideo(camEl, now); } catch(e) {}
-    if (res && res.faceLandmarks && res.faceLandmarks.length > 0) {
+  // 头姿检测(检测+平滑交给内核,本关自留 faceDot UI 与中立基线)
+  const p = kernel && kernel.ready() ? kernel.tick(now) : null;
+  syncPose(p);
+  if (p) {
+    if (facePresent) {
       faceDot.style.background = '#6bff9d';
       faceDot.style.boxShadow = '0 0 8px #6bff9d';
-      const mtx = res.facialTransformationMatrixes;
-      if (mtx && mtx.length > 0 && mtx[0].data) {
-        rawAngle = matrixToEuler(mtx[0].data);
-      }
     } else {
       faceDot.style.background = '#ff5757';
       faceDot.style.boxShadow = '0 0 8px #ff5757';
     }
   }
-
-  // 平滑
-  smoothAngle.yaw   += (rawAngle.yaw   - smoothAngle.yaw)   * SMOOTH;
-  smoothAngle.pitch += (rawAngle.pitch - smoothAngle.pitch) * SMOOTH;
-  smoothAngle.roll  += (rawAngle.roll  - smoothAngle.roll)  * SMOOTH;
 
   // 初始校准:前 30 帧取平均作为中立基线
   if (!baseInit) {

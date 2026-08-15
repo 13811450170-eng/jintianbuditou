@@ -21,3 +21,9 @@ JOY及DOGA IP规范手册*.pdf
 
 # 依赖（如果以后加）
 node_modules/
+
+# 后端密钥（LLM key 绝不进 git）
+.env
+.env.*
+server/.env
+!server/.env.example

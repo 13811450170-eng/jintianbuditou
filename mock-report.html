@@ -455,6 +455,28 @@ html, body {
   font-weight: 600;
 }
 
+/* ========== AI 教练分析卡(Phase 4-B) ========== */
+.ai-card { padding: 14px 16px; background: var(--card-alt); border-radius: 14px; }
+.ai-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.ai-badge {
+  font-size: 10px; font-weight: 700; color: var(--accent);
+  background: var(--accent-bg); padding: 3px 8px; border-radius: 999px; flex-shrink: 0;
+}
+.ai-headline { font-size: 13px; font-weight: 700; color: var(--ink); }
+.ai-insights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.ai-insights li {
+  font-size: 11px; line-height: 1.5; color: var(--ink-3);
+  padding-left: 18px; position: relative;
+}
+.ai-insights li::before {
+  content: ''; position: absolute; left: 0; top: 5px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3);
+}
+.ai-insights li.good::before { background: #35c26a; }
+.ai-insights li.warn::before { background: #f0a020; }
+.ai-insights li.todo::before { background: #9aa4b2; }
+.ai-advice { margin-top: 10px; font-size: 11px; color: var(--ink); font-weight: 600; line-height: 1.55; }
+
 /* ========== 底部 CTA ========== */
 .actions {
   flex-shrink: 0;
@@ -653,6 +675,16 @@ html, body {
         </div>
       </div>
 
+      <!-- AI 教练分析(Phase 4-B) —— 由后端 /api/analyze 填充,失败则隐藏 -->
+      <div class="card ai-card" id="aiCard" style="display:none">
+        <div class="ai-head">
+          <span class="ai-badge">Joy 的分析</span>
+          <span class="ai-headline" id="aiHeadline"></span>
+        </div>
+        <ul class="ai-insights" id="aiInsights"></ul>
+        <div class="ai-advice" id="aiAdvice"></div>
+      </div>
+
       <!-- 医学小卡 -->
       <div class="med-card">
         <div class="med-icon">
@@ -833,6 +865,53 @@ function applyBranch() {
   // 医学卡文案
   document.getElementById('medTitle').textContent = cfg.medTitle;
   document.getElementById('medDesc').textContent = cfg.medDesc;
+
+  // AI 教练分析(Phase 4-B):优先用 run.ai;没有则用 run.session 现场向后端要一次(异步,不阻塞报告主体)
+  if (run.ai) {
+    renderAI(run.ai);
+  } else if (run.session) {
+    fetchAI(run.session);
+  } else {
+    renderAI(null);
+  }
+}
+
+// 向后端 /api/analyze 拉取分析。任何失败(无后端/超时/降级)都静默隐藏 AI 卡,报告主体不受影响。
+async function fetchAI(session) {
+  const card = document.getElementById('aiCard');
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch('/api/analyze', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session }), signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    const data = await res.json();
+    renderAI(data);
+  } catch (e) {
+    card.style.display = 'none';   // 降级:直接双击打开 html(无后端)或后端挂时,不显示 AI 卡
+  }
+}
+
+// 渲染 AI 分析面板。data 为空 → 隐藏整卡(后端不可用时静默降级,不影响报告主体)
+function renderAI(data) {
+  const card = document.getElementById('aiCard');
+  if (!data || data.degraded || !data.insights || !data.insights.length) {
+    card.style.display = 'none';
+    return;
+  }
+  document.getElementById('aiHeadline').textContent = data.headline || '';
+  const ul = document.getElementById('aiInsights');
+  ul.innerHTML = '';
+  for (const ins of data.insights) {
+    const li = document.createElement('li');
+    li.className = ins.level || '';
+    li.textContent = ins.text || '';
+    ul.appendChild(li);
+  }
+  document.getElementById('aiAdvice').textContent = data.advice || '';
+  card.style.display = '';
 }
 
 function pickFeel(el) {
