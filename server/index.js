@@ -14,9 +14,28 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import { getProvider } from './adapters/provider.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
+
+// 极简 .env 读取(零依赖):把 server/.env 的键值塞进 process.env,已存在的不覆盖。
+// .env 被 .gitignore 排除,LLM key 绝不进 git。必须在 getProvider() 生效前执行。
+(function loadEnv() {
+  try {
+    const txt = readFileSync(join(__dirname, '.env'), 'utf8');
+    for (const line of txt.split('\n')) {
+      const s = line.trim();
+      if (!s || s.startsWith('#')) continue;
+      const eq = s.indexOf('=');
+      if (eq < 0) continue;
+      const k = s.slice(0, eq).trim();
+      const v = s.slice(eq + 1).trim();
+      if (k && process.env[k] === undefined) process.env[k] = v;
+    }
+  } catch {}  // 无 .env 则用现有环境变量
+})();
+
 const ROOT = normalize(join(__dirname, '..'));   // 项目根(静态文件在这)
 const PORT = process.env.PORT || 3000;
 
@@ -66,6 +85,18 @@ async function handleApi(req, res, path) {
     }
     if (path === '/api/recommend') {
       const data = await provider.recommend(payload);
+      return sendJSON(res, 200, { provider: provider.name, ...data });
+    }
+    if (path === '/api/screen') {          // 健康评估:红旗+ROM→gate/flow/baseline
+      const data = await provider.screen(payload);
+      return sendJSON(res, 200, { provider: provider.name, ...data });
+    }
+    if (path === '/api/coach') {           // 练习指导:分流→当日方案
+      const data = await provider.coach(payload);
+      return sendJSON(res, 200, { provider: provider.name, ...data });
+    }
+    if (path === '/api/profile') {         // 档案健康画像分析
+      const data = await provider.analyzeProfile(payload);
       return sendJSON(res, 200, { provider: provider.name, ...data });
     }
     return sendJSON(res, 404, { error: 'no such api' });

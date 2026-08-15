@@ -616,25 +616,25 @@ body { overflow-y: scroll; }
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
           </svg>
         </div>
-        <span class="part-status-badge status-tight">中等偏紧</span>
+        <span class="part-status-badge status-tight" id="nkBadge">中等偏紧</span>
       </div>
       <div class="part-name">颈部</div>
       <div class="part-cn-name">Cervical Region</div>
 
       <div class="part-metric">
         <span class="part-metric-lbl">左转 ROM</span>
-        <div class="part-metric-val"><span class="num">52</span><span class="unit">°</span></div>
+        <div class="part-metric-val"><span class="num" id="nkRotL">52</span><span class="unit">°</span></div>
       </div>
       <div class="part-metric">
         <span class="part-metric-lbl">右转 ROM</span>
-        <div class="part-metric-val"><span class="num">48</span><span class="unit">°</span></div>
+        <div class="part-metric-val"><span class="num" id="nkRotR">48</span><span class="unit">°</span></div>
       </div>
       <div class="part-metric">
         <span class="part-metric-lbl">灵活度评级</span>
-        <div class="part-metric-val"><span class="num">B</span></div>
+        <div class="part-metric-val"><span class="num" id="nkRating">B</span></div>
       </div>
 
-      <div class="part-note">
+      <div class="part-note" id="nkNote">
         <strong>观察:</strong>左右灵活度稍不对称,建议多做转头训练,让两侧慢慢平衡。
       </div>
     </div>
@@ -702,6 +702,16 @@ body { overflow-y: scroll; }
       </div>
     </div>
 
+  </section>
+
+  <!-- AI 健康画像(接京东内网 DeepSeek;无数据/后端挂则隐藏) -->
+  <section class="ai-profile" id="aiProfile" style="display:none;margin:0 auto 20px;max-width:1100px;background:#fff;border-radius:20px;padding:20px 24px;box-shadow:0 6px 20px rgba(10,10,15,.06);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+      <span style="font-size:11px;font-weight:700;color:#00A3FF;background:#E1F2FF;padding:4px 12px;border-radius:999px;">Joy 的健康画像</span>
+      <span id="apHeadline" style="font-size:15px;font-weight:800;color:#0A0A0F;"></span>
+    </div>
+    <ul id="apInsights" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;"></ul>
+    <div id="apAdvice" style="margin-top:12px;font-size:13px;color:#0A0A0F;font-weight:600;line-height:1.6;"></div>
   </section>
 
   <!-- 全身评估 -->
@@ -789,6 +799,67 @@ body { overflow-y: scroll; }
   </div>
 
 </div>
+
+<script type="module">
+// 档案页:读统一健康档案(health-store)填真实数据,并调后端 /api/profile 出 AI 画像。
+// 降级:无真实数据→保留页面原有 mock 展示;后端挂→AI 画像卡隐藏。均不报错。
+import { loadProfile } from './js/health-store.js';
+
+const p = loadProfile();
+
+// ① 颈部真值回填(有评估数据才覆盖 mock)
+const rom = p.zones?.neck?.romNeck;
+const rating = p.zones?.neck?.rating;
+if (rom) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.textContent = Math.round(Math.abs(v)); };
+  if (rom.rotationL) set('nkRotL', rom.rotationL.value);
+  if (rom.rotationR) set('nkRotR', rom.rotationR.value);
+}
+if (rating != null) {
+  const grade = rating >= 85 ? 'S' : rating >= 70 ? 'A' : rating >= 50 ? 'B' : 'C';
+  const el = document.getElementById('nkRating'); if (el) el.textContent = grade;
+  const badge = document.getElementById('nkBadge');
+  if (badge) badge.textContent = rating >= 70 ? '状态良好' : rating >= 50 ? '中等偏紧' : '偏紧待改善';
+}
+
+// ② AI 健康画像:有任一真实数据才请求(否则没啥可分析)
+const hasRealData = !!rom || (p.totalSessions > 0);
+if (hasRealData) {
+  const card = document.getElementById('aiProfile');
+  const profilePayload = {
+    zones: {
+      neck: p.zones?.neck?.rating != null ? { rating: p.zones.neck.rating } : null,
+    },
+    totalSessions: p.totalSessions || 0,
+    recentSessions: p.recentSessions || [],
+  };
+  (async () => {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 9000);
+      const res = await fetch('/api/profile', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile: profilePayload }), signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      const data = await res.json();
+      if (!data || data.degraded || !data.insights?.length) return;
+      document.getElementById('apHeadline').textContent = data.headline || '';
+      const ul = document.getElementById('apInsights');
+      const barColor = { good: '#4CAF88', warn: '#F0A020', todo: '#9AA4B2' };
+      ul.innerHTML = '';
+      for (const ins of data.insights) {
+        const li = document.createElement('li');
+        li.style.cssText = 'display:flex;gap:10px;font-size:13px;line-height:1.55;color:#3A3A45;';
+        li.innerHTML = `<span style="flex-shrink:0;width:3px;border-radius:2px;background:${barColor[ins.level] || '#9AA4B2'};"></span><span>${ins.text || ''}</span>`;
+        ul.appendChild(li);
+      }
+      document.getElementById('apAdvice').textContent = data.advice || '';
+      card.style.display = '';
+    } catch (e) { /* 后端不可用 → 卡片保持隐藏 */ }
+  })();
+}
+</script>
 
 </body>
 </html>
