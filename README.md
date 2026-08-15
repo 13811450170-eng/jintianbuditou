@@ -18,19 +18,30 @@ GitHub Desktop → **File → Clone Repository** → 选 `13811450170-eng/jintia
 
 ### 3. 起本地服务
 
-摄像头需要安全上下文(HTTPS 或 localhost),**直接双击 html 打不开摄像头**。
+> ⚠️ **一定要用下面的 Node 后端起服务,别再用 `python3 -m http.server`。**
+> 那种纯静态服务器**不提供 `/api/*` 接口**,会导致游戏报告的 AI 点评、训练方案、
+> 商品推荐、开局问诊、评估闸门等一切要后端的功能**静默失灵**(页面在,但对应卡片不出来)。
 
-打开终端,cd 到 clone 下来的项目文件夹,运行:
+后端是**零依赖**的(只用 Node 内置模块,不用 `npm install`),它同时干两件事:
+托管静态页面 + 提供 `/api/*` 接口,一个端口全搞定,摄像头也满足 localhost 安全上下文。
+
+打开终端,cd 到项目文件夹,运行:
 
 ```bash
-python3 -m http.server 8000
+node server/index.js
 ```
 
-然后浏览器打开 `http://localhost:8000`
+看到 `今天不低头 后端 · http://localhost:3000` 就成了,浏览器打开 **`http://localhost:3000`**。
+
+- 需要 Node ≥ 18(`node -v` 查看;没有就装一个 LTS 版)。
+- 默认走本地演示模式(`LLM_PROVIDER=stub`),**不需要任何 key**,AI 相关卡片用规则化数据即可跑通、可演示。
+- 接入真实内网大模型时才需在 `server/.env` 配 `LLM_PROVIDER=jd-gateway` 及网关地址/key(见 `server/.env.example`)。
+- 命令行不熟的话,让 AI 助手帮你起服务也行。
 
 ### 4. 常用调试参数
 
-- `http://localhost:8000/?debug=1` — 打开实时角度调试面板
+- `http://localhost:3000/?debug=1` — 打开实时角度调试面板
+- 直接预览某关卡的报告长相(不玩游戏):`http://localhost:3000/mock-report.html?branch=boxing`(可换 walk/lunch/rowing/star)
 
 ## 项目结构
 
