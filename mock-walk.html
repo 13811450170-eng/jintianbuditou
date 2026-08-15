@@ -527,6 +527,7 @@
 // 头姿检测走共享内核(js/pose-kernel.js)。本文件只保留散步 v3 的游戏逻辑，
 // 检测/校准/相机管线由内核负责。kernel 实例在 loadModel() 里创建。
 import { createPoseKernel } from "./js/pose-kernel.js";
+import { recordSession } from "./js/health-store.js";
 let kernel = null;
 
 // ================= 存档（回来的钩子） =================
@@ -1895,6 +1896,11 @@ function finish() {
     level: 'walk',   // 关卡标识,AI 分析时区分不同关卡
   };
   try { sessionStorage.setItem('lastRun', JSON.stringify(lastRun)); } catch (e) {}
+  // 写进统一健康档案(供档案页 AI 画像的"已练N次"与趋势)。隐私:只存数值。
+  try {
+    const s = lastRun.session || {};
+    recordSession({ level: 'walk', byAxis: s.byAxis, flingCount: s.flingCount, durationMs: s.durationMs, ts: Date.now() });
+  } catch (e) {}
   setTimeout(() => { location.href = 'mock-report.html'; }, 1800);
 }
 
