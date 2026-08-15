@@ -104,13 +104,6 @@ body::before {
 }
 .zone-glyph img { width: 100%; height: 100%; object-fit: cover; }
 .zone-hero-body { position: relative; flex: 1; }
-.zone-kicker {
-  display: inline-flex; align-items: center; gap: 7px;
-  font-size: 13px; font-weight: 700; letter-spacing: 1px;
-  color: var(--zone); background: var(--zone-bg);
-  padding: 6px 14px; border-radius: 999px; margin-bottom: 12px;
-}
-.zone-kicker svg { width: 14px; height: 14px; stroke: var(--zone); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .zone-name { font-size: 32px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
 .zone-desc { font-size: 15px; color: var(--ink-3); line-height: 1.7; max-width: 560px; }
 .zone-desc b { color: var(--ink-2); }
@@ -314,9 +307,9 @@ const ZONES = {
       { name: '田野散步', diff: 'hard', diffTxt: '重度', time: '约 60 秒', action: '转头躲避',
         sub: 'Joy 自己往前走,你转头切道、抬头跳、低头钻,陪它躲开一路障碍 —— 颈椎全方位活动开。',
         url: 'mock-walk.html', image: 'img/walk-cover.svg', assess: true },
-      { name: '颈椎迷宫', diff: 'hard', diffTxt: '重度', time: '开发中', action: '转头控向',
-        sub: '转头操控小球走迷宫,大范围多方向转动 —— 进阶挑战,敬请期待。',
-        soon: true },
+      { name: '颈椎迷宫', diff: 'hard', diffTxt: '重度', time: '约 60 秒', action: '转头控向',
+        sub: '转头操控 Joy 在树篱迷宫里找路,大范围多方向转动 —— 颈椎进阶挑战。',
+        video: 'img/maze.mp4', noLink: true },
     ],
   },
   shoulder: {
