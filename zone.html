@@ -22,6 +22,7 @@
 
   --easy:        #4CAF88;   --easy-bg:     #E1F5EC;
   --mid:         #FFB800;   --mid-bg:      #FFF6DA;
+  --hard:        #FF6B4A;   --hard-bg:     #FFEDE8;
 
   --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
   --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
@@ -124,19 +125,19 @@ body::before {
 .section-title h2 { font-size: 20px; font-weight: 800; letter-spacing: .5px; }
 .section-title span { font-size: 13px; color: var(--ink-4); font-weight: 600; }
 
-.play-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.play-grid { display: flex; flex-wrap: wrap; gap: 18px; }
 
 .play-card {
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; width: 300px;
   background: var(--card); border: 1px solid var(--line);
-  border-radius: 22px; box-shadow: var(--shadow-2);
+  border-radius: 18px; box-shadow: var(--shadow-2);
   cursor: pointer; transition: transform .16s cubic-bezier(.34,1.3,.64,1), box-shadow .16s;
   display: flex; flex-direction: column;
 }
 .play-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
 .play-card:active { transform: translateY(-1px); }
 .play-visual {
-  position: relative; height: 168px;
+  position: relative; height: 120px;
   background: linear-gradient(150deg, var(--zone-bg), #fff);
   display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
@@ -145,43 +146,66 @@ body::before {
 }
 .play-visual .scrim {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(10,10,15,.42));
+  background: linear-gradient(180deg, transparent 45%, rgba(10,10,15,.4));
 }
 .diff-badge {
-  position: absolute; top: 14px; left: 14px; z-index: 2;
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 13px; border-radius: 999px;
-  font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  position: absolute; top: 11px; left: 11px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .3px;
   background: rgba(255,255,255,.92); box-shadow: var(--shadow-1);
 }
-.diff-badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+.diff-badge .dot { width: 6px; height: 6px; border-radius: 50%; }
 .diff-easy { color: #2e8b63; } .diff-easy .dot { background: var(--easy); }
 .diff-mid  { color: #a87800; } .diff-mid  .dot { background: var(--mid); }
-.play-body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
-.play-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.play-name { font-size: 20px; font-weight: 800; letter-spacing: .5px; }
-.play-sub { font-size: 13.5px; color: var(--ink-3); line-height: 1.6; }
-.play-meta { display: flex; gap: 9px; flex-wrap: wrap; }
+.diff-hard { color: #c2381c; } .diff-hard .dot { background: var(--hard); }
+.play-body { padding: 15px 16px 16px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.play-name { font-size: 17px; font-weight: 800; letter-spacing: .3px; }
+.play-sub { font-size: 12.5px; color: var(--ink-3); line-height: 1.55;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.play-meta { display: flex; gap: 7px; flex-wrap: wrap; }
 .meta-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 12px; border-radius: 999px;
-  background: var(--bg); font-size: 12.5px; font-weight: 600; color: var(--ink-3);
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 999px;
+  background: var(--bg); font-size: 11.5px; font-weight: 600; color: var(--ink-3);
 }
-.meta-chip svg { width: 14px; height: 14px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.play-foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
-.play-foot .hint { font-size: 12.5px; color: var(--ink-4); }
+.meta-chip svg { width: 13px; height: 13px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.play-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 3px; }
+.play-foot .hint { font-size: 11.5px; color: var(--ink-4); }
 .play-cta {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
-  background: var(--ink); color: #fff; font-size: 14.5px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: 999px; border: none; cursor: pointer;
+  background: var(--ink); color: #fff; font-size: 13px; font-weight: 700;
   font-family: var(--font); transition: filter .15s, transform .1s;
 }
 .play-card:hover .play-cta { filter: brightness(1.15); }
-.play-cta svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.play-cta svg { width: 15px; height: 15px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 未上线玩法 · 占位卡(和真卡同宽,虚线锁态) */
+.play-card.locked {
+  width: 300px; border: 1px dashed var(--line-hard); box-shadow: none;
+  background: rgba(255,255,255,.5); cursor: default;
+}
+.play-card.locked:hover { transform: none; box-shadow: none; }
+.lock-visual {
+  position: relative; height: 120px;
+  background: repeating-linear-gradient(135deg, var(--bg) 0 12px, var(--bg-hover) 12px 24px);
+  display: flex; align-items: center; justify-content: center;
+}
+.lock-visual .lock-ico {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: rgba(255,255,255,.7); display: flex; align-items: center; justify-content: center;
+}
+.lock-visual .lock-ico svg { width: 20px; height: 20px; stroke: var(--ink-4); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lock-body { padding: 15px 16px 16px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+.lock-name { font-size: 17px; font-weight: 800; letter-spacing: .3px; color: var(--ink-3); display: flex; align-items: center; gap: 8px; }
+.lock-tag { font-size: 11px; font-weight: 700; color: var(--ink-4); background: var(--bg); padding: 3px 9px; border-radius: 999px; }
+.lock-sub { font-size: 12.5px; color: var(--ink-4); line-height: 1.55; }
+.lock-foot { margin-top: 3px; font-size: 12px; color: var(--ink-4); font-weight: 600; }
 
 /* ===== 敬请期待(眼部) ===== */
 .soon-card {
-  grid-column: 1 / -1;
+  width: 100%;
   background: var(--card); border: 1px dashed var(--line-hard);
   border-radius: 22px; box-shadow: var(--shadow-1);
   padding: 46px; text-align: center;
@@ -241,12 +265,15 @@ const ZONES = {
     glyph: '颈', name: '颈部训练营', color: 'var(--neck)', bg: 'var(--neck-bg)',
     desc: '久坐低头最先累的就是颈椎。<b>转头、追踪、挥拳</b>,在游戏里把僵硬的脖子活动开,悄悄拉回该有的活动度。',
     plays: [
-      { name: 'Doga 餐厅', diff: 'easy', diffTxt: '轻度', time: '约 40 秒', action: '左右转头',
-        sub: '转头对准饿了的 Doga,金勺圈闭合一秒喂饱它 —— 温和的左右转动,唤醒颈部。',
-        url: 'mock-lunch-video.html', video: 'img/lunch.mp4' },
-      { name: '拳击派对', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '四向挥拳',
+      { name: '拳击派对', diff: 'easy', diffTxt: '轻度', time: '约 40 秒', action: '四向挥拳',
         sub: '跟着节拍左钩右钩上勾下勾,挥拳时颈部随之转动发力,综合灵活度拉满。',
         url: 'mock-boxing-video.html', video: 'img/boxing.mp4' },
+      { name: 'Doga 餐厅', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '左右转头',
+        sub: '转头对准饿了的 Doga,金勺圈闭合一秒喂饱它 —— 温和的左右转动,唤醒颈部。',
+        url: 'mock-lunch-video.html', video: 'img/lunch.mp4' },
+      { name: '颈椎迷宫', diff: 'hard', diffTxt: '重度', time: '开发中', action: '转头控向',
+        sub: '转头操控小球走迷宫,大范围多方向转动 —— 进阶挑战,敬请期待。',
+        soon: true },
     ],
   },
   shoulder: {
@@ -259,6 +286,9 @@ const ZONES = {
       { name: '河道划船', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '双桨后拉',
         sub: '坐直挺胸,双桨对称往后拉,肩胛后收 —— 专治圆肩驼背的扩胸动作。',
         url: 'mock-rowing-video.html', video: 'img/rowing.mp4' },
+      { name: '太极操', diff: 'hard', diffTxt: '重度', time: '开发中', action: '云手大弧',
+        sub: '云手、揽雀尾,手臂画大弧配合躯干转 —— 深度舒展,敬请期待。',
+        soon: true },
     ],
   },
   eye: {
@@ -290,6 +320,7 @@ document.title = '今天不低头 · ' + z.name;
 const ICO_CLOCK = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
 const ICO_MOVE  = '<svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>';
 const ICO_ARROW = '<svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+const ICO_LOCK  = '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>';
 
 const grid = document.getElementById('playGrid');
 
@@ -304,7 +335,18 @@ if (z.plays.length === 0) {
       <div class="soon-desc">${z.soon || z.desc}</div>
     </div>`;
 } else {
-  grid.innerHTML = z.plays.map(p => `
+  grid.innerHTML = z.plays.map(p => p.soon ? `
+    <div class="play-card locked">
+      <div class="lock-visual">
+        <div class="lock-ico">${ICO_LOCK}</div>
+        <span class="diff-badge diff-${p.diff}"><span class="dot"></span>${p.diffTxt}</span>
+      </div>
+      <div class="lock-body">
+        <div class="lock-name">${p.name}<span class="lock-tag">即将上线</span></div>
+        <div class="lock-sub">${p.sub}</div>
+        <div class="lock-foot">敬请期待</div>
+      </div>
+    </div>` : `
     <div class="play-card" onclick="location.href='${p.url}'">
       <div class="play-visual">
         <video src="${p.video}" muted loop playsinline autoplay></video>
@@ -312,16 +354,14 @@ if (z.plays.length === 0) {
         <span class="diff-badge diff-${p.diff}"><span class="dot"></span>${p.diffTxt}</span>
       </div>
       <div class="play-body">
-        <div class="play-head">
-          <div class="play-name">${p.name}</div>
-        </div>
+        <div class="play-name">${p.name}</div>
         <div class="play-sub">${p.sub}</div>
         <div class="play-meta">
           <span class="meta-chip">${ICO_CLOCK}${p.time}</span>
           <span class="meta-chip">${ICO_MOVE}${p.action}</span>
         </div>
         <div class="play-foot">
-          <span class="hint">演示版 · 点击进入</span>
+          <span class="hint">演示版</span>
           <button class="play-cta" onclick="event.stopPropagation();location.href='${p.url}'">开始 ${ICO_ARROW}</button>
         </div>
       </div>
