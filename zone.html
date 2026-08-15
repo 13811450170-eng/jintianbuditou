@@ -306,7 +306,7 @@ const ZONES = {
         url: 'mock-lunch-video.html', video: 'img/lunch.mp4', assess: true },
       { name: '田野散步', diff: 'hard', diffTxt: '重度', time: '约 60 秒', action: '转头躲避',
         sub: 'Joy 自己往前走,你转头切道、抬头跳、低头钻,陪它躲开一路障碍 —— 颈椎全方位活动开。',
-        image: 'img/walk-cover.svg', noLink: true },
+        video: 'img/walk.mp4', noLink: true },
       { name: '颈椎迷宫', diff: 'hard', diffTxt: '重度', time: '约 60 秒', action: '转头控向',
         sub: '转头操控 Joy 在树篱迷宫里找路,大范围多方向转动 —— 颈椎进阶挑战。',
         video: 'img/maze.mp4', noLink: true },
@@ -318,10 +318,10 @@ const ZONES = {
     plays: [
       { name: '举臂摘星', diff: 'easy', diffTxt: '轻度', time: '约 40 秒', action: '举臂上举',
         sub: '举手够到夜空的星星,保持一下点亮烟花 —— 肩关节上举,改善过顶活动度。',
-        url: 'mock-shoulder-star.html', video: 'img/star.mp4', fx: 'star' },
+        url: 'mock-shoulder-star.html', video: 'img/star.mp4', fx: 'star', assess: true },
       { name: '河道划船', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '双桨后拉',
         sub: '坐直挺胸,双桨对称往后拉,肩胛后收 —— 专治圆肩驼背的扩胸动作。',
-        url: 'mock-rowing-video.html', video: 'img/rowing.mp4' },
+        url: 'mock-rowing-video.html', video: 'img/rowing.mp4', assess: true },
       { name: '太极操', diff: 'hard', diffTxt: '重度', time: '开发中', action: '云手大弧',
         sub: '云手、揽雀尾,手臂画大弧配合躯干转 —— 深度舒展,敬请期待。',
         soon: true },
@@ -392,7 +392,7 @@ if (z.plays.length === 0) {
         <div class="lock-foot">敬请期待</div>
       </div>
     </div>` : `
-    <div class="play-card${p.noLink ? ' nolink' : ''}"${p.noLink ? '' : ` onclick="enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})"`}>
+    <div class="play-card${p.noLink ? ' nolink' : ''}"${p.noLink ? '' : ` onclick="enterPlay('${p.url}', ${p.assess ? 'true' : 'false'}, '${zoneKey}')"`}>
       <div class="play-visual${p.fx === 'star' ? ' fx-star' : ''}">
         ${p.image
           ? `<img src="${p.image}" alt="${p.name}">`
@@ -412,7 +412,7 @@ if (z.plays.length === 0) {
           ${p.noLink
             ? `<span class="soon-pill">即将上线</span>`
             : `<span class="hint">${p.assess ? '先做健康评估' : '演示版'}</span>
-          <button class="play-cta" onclick="event.stopPropagation();enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})">开始 ${ICO_ARROW}</button>`}
+          <button class="play-cta" onclick="event.stopPropagation();enterPlay('${p.url}', ${p.assess ? 'true' : 'false'}, '${zoneKey}')">开始 ${ICO_ARROW}</button>`}
         </div>
       </div>
     </div>`).join('');
@@ -421,10 +421,10 @@ if (z.plays.length === 0) {
 // 进关卡:需评估的先跑健康评估闸门(assessment.js 挂在 window.runAssessment)。
 // gate=pass 才放行;refer 则 runAssessment 内部已提示、这里不跳。
 // 降级:评估模块没加载好 / 返回 degraded → 直接进关卡,绝不阻断。
-async function enterPlay(url, needAssess) {
+async function enterPlay(url, needAssess, zone) {
   if (needAssess && typeof window.runAssessment === 'function') {
     try {
-      const r = await window.runAssessment('neck');
+      const r = await window.runAssessment(zone || 'neck');
       if (r && r.pass === false) return;   // 转介,不进游戏
     } catch (e) { /* 评估异常 → 降级放行 */ }
   }

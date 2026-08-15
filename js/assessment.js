@@ -17,7 +17,7 @@
 import { createPoseKernel } from './pose-kernel.js';
 import { recordAssessment } from './health-store.js';
 
-// 颈部红旗项(命中任一 → 转介线下,不进游戏)
+// 红旗项(命中任一 → 转介线下,不进游戏)。按部位分流,取不到用通用兜底。
 const RED_FLAGS_NECK = [
   '近期有过头颈部外伤',
   '症状进行性加重、很剧烈',
@@ -26,6 +26,21 @@ const RED_FLAGS_NECK = [
   '吞咽或呼吸有困难',
   '大小便功能近期有新变化',
 ];
+const RED_FLAGS_SHOULDER = [
+  '近期肩部有外伤 / 脱臼',
+  '肩痛很剧烈或夜间痛醒',
+  '手臂发麻无力 / 抬不起来',
+  '肩关节有卡住 / 脱位感',
+  '发烧伴关节红肿热痛',
+];
+const RED_FLAGS_GENERIC = [
+  '相关部位近期有外伤',
+  '疼痛剧烈或进行性加重',
+  '肢体发麻、无力或动作变笨',
+  '发烧伴关节红肿热痛',
+];
+const RED_FLAGS = { neck: RED_FLAGS_NECK, shoulder: RED_FLAGS_SHOULDER };
+function redFlagsFor(zone) { return RED_FLAGS[zone] || RED_FLAGS_GENERIC; }
 
 // 颈部6向ROM采集顺序(FaceLandmarker 能测的方向)。axis+dir 决定读 rel 的哪个分量、哪个符号。
 // target:达标目标角(和后端 NECK_TARGET_ROM 对齐,仅用于前端进度条,判定以后端为准)。
@@ -124,8 +139,8 @@ function introStep(c) {
 }
 
 // ——— 第一步:红旗问卷 ———
-// 返回 {hit:bool, answers:{}} —— hit=true 表示命中红旗
-function redFlagStep(c) {
+// 返回 {hit:bool, answers:{}} —— hit=true 表示命中红旗。flags:该部位红旗集合
+function redFlagStep(c, flags) {
   return new Promise(resolve => {
     const answers = {};
     c.innerHTML = `
@@ -136,7 +151,7 @@ function redFlagStep(c) {
       <button class="asmt-btn" id="asmtNext" disabled>继续 →</button>
     `;
     const qs = c.querySelector('#asmtQs');
-    RED_FLAGS_NECK.forEach((q, i) => {
+    flags.forEach((q, i) => {
       const row = document.createElement('div'); row.className = 'asmt-q';
       row.innerHTML = `<span class="asmt-q-txt">${q}</span>
         <span class="asmt-yn"><button data-v="yes">有</button><button data-v="no">没有</button></span>`;
@@ -145,7 +160,7 @@ function redFlagStep(c) {
         row.querySelector('[data-v=yes]').classList.toggle('on-yes', answers[i]);
         row.querySelector('[data-v=no]').classList.toggle('on-no', !answers[i]);
         // 全部答完才亮"继续"
-        c.querySelector('#asmtNext').disabled = Object.keys(answers).length < RED_FLAGS_NECK.length;
+        c.querySelector('#asmtNext').disabled = Object.keys(answers).length < flags.length;
       }));
       qs.appendChild(row);
     });
@@ -252,15 +267,21 @@ export async function runAssessment(zone = 'neck') {
     // 0. AI 问诊(调 /api/intro,每次问题不同,体现现场分析感)。拿不到→跳过。
     const introAnswers = await introStep(c);
 
-    // 1. 红旗安全确认(固定项,不可省)
-    const rf = await redFlagStep(c);
+    // 1. 红旗安全确认(固定项,不可省)。按部位取红旗集合。
+    const rf = await redFlagStep(c, redFlagsFor(zone));
     if (rf.hit) {
       await referView(c);
       close();
       return { pass: false, referReasons: ['命中红旗自评项'] };
     }
 
-    // 2. ROM 采集(需要一个 video 元素给内核)
+    // 通用两步(问诊+红旗)后:非颈部暂无 ROM 采集(仅颈部有6向ROM),直接放行进关卡。
+    if (zone !== 'neck') {
+      close();
+      return { pass: true, degraded: true };
+    }
+
+    // 2. ROM 采集(需要一个 video 元素给内核)—— 仅颈部
     let video = document.createElement('video');
     video.setAttribute('playsinline', ''); video.muted = true;
     video.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;';
