@@ -161,11 +161,12 @@ function redFlagStep(c) {
 // 返回 romNeck 格式 {flexion:{value,confidence},...} 或 null(降级)
 
 // 采集单方向峰值角:持续读 rel,记该轴该符号方向的最大值;到目标附近保持一会儿即完成。
-function captureAxisPeak(k, step, barEl) {
+function captureAxisPeak(k, step, barEl, isSkipped) {
   return new Promise(resolve => {
     let peak = 0, holdStart = 0;
     const t0 = performance.now();
     function poll() {
+      if (isSkipped && isSkipped()) { resolve(peak); return; }
       const snap = k.snapshot ? k.snapshot() : null;
       const rel = snap && snap.rel ? snap.rel : { yaw:0, pitch:0, roll:0 };
       let v = rel[step.axis] * step.sign;   // 该方向为正
@@ -186,10 +187,11 @@ function captureAxisPeak(k, step, barEl) {
 }
 
 // 等头回到中立位(各轴 rel 都小)
-function waitReturnToCenter(k) {
+function waitReturnToCenter(k, isSkipped) {
   return new Promise(resolve => {
     const t0 = performance.now();
     function poll() {
+      if (isSkipped && isSkipped()) { resolve(); return; }
       const snap = k.snapshot ? k.snapshot() : null;
       const rel = snap && snap.rel ? snap.rel : { yaw:0, pitch:0, roll:0 };
       const centered = Math.abs(rel.yaw) < 8 && Math.abs(rel.pitch) < 8 && Math.abs(rel.roll) < 8;
@@ -270,6 +272,12 @@ export async function runAssessment(zone = 'neck') {
       romNeck = await romStepShared(c, video, kernel);   // 采集6向ROM,把摄像头画面镜像进卡片小窗
     } catch (e) { romNeck = null; }
     video.remove();
+
+    // 用户点了"跳过评估" → 直接放行进关卡(等同降级,不发后端)
+    if (romNeck === 'SKIP') {
+      close();
+      return { pass: true, degraded: true, skipped: true };
+    }
 
     // 3. 降级:采集失败(无摄像头等)→ 直接放行
     if (!romNeck) {
@@ -354,12 +362,17 @@ async function romStepShared(c, kernelVideo, k) {
     <div class="asmt-desc" id="asmtRomDesc">让摄像头看清你的脸,保持中立…</div>
     <div class="asmt-bar"><div class="asmt-bar-fill" id="asmtBar"></div></div>
     <div class="asmt-progress" id="asmtProg">校准中</div>
+    <button class="asmt-btn ghost" id="asmtRomSkip">跳过评估,直接开始</button>
   `;
   const shownVideo = c.querySelector('#asmtVideo');
   const titleEl = c.querySelector('#asmtRomTitle');
   const descEl = c.querySelector('#asmtRomDesc');
   const barEl = c.querySelector('#asmtBar');
   const progEl = c.querySelector('#asmtProg');
+
+  // 跳过:标记后立即停采集,romStepShared 返回 'SKIP',由 runAssessment 走降级放行
+  let skipped = false;
+  c.querySelector('#asmtRomSkip').addEventListener('click', () => { skipped = true; });
 
   try { await k.startCamera(); } catch (e) { return null; }
   // 把内核摄像头的流也显示到可见小窗
@@ -373,17 +386,22 @@ async function romStepShared(c, kernelVideo, k) {
   await new Promise(r => setTimeout(r, 1200));
   k.endCalibration();
 
+  const bail = () => { running = false; k.stopCamera(); return 'SKIP'; };
+  if (skipped) return bail();
+
   for (let i = 0; i < ROM_STEPS.length; i++) {
+    if (skipped) return bail();
     const step = ROM_STEPS[i];
     titleEl.textContent = `${step.emoji} 请${step.name}`;
     descEl.textContent = '慢慢转到最大,停住别晃 —— 稳一下就好';
     progEl.textContent = `第 ${i + 1} / ${ROM_STEPS.length} 个方向`;
-    const peak = await captureAxisPeak(k, step, barEl);
+    const peak = await captureAxisPeak(k, step, barEl, () => skipped);
+    if (skipped) return bail();
     romNeck[step.key] = { value: Math.round(peak), confidence: 0.85 };
     titleEl.textContent = '回到正中,放松';
     descEl.textContent = '';
     barEl.style.width = '0%';
-    await waitReturnToCenter(k);
+    await waitReturnToCenter(k, () => skipped);
   }
 
   running = false;

@@ -331,15 +331,15 @@
   }
   .subtitle{font-size:15px;color:rgba(255,255,255,.82);line-height:1.7;max-width:440px;}
   .subtitle b{color:var(--gold-bright);}
-  .how-grid{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;justify-content:center;}
+  .how-grid{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
   .how-item{
-    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-    border-radius:var(--r-sm);padding:12px 14px;min-width:92px;
-    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);
+    border-radius:var(--r-md);padding:22px 20px;min-width:150px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
   }
-  .how-item .ico{width:22px;height:22px;color:#fff;}
-  .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
-  .how-item .sub2{font-size:10px;color:rgba(255,255,255,.6);}
+  .how-item .arrow{font-size:44px;line-height:1;color:#fff;font-weight:900;}
+  .how-item .lb{font-size:17px;color:var(--gold-bright);font-weight:800;}
+  .how-item .sub2{font-size:13px;color:rgba(255,255,255,.65);}
   .btn{
     margin-top:8px;border:none;cursor:pointer;
     background:var(--brand);
@@ -489,10 +489,10 @@
     <div class="big-title">拳击派对</div>
     <div class="subtitle">Joy 会挥拳过来，你用<b>头部动作</b>躲开<br>转头、抬头、收下巴——40 秒的舒缓颈椎训练</div>
     <div class="how-grid">
-      <div class="how-item"><svg class="ico"><use href="#i-body-dodge"/></svg><div class="lb">头向左倾</div><div class="sub2">躲左钩拳</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-body-dodge"/></svg><div class="lb">头向右倾</div><div class="sub2">躲右钩拳</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-body-dodge"/></svg><div class="lb">收下巴</div><div class="sub2">躲上勾拳</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-body-dodge"/></svg><div class="lb">抬起头</div><div class="sub2">躲下勾拳</div></div>
+      <div class="how-item"><div class="arrow">◀</div><div class="lb">头向左倾</div><div class="sub2">躲左钩拳</div></div>
+      <div class="how-item"><div class="arrow">▶</div><div class="lb">头向右倾</div><div class="sub2">躲右钩拳</div></div>
+      <div class="how-item"><div class="arrow">▼</div><div class="lb">收下巴</div><div class="sub2">躲上勾拳</div></div>
+      <div class="how-item"><div class="arrow">▲</div><div class="lb">抬起头</div><div class="sub2">躲下勾拳</div></div>
     </div>
     <button class="btn" id="startBtn"><svg class="ico"><use href="#i-boxglove"/></svg>开始对战 · BOXING TIME!</button>
     <div class="status">演示模式 · 自动播放</div>
