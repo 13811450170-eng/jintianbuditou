@@ -157,21 +157,24 @@
     text-shadow:0 1px 3px rgba(0,0,0,.6);width:120px;
   }
 
-  /* 右下动作提示小窗 */
-  .action-cam{
+  /* 右下角 · 真人点阵脸小窗(与拳击关统一) */
+  .you-cam{
     position:absolute;bottom:20px;right:20px;z-index:30;
-    width:158px;height:158px;border-radius:var(--r-md);
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    width:168px;height:126px;
+    border:3px solid #ffcc00;border-radius:12px;overflow:hidden;
+    background:radial-gradient(ellipse at 50% 45%,#0b0512 0%,#000 100%);
+    box-shadow:0 0 22px rgba(255,204,0,.4),0 4px 20px rgba(0,0,0,.6);
   }
-  .action-cam .ac-txt{font-size:13px;color:var(--gold-bright);font-weight:700;text-align:center;line-height:1.5;}
-  .action-cam .ac-dot{position:absolute;top:11px;right:11px;width:9px;height:9px;border-radius:50%;background:var(--ok);box-shadow:0 0 9px var(--ok);animation:acDot 2s ease-in-out infinite;}
-  @keyframes acDot{0%,100%{opacity:1;}50%{opacity:.4;}}
-  .action-cam .ac-fig{color:var(--gold-bright);animation:acRow 3s ease-in-out infinite;}
-  .action-cam .ac-fig .ico{width:58px;height:58px;stroke-width:2;}
-  @keyframes acRow{
-    0%,100%{transform:rotate(5deg);}
-    50%{transform:rotate(-5deg);}
+  .you-cam video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+  .you-cam .you-mesh{width:100%;height:100%;display:block;}
+  .you-cam .you-label{
+    position:absolute;top:8px;right:8px;
+    display:flex;align-items:center;gap:5px;
+    color:#ff4d5e;font-size:11px;font-weight:900;letter-spacing:2px;
+    padding:3px 8px;background:rgba(0,0,0,.55);border-radius:5px;
   }
+  .you-cam .you-dot{width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 8px #ff4d5e;animation:youBlink 1.2s infinite;}
+  @keyframes youBlink{50%{opacity:.3;}}
 
   /* ==================== 开场 / 结算 ==================== */
   .overlay{
@@ -216,6 +219,14 @@
   .btn .ico{stroke:#fff;}
   .btn:hover{filter:brightness(1.08);}
   .btn:active{transform:translateY(1px);}
+  .btn-ghost{
+    margin-top:2px;border:none;cursor:pointer;background:transparent;
+    color:rgba(255,255,255,.6);font-family:var(--font);
+    font-size:14px;font-weight:700;letter-spacing:.5px;
+    display:inline-flex;align-items:center;gap:6px;transition:color .15s;
+  }
+  .btn-ghost:hover{color:var(--gold-bright);}
+  .btn-ghost .ico{width:15px;height:15px;stroke:currentColor;}
   .status{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;}
 
   .result-card{
@@ -333,11 +344,11 @@
     <div class="hold-txt">双桨拉满<br>保持挺胸</div>
   </div>
 
-  <!-- 动作提示小窗 -->
-  <div class="action-cam glass">
-    <div class="ac-dot"></div>
-    <div class="ac-fig"><svg class="ico"><use href="#i-body-row"/></svg></div>
-    <div class="ac-txt">跟我一起<br>划船 · 扩胸</div>
+  <!-- 右下角 · 真人点阵脸小窗 -->
+  <div class="you-cam">
+    <video autoplay playsinline muted></video>
+    <canvas class="you-mesh" width="336" height="252"></canvas>
+    <div class="you-label"><span class="you-dot"></span>YOU</div>
   </div>
 
   <!-- 开场 -->
@@ -388,6 +399,7 @@
       <div class="result-up"><svg class="ico"><use href="#i-spark"/></svg>比上周舒展 5°，圆肩缓解中</div>
     </div>
     <button class="btn" id="againBtn">再划一程</button>
+    <button class="btn-ghost" onclick="location.href='zone.html?zone=shoulder'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回肩部训练营</button>
     <div class="status">今天不低头 · 关注你的肩颈健康</div>
   </div>
 
@@ -561,6 +573,9 @@ if(location.search.indexOf('end=1')>=0){
   result.classList.remove('hide');
   setTimeout(playStreakFlame,600);
 }
+
 </script>
+<!-- 右下角「● YOU」点阵脸小窗:载入即装饰脸保底,摄像头就绪后自动升级为真脸点云 -->
+<script src="js/you-facecam.js"></script>
 </body>
 </html>

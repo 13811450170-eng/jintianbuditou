@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>今天不低头 · 部位训练营</title>
+<style>
+:root {
+  --bg:          #F0F1F8;
+  --bg-hover:    #E7E8F2;
+  --card:        #FFFFFF;
+  --line:        rgba(10, 10, 15, 0.06);
+  --line-hard:   rgba(10, 10, 15, 0.1);
+  --ink:         #0A0A0F;
+  --ink-2:       #3A3A45;
+  --ink-3:       #6B6B7A;
+  --ink-4:       #A8A8B3;
+
+  --neck:        #00A3FF;   --neck-bg:     #E1F2FF;
+  --shoulder:    #7C5AFF;   --shoulder-bg: #EBE5FF;
+  --eye:         #4CAF88;   --eye-bg:      #E1F5EC;
+
+  --easy:        #4CAF88;   --easy-bg:     #E1F5EC;
+  --mid:         #FFB800;   --mid-bg:      #FFF6DA;
+
+  --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
+  --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
+  --shadow-3:    0 12px 32px rgba(10, 10, 15, 0.1);
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+
+  /* 当前部位主题色(JS 注入) */
+  --zone:    var(--neck);
+  --zone-bg: var(--neck-bg);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(48vw 42vw at 12% 6%,  rgba(255, 156, 66, 0.07), transparent 60%),
+    radial-gradient(30vw 26vw at 18% 2%,  rgba(255, 190, 120, 0.06), transparent 62%),
+    radial-gradient(46vw 40vw at 88% 4%,  rgba(124, 90, 255, 0.13), transparent 60%),
+    radial-gradient(52vw 46vw at 78% 96%, rgba(255, 107, 74, 0.10), transparent 62%),
+    radial-gradient(40vw 38vw at 4% 92%,  rgba(76, 175, 136, 0.10), transparent 62%);
+  animation: bgDrift 22s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+  0%   { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(0, -1.5%, 0) scale(1.06); }
+}
+.page {
+  position: relative; z-index: 1;
+  max-width: 1440px; margin: 0 auto;
+  padding: 22px 40px 60px;
+  display: flex; flex-direction: column; gap: 26px;
+}
+
+/* ===== 顶部返回栏 ===== */
+.topbar { display: flex; align-items: center; gap: 14px; }
+.back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px 10px 14px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--line);
+  box-shadow: var(--shadow-1); cursor: pointer;
+  font-size: 15px; font-weight: 600; color: var(--ink-2);
+  transition: background .15s, transform .1s;
+}
+.back-btn:hover { background: var(--bg-hover); }
+.back-btn:active { transform: translateY(1px); }
+.back-btn svg { width: 18px; height: 18px; stroke: var(--ink-2); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.crumb { font-size: 14px; color: var(--ink-4); font-weight: 600; letter-spacing: .5px; }
+
+/* ===== 部位介绍横幅 ===== */
+.zone-hero {
+  position: relative; overflow: hidden;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 26px; box-shadow: var(--shadow-2);
+  padding: 34px 38px;
+  display: flex; align-items: center; gap: 30px;
+}
+.zone-hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 120% at 88% 12%, var(--zone-bg), transparent 70%);
+  opacity: .8;
+}
+.zone-glyph {
+  position: relative; flex-shrink: 0;
+  width: 108px; height: 108px; border-radius: 30px;
+  background: linear-gradient(160deg, var(--zone-bg), #fff);
+  border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 54px; font-weight: 800; color: var(--zone);
+  box-shadow: inset 0 2px 10px rgba(255,255,255,.6);
+}
+.zone-hero-body { position: relative; flex: 1; }
+.zone-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 700; letter-spacing: 1px;
+  color: var(--zone); background: var(--zone-bg);
+  padding: 6px 14px; border-radius: 999px; margin-bottom: 12px;
+}
+.zone-kicker svg { width: 14px; height: 14px; stroke: var(--zone); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.zone-name { font-size: 32px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
+.zone-desc { font-size: 15px; color: var(--ink-3); line-height: 1.7; max-width: 560px; }
+.zone-desc b { color: var(--ink-2); }
+.zone-stat {
+  position: relative; flex-shrink: 0; text-align: center;
+  padding-left: 30px; border-left: 1px solid var(--line);
+}
+.zone-stat .n { font-size: 42px; font-weight: 800; color: var(--zone); line-height: 1; }
+.zone-stat .l { font-size: 13px; color: var(--ink-4); margin-top: 8px; font-weight: 600; }
+
+/* ===== 玩法列表 ===== */
+.section-title { display: flex; align-items: baseline; gap: 10px; padding: 0 4px; }
+.section-title h2 { font-size: 20px; font-weight: 800; letter-spacing: .5px; }
+.section-title span { font-size: 13px; color: var(--ink-4); font-weight: 600; }
+
+.play-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+
+.play-card {
+  position: relative; overflow: hidden;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 22px; box-shadow: var(--shadow-2);
+  cursor: pointer; transition: transform .16s cubic-bezier(.34,1.3,.64,1), box-shadow .16s;
+  display: flex; flex-direction: column;
+}
+.play-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-3); }
+.play-card:active { transform: translateY(-1px); }
+.play-visual {
+  position: relative; height: 168px;
+  background: linear-gradient(150deg, var(--zone-bg), #fff);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.play-visual video, .play-visual img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.play-visual .scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(10,10,15,.42));
+}
+.diff-badge {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 13px; border-radius: 999px;
+  font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  background: rgba(255,255,255,.92); box-shadow: var(--shadow-1);
+}
+.diff-badge .dot { width: 7px; height: 7px; border-radius: 50%; }
+.diff-easy { color: #2e8b63; } .diff-easy .dot { background: var(--easy); }
+.diff-mid  { color: #a87800; } .diff-mid  .dot { background: var(--mid); }
+.play-body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+.play-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.play-name { font-size: 20px; font-weight: 800; letter-spacing: .5px; }
+.play-sub { font-size: 13.5px; color: var(--ink-3); line-height: 1.6; }
+.play-meta { display: flex; gap: 9px; flex-wrap: wrap; }
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--bg); font-size: 12.5px; font-weight: 600; color: var(--ink-3);
+}
+.meta-chip svg { width: 14px; height: 14px; stroke: var(--ink-3); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.play-foot { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
+.play-foot .hint { font-size: 12.5px; color: var(--ink-4); }
+.play-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 22px; border-radius: 999px; border: none; cursor: pointer;
+  background: var(--ink); color: #fff; font-size: 14.5px; font-weight: 700;
+  font-family: var(--font); transition: filter .15s, transform .1s;
+}
+.play-card:hover .play-cta { filter: brightness(1.15); }
+.play-cta svg { width: 17px; height: 17px; stroke: #fff; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ===== 敬请期待(眼部) ===== */
+.soon-card {
+  grid-column: 1 / -1;
+  background: var(--card); border: 1px dashed var(--line-hard);
+  border-radius: 22px; box-shadow: var(--shadow-1);
+  padding: 46px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.soon-glyph {
+  width: 64px; height: 64px; border-radius: 20px;
+  background: var(--zone-bg); color: var(--zone);
+  display: flex; align-items: center; justify-content: center;
+}
+.soon-glyph svg { width: 30px; height: 30px; stroke: var(--zone); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.soon-title { font-size: 20px; font-weight: 800; }
+.soon-desc { font-size: 14px; color: var(--ink-3); line-height: 1.7; max-width: 420px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <button class="back-btn" onclick="location.href='mock-home-v2.html'">
+      <svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+      首页
+    </button>
+    <span class="crumb" id="crumb">训练营</span>
+  </div>
+
+  <!-- 部位介绍横幅 -->
+  <div class="zone-hero">
+    <div class="zone-glyph" id="zoneGlyph">颈</div>
+    <div class="zone-hero-body">
+      <div class="zone-kicker" id="zoneKicker">
+        <svg viewBox="0 0 24 24"><path d="M12 2c-4 4-6 7-6 10a6 6 0 0 0 12 0c0-3-2-6-6-10z"/></svg>
+        <span id="zoneKickerTxt">颈部训练营</span>
+      </div>
+      <div class="zone-name" id="zoneName">颈部训练营</div>
+      <div class="zone-desc" id="zoneDesc"></div>
+    </div>
+    <div class="zone-stat">
+      <div class="n" id="zoneCount">2</div>
+      <div class="l">个玩法</div>
+    </div>
+  </div>
+
+  <!-- 玩法列表 -->
+  <div class="section-title">
+    <h2>选个玩法</h2>
+    <span id="playHint">按难易程度选择,今天想练哪个?</span>
+  </div>
+  <div class="play-grid" id="playGrid"></div>
+
+</div>
+
+<script>
+// ============ 部位 → 玩法映射(v4:颈部/肩部真做,眼部占位) ============
+const ZONES = {
+  neck: {
+    glyph: '颈', name: '颈部训练营', color: 'var(--neck)', bg: 'var(--neck-bg)',
+    desc: '久坐低头最先累的就是颈椎。<b>转头、追踪、挥拳</b>,在游戏里把僵硬的脖子活动开,悄悄拉回该有的活动度。',
+    plays: [
+      { name: 'Doga 餐厅', diff: 'easy', diffTxt: '轻度', time: '约 40 秒', action: '左右转头',
+        sub: '转头对准饿了的 Doga,金勺圈闭合一秒喂饱它 —— 温和的左右转动,唤醒颈部。',
+        url: 'mock-lunch-video.html', video: 'img/lunch.mp4' },
+      { name: '拳击派对', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '四向挥拳',
+        sub: '跟着节拍左钩右钩上勾下勾,挥拳时颈部随之转动发力,综合灵活度拉满。',
+        url: 'mock-boxing-video.html', video: 'img/boxing.mp4' },
+    ],
+  },
+  shoulder: {
+    glyph: '肩', name: '肩部训练营', color: 'var(--shoulder)', bg: 'var(--shoulder-bg)',
+    desc: '圆肩驼背、肩背发紧,是屏幕前的通病。<b>上举、后拉、扩胸</b>,舒展被久坐锁住的肩关节,把姿势打开。',
+    plays: [
+      { name: '举臂摘星', diff: 'easy', diffTxt: '轻度', time: '约 40 秒', action: '举臂上举',
+        sub: '举手够到夜空的星星,保持一下点亮烟花 —— 肩关节上举,改善过顶活动度。',
+        url: 'mock-shoulder-star.html', video: 'img/star.mp4' },
+      { name: '河道划船', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '双桨后拉',
+        sub: '坐直挺胸,双桨对称往后拉,肩胛后收 —— 专治圆肩驼背的扩胸动作。',
+        url: 'mock-rowing-video.html', video: 'img/rowing.mp4' },
+    ],
+  },
+  eye: {
+    glyph: '眼', name: '眼部训练营', color: 'var(--eye)', bg: 'var(--eye-bg)',
+    desc: '盯屏幕太久,眼睛又干又累。远眺、转动、眨眼放松 —— 眼部玩法正在开发中。',
+    soon: '我们正在打磨远眺追踪、眼球转动这些玩法,让你在游戏里也能给眼睛放个假。很快就来,先练练颈和肩吧。',
+    plays: [],
+  },
+};
+
+const params = new URLSearchParams(location.search);
+const zoneKey = ZONES[params.get('zone')] ? params.get('zone') : 'neck';
+const z = ZONES[zoneKey];
+
+// 主题色注入
+document.documentElement.style.setProperty('--zone', z.color);
+document.documentElement.style.setProperty('--zone-bg', z.bg);
+
+// 横幅
+document.getElementById('zoneGlyph').textContent = z.glyph;
+document.getElementById('zoneName').textContent = z.name;
+document.getElementById('zoneKickerTxt').textContent = z.name;
+document.getElementById('zoneDesc').innerHTML = z.desc;
+document.getElementById('zoneCount').textContent = z.plays.length;
+document.getElementById('crumb').textContent = z.name;
+document.title = '今天不低头 · ' + z.name;
+
+// 图标(SVG symbol 简用)
+const ICO_CLOCK = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const ICO_MOVE  = '<svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18M8 7l4-4 4 4M8 17l4 4 4-4"/></svg>';
+const ICO_ARROW = '<svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+
+const grid = document.getElementById('playGrid');
+
+if (z.plays.length === 0) {
+  document.getElementById('playHint').textContent = '这个部位的玩法正在路上';
+  grid.innerHTML = `
+    <div class="soon-card">
+      <div class="soon-glyph">
+        <svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      </div>
+      <div class="soon-title">敬请期待</div>
+      <div class="soon-desc">${z.soon || z.desc}</div>
+    </div>`;
+} else {
+  grid.innerHTML = z.plays.map(p => `
+    <div class="play-card" onclick="location.href='${p.url}'">
+      <div class="play-visual">
+        <video src="${p.video}" muted loop playsinline autoplay></video>
+        <div class="scrim"></div>
+        <span class="diff-badge diff-${p.diff}"><span class="dot"></span>${p.diffTxt}</span>
+      </div>
+      <div class="play-body">
+        <div class="play-head">
+          <div class="play-name">${p.name}</div>
+        </div>
+        <div class="play-sub">${p.sub}</div>
+        <div class="play-meta">
+          <span class="meta-chip">${ICO_CLOCK}${p.time}</span>
+          <span class="meta-chip">${ICO_MOVE}${p.action}</span>
+        </div>
+        <div class="play-foot">
+          <span class="hint">演示版 · 点击进入</span>
+          <button class="play-cta" onclick="event.stopPropagation();location.href='${p.url}'">开始 ${ICO_ARROW}</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+</script>
+</body>
+</html>

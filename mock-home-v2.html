@@ -401,7 +401,7 @@ body::before {
   margin-top: 4px;
 }
 
-/* 数据三宫格 */
+/* 数据三宫格 · 本周变化 */
 .dp-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -409,18 +409,20 @@ body::before {
   padding: 18px 0;
   border-top: 1px solid var(--line);
 }
-.dp-stats .stat { gap: 4px; }
+.dp-stats .stat { gap: 5px; }
+.stat-num .delta {
+  font-size: 13px;
+  font-weight: 800;
+  margin-left: 6px;
+  color: var(--eye);
+  letter-spacing: 0;
+}
+.stat-num .arrow { font-size: 26px; font-weight: 800; color: var(--neck); }
 
-/* 身体状态分析:三部位状态条 + AI 洞察(左对齐铺满) */
+/* 身体状态分析:三部位圆环卡 + Joy 观察 */
 .dp-zones {
   flex: 1;
   min-height: 0;
-  display: flex;
-}
-
-.dp-zones-right {
-  flex: 1;
-  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -431,6 +433,79 @@ body::before {
   color: var(--ink-2);
   letter-spacing: 0.2px;
 }
+
+/* 三张部位卡横排 */
+.zone-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.zone-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 10px 16px;
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 18px;
+}
+
+/* 部位色圆环 */
+.zone-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.zone-ring svg { width: 72px; height: 72px; transform: rotate(-90deg); }
+.zone-ring-track { fill: none; stroke-width: 8; }
+.zone-ring-track.neck     { stroke: var(--neck-bg); }
+.zone-ring-track.shoulder { stroke: var(--shoulder-bg); }
+.zone-ring-track.eye      { stroke: var(--eye-bg); }
+.zone-ring-fill {
+  fill: none;
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s cubic-bezier(0.16,1,0.3,1);
+}
+.zone-ring-fill.neck     { stroke: var(--neck); }
+.zone-ring-fill.shoulder { stroke: var(--shoulder); }
+.zone-ring-fill.eye      { stroke: var(--eye); }
+.zone-ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+.zone-ring-label.neck     { color: var(--neck); }
+.zone-ring-label.shoulder { color: var(--shoulder); }
+.zone-ring-label.eye      { color: var(--eye); }
+
+/* 状态词 + 趋势箭头 */
+.zone-card-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.zone-card-status .st-word { color: var(--ink); }
+.zone-card-status .st-word.warn { color: var(--fire); }
+.zone-card-status .st-word.good { color: var(--eye); }
+.zone-trend { font-size: 15px; font-weight: 900; line-height: 1; }
+.zone-trend.up   { color: var(--eye); }
+.zone-trend.flat { color: var(--ink-4); }
+.zone-trend.down { color: var(--fire); }
+.zone-card-name {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* Joy 一句观察 */
 .dp-insight {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 12px 14px;
@@ -442,31 +517,6 @@ body::before {
 }
 .dp-insight svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; color: var(--neck); }
 .dp-insight strong { color: var(--ink); font-weight: 700; }
-
-.zone-row {
-  display: flex; align-items: center; gap: 12px;
-}
-.zone-name {
-  font-size: 13px; font-weight: 600; color: var(--ink);
-  width: 40px; flex-shrink: 0;
-}
-.zone-bar {
-  flex: 1;
-  height: 8px;
-  background: var(--bg);
-  border-radius: 100px;
-  overflow: hidden;
-}
-.zone-fill { height: 100%; border-radius: 100px; }
-.zone-fill.neck { background: var(--neck); }
-.zone-fill.shoulder { background: var(--shoulder); }
-.zone-fill.eye { background: var(--eye); }
-.zone-status {
-  font-size: 12px; font-weight: 700;
-  width: 44px; flex-shrink: 0; text-align: right;
-}
-.zone-status.warn { color: var(--fire); }
-.zone-status.good { color: var(--eye); }
 
 /* 面板底部:完整报告 + 法务链接 */
 .dp-foot {
@@ -1020,42 +1070,76 @@ body::before {
 
       <div class="dp-stats">
         <div class="stat">
-          <span class="stat-num" data-count="23">0</span>
-          <span class="stat-label">累计训练</span>
+          <span class="stat-num"><span data-count="12">0</span><small>次</small><span class="delta">↑3</span></span>
+          <span class="stat-label">本周训练</span>
         </div>
         <div class="stat">
-          <span class="stat-num">23<small>h</small></span>
-          <span class="stat-label">总时长</span>
+          <span class="stat-num">B<span class="arrow">→</span>A</span>
+          <span class="stat-label">灵活度评级</span>
         </div>
         <div class="stat">
-          <span class="stat-num">6<small>/7</small></span>
+          <span class="stat-num" data-count="6">0<small>/7</small></span>
           <span class="stat-label">本周打卡</span>
         </div>
       </div>
 
       <div class="dp-zones">
-        <!-- 三部位状态 + AI 洞察 -->
-        <div class="dp-zones-right">
-          <div class="dp-zones-title">近期身体状态</div>
-          <div class="zone-row">
-            <span class="zone-name">颈部</span>
-            <div class="zone-bar"><div class="zone-fill neck" style="width: 42%;"></div></div>
-            <span class="zone-status warn">偏紧</span>
+        <div class="zone-cards">
+          <!-- 颈部 · 偏紧 · 好转 -->
+          <div class="zone-card">
+            <div class="zone-ring">
+              <svg viewBox="0 0 72 72">
+                <circle class="zone-ring-track neck" cx="36" cy="36" r="26"/>
+                <circle class="zone-ring-fill neck" cx="36" cy="36" r="26"
+                        stroke-dasharray="163.4" stroke-dashoffset="94.8" data-offset="94.8"/>
+              </svg>
+              <div class="zone-ring-label neck">颈</div>
+            </div>
+            <div class="zone-card-status">
+              <span class="st-word warn">偏紧</span>
+              <span class="zone-trend up">↑</span>
+            </div>
+            <div class="zone-card-name">较上周好转</div>
           </div>
-          <div class="zone-row">
-            <span class="zone-name">肩部</span>
-            <div class="zone-bar"><div class="zone-fill shoulder" style="width: 78%;"></div></div>
-            <span class="zone-status good">灵活</span>
+
+          <!-- 肩部 · 灵活 · 稳定 -->
+          <div class="zone-card">
+            <div class="zone-ring">
+              <svg viewBox="0 0 72 72">
+                <circle class="zone-ring-track shoulder" cx="36" cy="36" r="26"/>
+                <circle class="zone-ring-fill shoulder" cx="36" cy="36" r="26"
+                        stroke-dasharray="163.4" stroke-dashoffset="35.9" data-offset="35.9"/>
+              </svg>
+              <div class="zone-ring-label shoulder">肩</div>
+            </div>
+            <div class="zone-card-status">
+              <span class="st-word good">灵活</span>
+              <span class="zone-trend flat">→</span>
+            </div>
+            <div class="zone-card-name">保持稳定</div>
           </div>
-          <div class="zone-row">
-            <span class="zone-name">眼部</span>
-            <div class="zone-bar"><div class="zone-fill eye" style="width: 35%;"></div></div>
-            <span class="zone-status warn">疲劳</span>
+
+          <!-- 眼部 · 疲劳 · 需注意 -->
+          <div class="zone-card">
+            <div class="zone-ring">
+              <svg viewBox="0 0 72 72">
+                <circle class="zone-ring-track eye" cx="36" cy="36" r="26"/>
+                <circle class="zone-ring-fill eye" cx="36" cy="36" r="26"
+                        stroke-dasharray="163.4" stroke-dashoffset="106.2" data-offset="106.2"/>
+              </svg>
+              <div class="zone-ring-label eye">眼</div>
+            </div>
+            <div class="zone-card-status">
+              <span class="st-word warn">疲劳</span>
+              <span class="zone-trend down">↓</span>
+            </div>
+            <div class="zone-card-name">该休息了</div>
           </div>
-          <div class="dp-insight">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
-            <span><strong>颈部本周偏紧</strong>，久坐后建议做套拳击放松，眼睛也该远眺休息啦。</span>
-          </div>
+        </div>
+
+        <div class="dp-insight">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>
+          <span><strong>颈部本周偏紧</strong>，久坐后打套拳放松一下，眼睛也该远眺休息啦。</span>
         </div>
       </div>
 
@@ -1117,7 +1201,7 @@ body::before {
               </div>
               <div class="meta-chip">🌱 中度</div>
             </div>
-            <button class="btn-primary" onclick="location.href='mock-joy-boxing.html'">
+            <button class="btn-primary" onclick="location.href='mock-boxing-video.html'">
               开始训练
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </button>
@@ -1132,7 +1216,7 @@ body::before {
   <!-- 底部:三个训练营自选入口 -->
   <div class="camps-row">
 
-    <div class="camp camp-neck" onclick="location.href='index.html'">
+    <div class="camp camp-neck" onclick="location.href='zone.html?zone=neck'">
       <div class="camp-visual">
         <img src="img/颈部.png" alt="颈部训练营">
       </div>
@@ -1151,14 +1235,14 @@ body::before {
             <span class="num">2</span><span class="lbl">个玩法</span>
           </div>
           <div class="camp-progress">
-            <span class="camp-progress-txt">已完成 3 次</span>
-            <div class="bar"><div class="fill" style="width: 50%;"></div></div>
+            <span class="camp-progress-txt">本周 3/5 次</span>
+            <div class="bar"><div class="fill" style="width: 60%;"></div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="camp camp-shoulder">
+    <div class="camp camp-shoulder" onclick="location.href='zone.html?zone=shoulder'">
       <div class="camp-visual">
         <img src="img/肩部.png" alt="肩部训练营">
       </div>
@@ -1177,14 +1261,14 @@ body::before {
             <span class="num">2</span><span class="lbl">个玩法</span>
           </div>
           <div class="camp-progress">
-            <span class="camp-progress-txt">已完成 3 次</span>
-            <div class="bar"><div class="fill" style="width: 25%;"></div></div>
+            <span class="camp-progress-txt">本周 1/5 次</span>
+            <div class="bar"><div class="fill" style="width: 20%;"></div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="camp camp-eye">
+    <div class="camp camp-eye" onclick="location.href='zone.html?zone=eye'">
       <div class="camp-visual">
         <img src="img/眼部.png" alt="眼部训练营">
       </div>
@@ -1203,7 +1287,7 @@ body::before {
             <span class="num">2</span><span class="lbl">个玩法</span>
           </div>
           <div class="camp-progress">
-            <span class="camp-progress-txt">已完成 3 次</span>
+            <span class="camp-progress-txt">本周 2/5 次</span>
             <div class="bar"><div class="fill" style="width: 40%;"></div></div>
           </div>
         </div>
@@ -1249,21 +1333,35 @@ document.querySelector('.toast-btn-ghost').addEventListener('click', () => toast
   document.addEventListener('click', kick, { once: true });
 })();
 
-/* 数字滚动:入场时从 0 滚到目标值 */
+/* 数字滚动:入场时从 0 滚到目标值(保留 h、/7 等后缀单位) */
 (function countUp() {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.querySelectorAll('[data-count]').forEach(el => {
     const target = parseInt(el.dataset.count, 10) || 0;
-    if (reduce) { el.textContent = target; return; }
+    const suffix = el.querySelector('small');
+    const suffixHTML = suffix ? suffix.outerHTML : '';
+    const render = n => { el.textContent = n; if (suffixHTML) el.insertAdjacentHTML('beforeend', suffixHTML); };
+    if (reduce) { render(target); return; }
     const dur = 1200, t0 = performance.now();
     function tick(now) {
       const p = Math.min((now - t0) / dur, 1);
       const eased = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(target * eased);
+      render(Math.round(target * eased));
       if (p < 1) requestAnimationFrame(tick);
     }
     setTimeout(() => requestAnimationFrame(tick), 300);
   });
+})();
+
+/* 部位圆环:入场时从空环填充到目标进度(静态已正确,JS 仅增强动效) */
+(function ringFill() {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rings = document.querySelectorAll('.zone-ring-fill');
+  if (reduce) return;
+  rings.forEach(r => { r.style.strokeDashoffset = r.getAttribute('stroke-dasharray'); });
+  requestAnimationFrame(() => setTimeout(() => {
+    rings.forEach(r => { r.style.strokeDashoffset = r.dataset.offset; });
+  }, 400));
 })();
 </script>
 
