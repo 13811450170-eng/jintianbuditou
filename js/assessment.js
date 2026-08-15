@@ -76,6 +76,53 @@ function mask() {
   return { m, c, close: () => m.remove() };
 }
 
+// ——— 第 0 步:AI 问诊(调 /api/intro,问题每次不同)———
+// 返回答案对象 {feel, goal, ...};拿不到问题(后端挂)→返回 {},静默跳过。
+function introStep(c) {
+  return new Promise(async resolve => {
+    let data = null;
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 6000);
+      const res = await fetch('/api/intro', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile: {} }), signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      data = await res.json();
+    } catch (e) { data = null; }
+    if (!data || data.degraded || !data.questions || !data.questions.length) { resolve({}); return; }
+
+    const answers = {};
+    c.innerHTML = `
+      <div class="asmt-kicker">AI 问诊 · Joy</div>
+      <div class="asmt-title">${data.greeting || '先聊两句~'}</div>
+      <div id="asmtIntroQs"></div>
+      <button class="asmt-btn" id="asmtIntroNext" disabled>下一步 →</button>
+    `;
+    const box = c.querySelector('#asmtIntroQs');
+    data.questions.forEach(q => {
+      const wrap = document.createElement('div'); wrap.style.margin = '14px 0';
+      wrap.innerHTML = `<div style="text-align:left;font-size:14px;font-weight:700;color:#3A3A45;margin-bottom:8px;">${q.q}</div>`;
+      const opts = document.createElement('div'); opts.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;justify-content:center;';
+      (q.options || []).forEach(opt => {
+        const b = document.createElement('button');
+        b.textContent = opt;
+        b.style.cssText = 'padding:8px 16px;border-radius:20px;border:1px solid rgba(10,10,15,.15);background:#fff;font-size:13px;font-weight:600;cursor:pointer;color:#3A3A45;font-family:inherit;';
+        b.addEventListener('click', () => {
+          answers[q.id] = opt;
+          opts.querySelectorAll('button').forEach(x => { x.style.background = '#fff'; x.style.color = '#3A3A45'; x.style.borderColor = 'rgba(10,10,15,.15)'; });
+          b.style.background = '#00A3FF'; b.style.color = '#fff'; b.style.borderColor = '#00A3FF';
+          c.querySelector('#asmtIntroNext').disabled = Object.keys(answers).length < data.questions.length;
+        });
+        opts.appendChild(b);
+      });
+      wrap.appendChild(opts); box.appendChild(wrap);
+    });
+    c.querySelector('#asmtIntroNext').addEventListener('click', () => resolve(answers));
+  });
+}
+
 // ——— 第一步:红旗问卷 ———
 // 返回 {hit:bool, answers:{}} —— hit=true 表示命中红旗
 function redFlagStep(c) {
@@ -154,7 +201,7 @@ function waitReturnToCenter(k) {
 }
 
 // ——— 转介提示(命中红旗) ———
-function referView(c, reasons) {
+function referView(c) {
   return new Promise(resolve => {
     c.innerHTML = `
       <div class="asmt-kicker asmt-refer">建议线下评估</div>
@@ -166,6 +213,33 @@ function referView(c, reasons) {
   });
 }
 
+// ——— 评估后指导页(gate=pass 才显示):颈部分析 + 今日方案 + 开始 ———
+const AXIS_CN = { flexion: '低头', extension: '抬头', lateralL: '左侧屈', lateralR: '右侧屈', rotationL: '左转', rotationR: '右转' };
+function coachView(c, coach, result) {
+  return new Promise(resolve => {
+    const neck = (result.baseline && result.baseline.neck) || {};
+    let avail = 0, limited = 0;
+    for (const k of Object.keys(neck)) {
+      if (neck[k].status === 'available') avail++;
+      else if (neck[k].status === 'limited') limited++;
+    }
+    const planRows = (coach.plan || []).slice(0, 6).map(pl => {
+      const cn = AXIS_CN[pl.axis] || pl.axis;
+      const cues = (pl.cues || []).join(' · ');
+      return `<div class="asmt-q"><span class="asmt-q-txt"><b>${cn}</b> 目标约 ${pl.targetRom || 0}°<br><span style="color:#A8A8B3;font-size:12px;">${cues}</span></span></div>`;
+    }).join('');
+    c.innerHTML = `
+      <div class="asmt-kicker">评估完成 · 今日指导</div>
+      <div class="asmt-title">${coach.reason || '来,今天这样练'}</div>
+      <div class="asmt-desc">颈部 ${avail} 个方向状态良好${limited ? `,${limited} 个偏紧已为你下调目标` : ''}。下面是今天的动作重点:</div>
+      <div style="text-align:left;">${planRows || '<div class="asmt-desc">保持慢而稳,量力而行~</div>'}</div>
+      ${coach.breaks ? `<div class="asmt-desc" style="margin-top:12px;">⏰ ${coach.breaks}</div>` : ''}
+      <button class="asmt-btn" id="asmtStart">开始训练 →</button>
+    `;
+    c.querySelector('#asmtStart').addEventListener('click', () => resolve());
+  });
+}
+
 // ——— 主入口 ———
 // zone:'neck'(目前只做颈部)。返回 {pass, flow, baseline, degraded, referReasons}
 export async function runAssessment(zone = 'neck') {
@@ -173,10 +247,13 @@ export async function runAssessment(zone = 'neck') {
   const { c, close } = mask();
 
   try {
-    // 1. 红旗问卷
+    // 0. AI 问诊(调 /api/intro,每次问题不同,体现现场分析感)。拿不到→跳过。
+    const introAnswers = await introStep(c);
+
+    // 1. 红旗安全确认(固定项,不可省)
     const rf = await redFlagStep(c);
     if (rf.hit) {
-      await referView(c, []);
+      await referView(c);
       close();
       return { pass: false, referReasons: ['命中红旗自评项'] };
     }
@@ -233,12 +310,32 @@ export async function runAssessment(zone = 'neck') {
     // 写进统一健康档案(供档案页 + AI 画像分析)。隐私:只存角度数值。
     try { recordAssessment({ flow: result.flow, baseline: result.baseline, romNeck, ts: Date.now() }); } catch {}
 
-    // gate=refer → 提示
+    // gate=refer → 提示,不进游戏
     if (!result.pass) {
       const { c: c2, close: close2 } = mask();
-      await referView(c2, result.referReasons);
+      await referView(c2);
       close2();
+      return result;
     }
+
+    // gate=pass → 评估后、进关卡前:调 /api/coach 出"颈部分析+今日指导",用户看完点开始
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch('/api/coach', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flow: result.flow, baseline: result.baseline, answers: introAnswers || {} }),
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      const coach = await res.json();
+      if (coach && !coach.degraded) {
+        const { c: c3, close: close3 } = mask();
+        await coachView(c3, coach, result);
+        close3();
+      }
+    } catch (e) { /* coach 失败 → 跳过指导,直接进关卡 */ }
+
     return result;
 
   } catch (e) {

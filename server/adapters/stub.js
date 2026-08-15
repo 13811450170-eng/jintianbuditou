@@ -10,15 +10,38 @@
 const AXIS_CN = { yaw: '转头', pitch: '抬头低头', roll: '侧屈' };
 
 export const stubAdapter = {
-  // 开局引导:返回 1~2 个引导问题 + Joy 口吻招呼
+  // 开局引导:每次从题库随机抽,体现"AI 现场问诊"感(内网 DeepSeek 版天然随机)。
+  // feel/goal 两个关键 id 语义固定(recommend 依赖),但措辞与追加题随机。
   async intro({ profile } = {}) {
+    const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+    const greetings = [
+      '嗨,我是 Joy~ 正式开始前,让我先"读"一下你今天的状态。',
+      '来啦!老规矩,先让我给你把把脉,几个小问题~',
+      '在开练之前,我想先了解下你此刻的身体感受,好对症陪练。',
+      '喵…哦不,汪!先别急着动,让我这个外星狗先分析下你今天的情况。',
+    ];
+    const feelQs = [
+      '现在脖子肩膀,是酸、是紧、还是没啥特别感觉?',
+      '此刻你的颈肩,更接近哪种状态?',
+      '低头一整天了,现在脖子给你什么信号?',
+    ];
+    const goalQs = [
+      '今天想轻松放松一下,还是想认真练一组?',
+      '这次是想摸鱼式松一松,还是来点强度?',
+    ];
+    const extras = [
+      { id: 'duration', q: '今天已经连续坐了多久没起来动了?', options: ['1 小时内', '两三小时', '半天没动了'] },
+      { id: 'sleep', q: '昨晚睡得怎么样?睡姿也会影响颈椎哦。', options: ['睡得不错', '一般', '落枕/没睡好'] },
+      { id: 'mood', q: '顺便问下,今天心情如何?放松点更容易练到位~', options: ['挺好', '有点累', '压力山大'] },
+    ];
+    const questions = [
+      { id: 'feel', q: pick(feelQs), options: ['酸胀', '发紧', '还好'] },
+      { id: 'goal', q: pick(goalQs), options: ['轻松放松', '认真练一组'] },
+    ];
+    if (Math.random() < 0.7) questions.push(pick(extras));   // 70% 概率追加一题,更像现场问诊
     return {
-      greeting: '嗨,我是 Joy。开始前先问你两个小问题,我好知道今天怎么陪你练~',
-      questions: [
-        { id: 'feel', q: '现在脖子肩膀,是酸、是紧、还是没啥特别感觉?', options: ['酸胀', '发紧', '还好'] },
-        { id: 'goal', q: '今天想轻松放松一下,还是想认真练一组?', options: ['轻松放松', '认真练一组'] },
-      ],
-      // 灵敏度建议:酸/紧的人默认省力一点(游戏侧可选用)
+      greeting: pick(greetings),
+      questions,
       suggestSensitivity: profile && profile.feel === '酸胀' ? 35 : 50,
     };
   },
