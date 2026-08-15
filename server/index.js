@@ -103,6 +103,10 @@ async function handleApi(req, res, path) {
       const data = await provider.intake(payload);
       return sendJSON(res, 200, { provider: provider.name, ...data });
     }
+    if (path === '/api/game-report') {     // 编排:游戏结果 → 结论 + 训练方案 + 商业化推荐
+      const data = await provider.gameReport(payload);
+      return sendJSON(res, 200, { provider: provider.name, ...data });
+    }
     return sendJSON(res, 404, { error: 'no such api' });
   } catch (e) {
     // provider 未配置 / 网关报错等 —— 不让前端 hard-fail,返回可降级标记

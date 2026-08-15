@@ -1,0 +1,412 @@
+{
+  "generatedBy": "refresh-products.mjs",
+  "note": "真实京东商品,由 o2 metasearch 拉取。请求路径只读本文件,不实时调 metasearch。",
+  "categories": {
+    "neck-massager": {
+      "label": "颈椎按摩仪",
+      "query": "颈椎按摩仪",
+      "items": [
+        {
+          "id": "100118406273",
+          "name": "海尔 颈椎按摩器 HHZ-Y602Z-Pro",
+          "fullName": "海尔（Haier）颈椎按摩器腰部按摩仪按摩枕头颈部肩颈背部按摩靠垫腿全身七夕情人节礼物HHZ-Y602Z-Pro",
+          "price": "195.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/498323/9/5235/139534/6a793cdfF4973ea8f/008332032011b785.jpg",
+          "url": "https://item.jd.com/100118406273.html",
+          "shop": "海尔个护健康电器京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "仿真揉捏|2档热敷|全身可用"
+        },
+        {
+          "id": "100272235702",
+          "name": "SKG 颈椎按摩仪 G5 礼盒款",
+          "fullName": "SKG【七夕情人节礼物】颈椎按摩仪G5【礼盒款】肩颈部按摩器红光热敷院线EMS脉冲生日礼物送男女朋友",
+          "price": "704.58",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/484577/27/693/320725/6a587cb1F44f935cb/0083578578351a0f.jpg",
+          "url": "https://item.jd.com/100272235702.html",
+          "shop": "SKG京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "航天同源EMS|850nm热红光|环颈立体按摩"
+        },
+        {
+          "id": "100350245944",
+          "name": "SKG 颈椎按摩器 H5 鲜艾款",
+          "fullName": "SKG【七夕情人节礼物】颈椎按摩器H5尊贵真艾款 肩颈揉捏艾灸艾草热敷披肩按摩仪生日送父母男女友",
+          "price": "391.76",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/464182/38/7450/366379/6a3e4008F6e31d255/00835a05a0817fb1.jpg",
+          "url": "https://item.jd.com/100350245944.html",
+          "shop": "SKG京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "艾草热敷温养|6D立体揉捏|长续航 大电池"
+        },
+        {
+          "id": "10215965686528",
+          "name": "大师手 肩颈按摩仪 按键款",
+          "fullName": "大师手肩颈按摩仪颈椎按摩器仿真人五指手按摩披肩背部斜方肌揉捏服帖热敷送礼送爸妈男女朋友礼物 【超高性价比】精美礼盒+按键款+三档调节+加热恒温",
+          "price": "68.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/476175/16/12487/185917/6a576494F07f406ab/093532032087089e.png",
+          "url": "https://item.jd.com/10215965686528.html",
+          "shop": "京喜自营官方店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "1万+",
+          "sellingPoints": "斜方肌揉捏服贴|大师仿手指按摩仪|五指颈椎按摩器"
+        }
+      ]
+    },
+    "shoulder-massager": {
+      "label": "肩颈按摩披肩",
+      "query": "肩颈按摩披肩",
+      "items": [
+        {
+          "id": "100223541352",
+          "name": "飞利浦 肩颈按摩仪 3207N",
+          "fullName": "飞利浦（PHILIPS）肩颈按摩仪颈椎按摩器披肩 三伏艾灸暴汗热敷揉捏 送女友老婆七夕情人节礼物3207N",
+          "price": "299.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/495481/36/12247/134542/6a7d3dbaFa685b98f/008332032015da56.jpg",
+          "url": "https://item.jd.com/100223541352.html",
+          "shop": "飞利浦（PHILIPS ）按摩器京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "1万+",
+          "sellingPoints": "仿手揉捏|艾灸热敷|精美礼盒"
+        },
+        {
+          "id": "100350245944",
+          "name": "SKG 颈椎按摩器 H5 鲜艾款",
+          "fullName": "SKG【七夕情人节礼物】颈椎按摩器H5尊贵真艾款 肩颈揉捏艾灸艾草热敷披肩按摩仪生日送父母男女友",
+          "price": "391.76",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/464182/38/7450/366379/6a3e4008F6e31d255/00835a05a0817fb1.jpg",
+          "url": "https://item.jd.com/100350245944.html",
+          "shop": "SKG京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "艾草热敷温养|6D立体揉捏|长续航 大电池"
+        },
+        {
+          "id": "100168412976",
+          "name": "米家 肩颈按摩仪 三伏热敷暴汗",
+          "fullName": "米家小米【七夕情人节礼物】肩颈按摩仪斜方肌颈椎按摩器 肩颈披肩腰部背部颈椎按摩仪三伏热敷暴汗",
+          "price": "339.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/473279/12/2113/157832/6a462109Fc1ae0709/0083320320b71d1e.jpg",
+          "url": "https://item.jd.com/100168412976.html",
+          "shop": "小米京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "97",
+          "salesYear": "10万+",
+          "sellingPoints": "仿人手*揉捏|9种放松模式|米家APP智控"
+        },
+        {
+          "id": "10090215653969",
+          "name": "奥克斯 颈椎按摩器 旗舰捶背款",
+          "fullName": "奥克斯（AUX）颈椎按摩器颈肩斜方肌披肩敲捶打腰背部全身肩膀加热按摩仪生日父母亲礼物实用送爸爸妈妈 【旗舰捶背款】4核升级电机 高档礼品送爸爸妈妈老人老婆女友男女朋友女士",
+          "price": "127.99",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/461554/34/7781/131893/6a3ba5baF43980b97/008332032017a22d.jpg",
+          "url": "https://item.jd.com/10090215653969.html",
+          "shop": "奥克斯运动按摩旗舰店",
+          "isSelf": false,
+          "goodRate": "99",
+          "salesYear": "1000+",
+          "sellingPoints": "四核强劲捶打|深度缓解酸痛"
+        }
+      ]
+    },
+    "neck-pillow": {
+      "label": "护颈枕",
+      "query": "护颈枕 颈椎",
+      "items": [
+        {
+          "id": "100236133215",
+          "name": "半弦月 护颈椎记忆棉枕头",
+          "fullName": "半弦月【好评NO.1】枕头护颈椎助睡眠记忆棉颈椎病专用成人女男体工学芯",
+          "price": "208.70",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/500296/40/3785/244217/6a7a84b5Fe8bdd5db/00835a05a0c8c2fd.jpg",
+          "url": "https://item.jd.com/100236133215.html",
+          "shop": "半弦月京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "100",
+          "salesYear": "1万+",
+          "sellingPoints": "专业医学护颈助眠|专属高度贴合颈椎|A类凉感无味枕套"
+        },
+        {
+          "id": "100114906631",
+          "name": "J.Sir 颈椎枕 圆枕 荞麦壳填充",
+          "fullName": "J.Sir颈椎枕圆枕富贵包专用枕深度 睡眠荞麦壳填充舒缓颈椎牵引圆柱枕",
+          "price": "49.90",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/188678/39/49829/74323/671d9590F4883098f/e8583dec02cb1487.jpg",
+          "url": "https://item.jd.com/100114906631.html",
+          "shop": "国际者（GUOOJEZE）京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "1万+",
+          "sellingPoints": "进口荞麦填充|一枕多用|久睡不塌"
+        },
+        {
+          "id": "100255711491",
+          "name": "Mccofi 医用O型颈椎枕 反弓",
+          "fullName": "Mccofi日本医用O型颈椎枕反弓护颈椎牵引器肩颈按摩枕颈椎病专用枕头",
+          "price": "62.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/419368/29/8952/80372/69df42e2Fefa4867b/0083320320c00edb.jpg",
+          "url": "https://item.jd.com/100255711491.html",
+          "shop": "Mccofi京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "1万+",
+          "sellingPoints": "自然拉伸|指压按摩|舒缓肩颈"
+        },
+        {
+          "id": "100385738150",
+          "name": "亚朵星球 深睡枕Pro4.0 10cm",
+          "fullName": "亚朵星球深睡枕Pro4.0记忆枕头枕芯稳压枕海绵护颈椎助眠侧睡七夕送礼10cm",
+          "price": "539.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/491263/38/4087/50372/6a6b2194F9cad0501/0083320320a6a976.jpg",
+          "url": "https://item.jd.com/100385738150.html",
+          "shop": "亚朵星球京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "50万+",
+          "sellingPoints": "定位头肩颈|动态稳压|适应多睡姿"
+        }
+      ]
+    },
+    "laptop-stand": {
+      "label": "笔记本支架",
+      "query": "笔记本支架 升降",
+      "items": [
+        {
+          "id": "100223659612",
+          "name": "赛鲸 D8 电脑桌 升降桌",
+          "fullName": "赛鲸D8电脑桌办公桌升降桌笔记本增高电脑支架升降架站立办公放鼠标",
+          "price": "297.90",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/301487/7/26736/58742/688b104aFb4b76344/6384396551165686.jpg",
+          "url": "https://item.jd.com/100223659612.html",
+          "shop": "赛鲸（XGear）京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "1000+",
+          "sellingPoints": "板扣轻松升降|带鼠标板|稳固不晃"
+        },
+        {
+          "id": "100219812265",
+          "name": "极川 笔记本支架 两用 桌面立式可升降",
+          "fullName": "极川 笔记本支架电脑支架站坐两用桌面立式可升降悬空增高架联想拯救者小新苹果mac华为mate戴尔托架子",
+          "price": "98.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/341457/36/17803/166359/68ff364bF8a614d02/efee8919d71f4d7b.jpg",
+          "url": "https://item.jd.com/100219812265.html",
+          "shop": "极川（JRC）京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "10万+",
+          "sellingPoints": ""
+        },
+        {
+          "id": "100083754077",
+          "name": "酷睿冰尊 Z5 360°旋转散热支架",
+          "fullName": "酷睿冰尊（ICE COOREL）笔记本支架Z5电脑桌支架360°旋转散热支架便携折叠升降立式增高架适用平板苹果Mac联想拯救者华为",
+          "price": "28.40",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/249452/38/3316/69477/65a64865F1db3f19f/2dd6c4a7dbfd66f0.jpg",
+          "url": "https://item.jd.com/100083754077.html",
+          "shop": "酷睿冰尊京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "95",
+          "salesYear": "1万+",
+          "sellingPoints": "8档高度可调|稳固支撑不晃|赠送手机支架"
+        },
+        {
+          "id": "100132699046",
+          "name": "美家生活 平板电脑支架 可折叠散热架便携升降",
+          "fullName": "美家生活平板电脑支架  可折叠散热架便携升降小笔记本电脑支架",
+          "price": "25.80",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/433620/37/268/114444/69fc4004F2c4be587/00833203207cc764.jpg",
+          "url": "https://item.jd.com/100132699046.html",
+          "shop": "美家生活（home maid）京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "88",
+          "salesYear": "5万+",
+          "sellingPoints": "可折叠 易携带|稳固不晃|360度旋转"
+        }
+      ]
+    },
+    "ergonomic-chair": {
+      "label": "人体工学椅",
+      "query": "人体工学椅",
+      "items": [
+        {
+          "id": "100273437878",
+          "name": "西昊 C300二代Pro 人体工学椅",
+          "fullName": "西昊C300二代Pro人体工学椅电脑办公电竞椅子人工力学座椅 8D联动扶手",
+          "price": "2704.70",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/455798/20/17522/142163/6a3c972dF83c64a8b/0083320320ad437d.jpg",
+          "url": "https://item.jd.com/100273437878.html",
+          "shop": "西昊京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "1万+",
+          "sellingPoints": "腰背滑翔技术|8D联动扶手|多米诺腰靠2.0"
+        },
+        {
+          "id": "100326451788",
+          "name": "黑零 B1 Pro 人体工学椅 云白",
+          "fullName": "黑零B1 Pro人体工学椅办公椅电脑电竞椅子人工力学座椅学习  云白",
+          "price": "469.90",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/495138/6/12047/263525/6a7c8c7dF1d386b9a/00834654657d2277.jpg",
+          "url": "https://item.jd.com/100326451788.html",
+          "shop": "黑零（BLACK ZERO）京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "97",
+          "salesYear": "1万+",
+          "sellingPoints": "整椅抗衰特网|Air撑骶大腰靠|2向灵动扶手"
+        },
+        {
+          "id": "100291131558",
+          "name": "京东京造 Z5Pro 人体工学椅 双背电竞椅",
+          "fullName": "京东京造Z5Pro人体工学椅双背电竞椅办公椅子电脑椅人工力学座椅升降椅背",
+          "price": "468.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/505422/13/1319/143663/6a7c8f94Fb06c017b/008332032078b51b.png",
+          "url": "https://item.jd.com/100291131558.html",
+          "shop": "京东京造自营旗舰店",
+          "isSelf": true,
+          "goodRate": "97",
+          "salesYear": "10万+",
+          "sellingPoints": "升级大双背|三档旋转腰托|定型棉坐垫"
+        },
+        {
+          "id": "2791381",
+          "name": "西昊 M56二代 人体工学椅",
+          "fullName": "西昊M56二代 人体工学椅办公椅电脑电竞椅子人工力学座椅学习升降椅背",
+          "price": "468.99",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/470394/35/953/94207/6a432e02F6846d31a/00833203207004ce.jpg",
+          "url": "https://item.jd.com/2791381.html",
+          "shop": "西昊京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "96",
+          "salesYear": "10万+",
+          "sellingPoints": "6cm可升降椅背|145度大仰角|自适应双背腰枕"
+        }
+      ]
+    },
+    "eye-mask": {
+      "label": "蒸汽眼罩",
+      "query": "热敷眼罩 缓解疲劳",
+      "items": [
+        {
+          "id": "100340328682",
+          "name": "超亚 叶黄素蒸汽眼罩 50片",
+          "fullName": "超亚叶黄素蒸汽眼罩热敷缓解眼疲劳眼干眼涩敷贴男女学生润目护眼50片",
+          "price": "39.80",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/470413/10/16225/160306/6a50bcb5F29275827/0083320320fe6a74.png",
+          "url": "https://item.jd.com/100340328682.html",
+          "shop": "超亚眼部保健京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "已售5000W+"
+        },
+        {
+          "id": "100191982958",
+          "name": "海氏 海诺叶黄素蒸汽眼罩 20片",
+          "fullName": "海氏海诺叶黄素蒸汽眼罩20片睡眠遮光睡觉热敷贴缓解眼干涩疲劳视力模糊",
+          "price": "21.60",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/412275/22/11619/154688/69ce2b95F04ffcc75/008332032064baa2.jpg",
+          "url": "https://item.jd.com/100191982958.html",
+          "shop": "海氏海诺家庭清洁京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "10万+",
+          "sellingPoints": "叶黄素护眼|蒸汽滋养|释放双眼压力"
+        },
+        {
+          "id": "100075954172",
+          "name": "海氏海诺 热敷蒸汽眼罩 洋甘菊14艾草14沉香2",
+          "fullName": "海氏海诺热敷蒸汽眼罩护眼缓解眼干眼疲劳（洋甘菊14艾草14沉香2）共30片",
+          "price": "23.80",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/319202/13/20891/188681/688c71bfF17b70f89/325860d59f3d0d92.jpg",
+          "url": "https://item.jd.com/100075954172.html",
+          "shop": "海氏海诺京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "1万+",
+          "sellingPoints": "三种香型|可感蒸汽|独立包装"
+        },
+        {
+          "id": "100103703220",
+          "name": "可孚 医用级干眼症热敷眼罩 30片",
+          "fullName": "可孚 医用级干眼症热敷眼罩眼部热敷贴蒸汽眼罩缓解眼部眼睛疲劳 30片",
+          "price": "56.20",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/488386/13/8302/144130/6a6ab8f2Fc6ba3d89/0083320320d95cc6.jpg",
+          "url": "https://item.jd.com/100103703220.html",
+          "shop": "可孚京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "98",
+          "salesYear": "5万+",
+          "sellingPoints": "辅助缓解|滋润眼周|温热蒸汽"
+        }
+      ]
+    },
+    "eye-lamp": {
+      "label": "护眼台灯",
+      "query": "护眼台灯",
+      "items": [
+        {
+          "id": "100108509844",
+          "name": "米家 台灯2 Lite 国标AA级",
+          "fullName": "米家小米米家台灯2Lite 学生儿童学习阅读保护视力灯具 国标AA级 ",
+          "price": "79.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/490113/19/4640/155860/6a68218aFd161aed3/0083320320ec00f2.jpg",
+          "url": "https://item.jd.com/100108509844.html",
+          "shop": "小米京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "AA级照明实力|学习用灯具认证|CQC读写台灯"
+        },
+        {
+          "id": "100018932614",
+          "name": "欧普照明 护眼台灯 四档调光",
+          "fullName": "欧普照明（OPPLE）AAAA级学习护眼灯学生学习台灯卧室宿舍阅读 四档调光儿童家用",
+          "price": "69.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/495181/40/1313/126841/6a6b2f07Ffe0e7950/00833203204e352c.jpg",
+          "url": "https://item.jd.com/100018932614.html",
+          "shop": "欧普照明京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "国AA照度|无蓝光危害|多档调光"
+        },
+        {
+          "id": "100003814749",
+          "name": "松下 台灯 致岚升级",
+          "fullName": "松下（Panasonic）台灯 AAAA质量分级儿童卧室宿舍书桌学生护眼灯 致岚升级",
+          "price": "99.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/488841/21/6189/118999/6a7d6a8eFf1b9d9af/0083320320aeddd5.jpg",
+          "url": "https://item.jd.com/100003814749.html",
+          "shop": "松下灯具京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "无可视频闪|无蓝光危害|符近视防控要求"
+        },
+        {
+          "id": "100108322000",
+          "name": "米家 台灯2",
+          "fullName": "米家小米台灯2护眼学习专用国AA级儿童读写台灯阅读办公智能灯具七夕",
+          "price": "211.00",
+          "image": "https://img14.360buyimg.com/n1/jfs/t1/495704/32/9278/102870/6a7e5d22Fc7a8d757/00833203201d8416.jpg",
+          "url": "https://item.jd.com/100108322000.html",
+          "shop": "小米京东自营旗舰店",
+          "isSelf": true,
+          "goodRate": "99",
+          "salesYear": "10万+",
+          "sellingPoints": "重磅新品|国AA级照度|Ra97高显色"
+        }
+      ]
+    }
+  }
+}

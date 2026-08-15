@@ -16,6 +16,7 @@ import { jdGatewayAdapter } from './jd-gateway.js';
 import { healthAssessmentStub } from './health-assessment.stub.js';
 import { healthCoachingStub } from './health-coaching.stub.js';
 import { healthIntakeStub } from './health-intake.stub.js';
+import { productsAdapter } from './products.js';
 
 // 档案画像的 stub(规则化)。两种输入都支持:
 //   ① basics(录入即时画像):年龄/BMI/久坐/屏幕/职业/主诉/病史 → 生成"第一印象"
@@ -87,11 +88,12 @@ const STUB = {
   recommend:(a) => stubAdapter.recommend(a),
   screen: (a) => healthAssessmentStub.screen(a),
   coach:  (a) => healthCoachingStub.recommend(a),      // coaching 的入口叫 recommend
+  coachFromSession: (a) => stubAdapter.coachFromSession(a),   // 练后指导(post-game)
   analyzeProfile: (a) => profileStub(a),
   intake: (a) => healthIntakeStub.intake(a),
 };
 
-const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'analyzeProfile', 'intake'];
+const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'coachFromSession', 'analyzeProfile', 'intake'];
 
 // 给 jd-gateway 包一层降级:调用失败自动回退 STUB 对应方法。
 function withFallback(primary, name) {
@@ -110,10 +112,25 @@ function withFallback(primary, name) {
   return wrapped;
 }
 
+// 编排 gameReport:一次请求把「结论 + 训练方案 + 商业化推荐」都拿到。
+// 复用传入 provider 的 analyze / coachFromSession(已自带降级),商品恒走本地目录。
+// 单块失败不拖垮整体:analyze/coach 各自 try,products 读本地 JSON 基本不失败。
+function attachGameReport(provider) {
+  provider.gameReport = async ({ session, level, profile } = {}) => {
+    let conclusion = null, plan = null, recommend = null;
+    try { conclusion = await provider.analyze({ session }); } catch (e) { /* 结论失败 → 前端隐藏结论卡 */ }
+    try { plan = await provider.coachFromSession({ session, profile }); } catch (e) { /* 方案失败 → 隐藏方案卡 */ }
+    try { recommend = await productsAdapter.recommend({ analysis: conclusion, session, profile, level }); }
+    catch (e) { /* 推荐失败 → 隐藏推荐卡 */ }
+    return { conclusion, plan, recommend };
+  };
+  return provider;
+}
+
 export function getProvider() {
   const name = process.env.LLM_PROVIDER || 'stub';
-  if (name === 'jd-gateway') return withFallback(jdGatewayAdapter, 'jd-gateway');
-  if (name === 'stub') return { name: 'stub', ...STUB };
+  if (name === 'jd-gateway') return attachGameReport(withFallback(jdGatewayAdapter, 'jd-gateway'));
+  if (name === 'stub') return attachGameReport({ name: 'stub', ...STUB });
   console.warn(`[provider] 未知 LLM_PROVIDER="${name}",回退 stub`);
-  return { name: 'stub', ...STUB };
+  return attachGameReport({ name: 'stub', ...STUB });
 }

@@ -29,6 +29,7 @@
   --fire:        #FF6B4A;
   --success:     #4CAF88;
   --star:        #FFC94D;
+  --jd-red:      #E1251B;
 
   --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
   --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
@@ -305,6 +306,7 @@ html, body {
   flex-direction: column;
   gap: 12px;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .card {
@@ -476,6 +478,45 @@ html, body {
 .ai-insights li.warn::before { background: #f0a020; }
 .ai-insights li.todo::before { background: #9aa4b2; }
 .ai-advice { margin-top: 10px; font-size: 11px; color: var(--ink); font-weight: 600; line-height: 1.55; }
+
+/* ========== 训练方案卡(练后 · health-coaching) ========== */
+.plan-focus { font-size: 12px; color: var(--ink); font-weight: 700; line-height: 1.5; margin-bottom: 10px; }
+.plan-moves { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.plan-moves li {
+  background: var(--card-alt); border-radius: 12px; padding: 9px 12px;
+  font-size: 12px; color: var(--ink-2); line-height: 1.5;
+}
+.plan-moves li b { color: var(--ink); font-weight: 800; }
+.plan-moves li .cue { color: var(--ink-3); }
+.plan-breaks { font-size: 11px; color: var(--ink-3); line-height: 1.5; }
+.plan-breaks strong { color: var(--ink-2); font-weight: 700; }
+
+/* ========== 商业化推荐卡(真实京东商品) ========== */
+.shop-card { background: linear-gradient(135deg, #FFF9EC 0%, #FFFDF6 100%); border: 1px solid rgba(255,184,0,0.15); }
+.shop-jd-tag {
+  display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; margin-left: auto;
+  background: rgba(225,37,27,0.08); border: 1px solid rgba(225,37,27,0.2); border-radius: 7px;
+  color: var(--jd-red); font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+}
+.shop-reason { font-size: 12px; color: var(--ink-2); line-height: 1.5; margin-bottom: 12px; }
+.shop-grid { display: flex; flex-direction: column; gap: 10px; }
+.shop-item {
+  display: flex; gap: 12px; align-items: center; text-decoration: none;
+  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px;
+  transition: all 0.22s;
+}
+.shop-item:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
+.shop-thumb { width: 62px; height: 62px; border-radius: 10px; flex-shrink: 0; object-fit: cover; background: var(--card-alt); }
+.shop-info { flex: 1; min-width: 0; }
+.shop-cat { display: inline-block; font-size: 10px; font-weight: 700; color: var(--gold); background: var(--gold-bg); padding: 1px 7px; border-radius: 6px; margin-bottom: 3px; }
+.shop-name { font-size: 13px; font-weight: 800; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
+.shop-why { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin-bottom: 5px; }
+.shop-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.shop-price { font-size: 16px; font-weight: 900; color: var(--jd-red); }
+.shop-price span { font-size: 11px; margin-right: 1px; font-weight: 700; }
+.shop-meta { font-size: 10px; color: var(--ink-4); }
+.shop-go { flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; padding: 4px 11px; background: var(--jd-red); color: #fff; border-radius: 100px; font-size: 11px; font-weight: 700; }
+.shop-disclaim { font-size: 10px; color: var(--ink-4); margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255,184,0,0.3); line-height: 1.45; }
 
 /* ========== 底部 CTA ========== */
 .actions {
@@ -675,7 +716,7 @@ html, body {
         </div>
       </div>
 
-      <!-- AI 教练分析(Phase 4-B) —— 由后端 /api/analyze 填充,失败则隐藏 -->
+      <!-- 结论报告(逐轴点评) —— 由 /api/game-report 的 conclusion 填充,失败则隐藏 -->
       <div class="card ai-card" id="aiCard" style="display:none">
         <div class="ai-head">
           <span class="ai-badge">Joy 的分析</span>
@@ -683,6 +724,37 @@ html, body {
         </div>
         <ul class="ai-insights" id="aiInsights"></ul>
         <div class="ai-advice" id="aiAdvice"></div>
+      </div>
+
+      <!-- 训练方案(练后 · health-coaching) —— 由 /api/game-report 的 plan 填充,失败则隐藏 -->
+      <div class="card" id="planCard" style="display:none">
+        <div class="card-head">
+          <div class="card-head-icon" style="background: var(--neck-bg); color: var(--neck);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          <span class="card-head-title">下一步怎么练</span>
+        </div>
+        <div class="plan-focus" id="planFocus"></div>
+        <ul class="plan-moves" id="planMoves"></ul>
+        <div class="plan-breaks" id="planBreaks"></div>
+      </div>
+
+      <!-- 商业化推荐(真实京东商品) —— 由 /api/game-report 的 recommend 填充,失败则隐藏 -->
+      <div class="card shop-card" id="shopCard" style="display:none">
+        <div class="card-head">
+          <div class="card-head-icon" style="background: var(--gold-bg); color: var(--gold);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+          </div>
+          <span class="card-head-title">好物推荐</span>
+          <span class="shop-jd-tag">JD · 京东自营</span>
+        </div>
+        <div class="shop-reason" id="shopReason"></div>
+        <div class="shop-grid" id="shopGrid"></div>
+        <div class="shop-disclaim">商品由京东提供 · 与训练无强制关联,按需选购即可。</div>
       </div>
 
       <!-- 医学小卡 -->
@@ -866,35 +938,127 @@ function applyBranch() {
   document.getElementById('medTitle').textContent = cfg.medTitle;
   document.getElementById('medDesc').textContent = cfg.medDesc;
 
-  // AI 教练分析(Phase 4-B):优先用 run.ai;没有则用 run.session 现场向后端要一次(异步,不阻塞报告主体)
-  if (run.ai) {
-    renderAI(run.ai);
-  } else if (run.session) {
-    fetchAI(run.session);
-  } else {
-    renderAI(null);
-  }
+  // 练后闭环(结论 + 训练方案 + 商业化推荐):向 /api/game-report 要一次。
+  // 优先 run.ai(旧的现成结论)渲染结论卡;方案/推荐无论是否有 session 都拉(异步,不阻塞报告主体)。
+  if (run.ai) renderAI(run.ai);
+  fetchGameReport(run.session || null, run.level || run.branch || null, !run.ai);
 }
 
-// 向后端 /api/analyze 拉取分析。任何失败(无后端/超时/降级)都静默隐藏 AI 卡,报告主体不受影响。
-async function fetchAI(session) {
-  const card = document.getElementById('aiCard');
+// 向后端 /api/game-report 拉「结论 + 训练方案 + 商业化推荐」。
+// 任何失败(无后端/超时/降级)都静默隐藏对应卡,报告主体不受影响。
+// fillConclusion=false 时不覆盖已用 run.ai 渲染好的结论卡。
+async function fetchGameReport(session, level, fillConclusion) {
   try {
+    const profile = readProfile();
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 8000);
-    const res = await fetch('/api/analyze', {
+    const res = await fetch('/api/game-report', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session }), signal: ctrl.signal,
+      body: JSON.stringify({ session, level, profile }), signal: ctrl.signal,
     });
     clearTimeout(timer);
     const data = await res.json();
-    renderAI(data);
+    if (data && data.degraded) { hideReportCards(fillConclusion); return; }
+    if (fillConclusion) renderAI(data.conclusion || null);
+    renderPlan(data.plan || null);
+    renderShop(data.recommend || null);
   } catch (e) {
-    card.style.display = 'none';   // 降级:直接双击打开 html(无后端)或后端挂时,不显示 AI 卡
+    hideReportCards(fillConclusion);   // 无后端 / 超时:静默隐藏
   }
 }
 
-// 渲染 AI 分析面板。data 为空 → 隐藏整卡(后端不可用时静默降级,不影响报告主体)
+function hideReportCards(includeConclusion) {
+  if (includeConclusion) document.getElementById('aiCard').style.display = 'none';
+  document.getElementById('planCard').style.display = 'none';
+  document.getElementById('shopCard').style.display = 'none';
+}
+
+// 读统一健康档案的基础资料(给后端做商品意图映射)。无 health-store / 无数据都安全降级为 {}。
+function readProfile() {
+  try {
+    const p = JSON.parse(localStorage.getItem('health_profile_v1'));
+    return (p && p.profile) ? p.profile : {};
+  } catch { return {}; }
+}
+
+// 渲染训练方案卡。空 → 隐藏。
+function renderPlan(plan) {
+  const card = document.getElementById('planCard');
+  if (!plan || plan.degraded || (!plan.focus && !(plan.moves && plan.moves.length))) {
+    card.style.display = 'none';
+    return;
+  }
+  document.getElementById('planFocus').textContent = plan.focus || '';
+  const ul = document.getElementById('planMoves');
+  ul.innerHTML = '';
+  for (const m of (plan.moves || [])) {
+    const li = document.createElement('li');
+    const b = document.createElement('b'); b.textContent = m.name || '';
+    const cue = document.createElement('span'); cue.className = 'cue';
+    cue.textContent = m.cue ? ' · ' + m.cue : '';
+    li.appendChild(b); li.appendChild(cue);
+    ul.appendChild(li);
+  }
+  const breaks = document.getElementById('planBreaks');
+  breaks.innerHTML = '';
+  if (plan.breaks) {
+    const strong = document.createElement('strong'); strong.textContent = '间歇:';
+    breaks.appendChild(strong);
+    breaks.appendChild(document.createTextNode(' ' + plan.breaks));
+  }
+  card.style.display = '';
+}
+
+// 渲染商业化推荐卡(真实京东商品)。空 → 隐藏。商品名/推荐语用 textContent 防注入。
+function renderShop(rec) {
+  const card = document.getElementById('shopCard');
+  if (!rec || rec.degraded || !(rec.products && rec.products.length)) {
+    card.style.display = 'none';
+    return;
+  }
+  document.getElementById('shopReason').textContent = rec.reason || '';
+  const grid = document.getElementById('shopGrid');
+  grid.innerHTML = '';
+  for (const p of rec.products) {
+    const a = document.createElement('a');
+    a.className = 'shop-item';
+    a.href = p.url || '#';
+    a.target = '_blank'; a.rel = 'noopener noreferrer';
+
+    const img = document.createElement('img');
+    img.className = 'shop-thumb'; img.loading = 'lazy';
+    img.src = p.image || ''; img.alt = p.name || '';
+    img.onerror = function () { this.style.visibility = 'hidden'; };
+
+    const info = document.createElement('div'); info.className = 'shop-info';
+    const cat = document.createElement('span'); cat.className = 'shop-cat'; cat.textContent = p.categoryLabel || '';
+    const name = document.createElement('div'); name.className = 'shop-name'; name.textContent = p.name || '';
+    const why = document.createElement('div'); why.className = 'shop-why'; why.textContent = p.reason || '';
+
+    const bottom = document.createElement('div'); bottom.className = 'shop-bottom';
+    const price = document.createElement('div'); price.className = 'shop-price';
+    const yen = document.createElement('span'); yen.textContent = '¥';
+    price.appendChild(yen);
+    price.appendChild(document.createTextNode(p.price != null ? String(p.price) : '—'));
+    const go = document.createElement('span'); go.className = 'shop-go'; go.textContent = '去看看';
+    bottom.appendChild(price); bottom.appendChild(go);
+
+    info.appendChild(cat); info.appendChild(name);
+    if (p.reason) info.appendChild(why);
+    if (p.goodRate) {
+      const meta = document.createElement('div'); meta.className = 'shop-meta';
+      meta.textContent = '好评 ' + p.goodRate + '%' + (p.salesYear ? ' · 年销 ' + p.salesYear : '');
+      info.appendChild(meta);
+    }
+    info.appendChild(bottom);
+
+    a.appendChild(img); a.appendChild(info);
+    grid.appendChild(a);
+  }
+  card.style.display = '';
+}
+
+// 渲染 AI 结论面板(结论卡)。data 为空 → 隐藏整卡(后端不可用时静默降级,不影响报告主体)
 function renderAI(data) {
   const card = document.getElementById('aiCard');
   if (!data || data.degraded || !data.insights || !data.insights.length) {
