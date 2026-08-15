@@ -9,9 +9,18 @@
 //
 // 隐私红线:只接收数值化 session,绝不接收任何画面。
 
+import { stubAdapter } from './stub.js';   // 复用其 analyze() 的逐轴 insights
+
 const RED_FLAG_NECK = ['近期头颈外伤', '进行性剧烈症状', '手脚无力笨拙', '走路不稳', '吞咽或呼吸困难', '大小便功能新变化'];
 const RED_FLAG_SHOULDER = ['近期肩部外伤', '肩臂变形或肿胀', '无法正常抬臂', '持续麻木或无力', '发热不适', '胸痛或呼吸困难'];
 const NECK_AXES = ['protrusion', 'flexion', 'retraction', 'extension', 'lateralL', 'lateralR', 'rotationL', 'rotationR'];
+
+// 各向 ROM 目标角(度) —— 取解剖极限 ~70-80%,舒展而非极限(医学背书见 SKILL.md 第3节)。
+// ⚠️ 需真机校准:摄像头实测 rel 角与真实颈部角有系统偏差,这些是 demo 起点值。
+const NECK_TARGET_ROM = {
+  flexion: 40, extension: 30, lateralL: 35, lateralR: 35, rotationL: 60, rotationR: 60,
+  protrusion: 12, retraction: 12,  // 前突/后缩 FaceLandmarker 难测,颈部这两向暂不采集
+};
 
 // 命中任意红旗 → 硬拦截
 function hitRedFlag(flags = {}) {
@@ -20,11 +29,12 @@ function hitRedFlag(flags = {}) {
 }
 
 // 单方向四态判定:available / limited / remeasure / stop
-function axisStatus(m = {}, calibOk = true) {
+// target:该向目标角(0=不判幅度);m.value:本次实测峰值角,达标率=value/target。
+function axisStatus(m = {}, calibOk = true, target = 0) {
   if (m.discomfort) return 'stop';                       // 该方向不适 → 停
   if (!calibOk || (m.confidence ?? 1) < 0.5) return 'remeasure';  // 追踪不可信 → 重测
   if ((m.compensation && m.compensation.length >= 2)) return 'limited';  // 代偿明显但无痛 → 降级
-  // TODO: 引入各方向 ROM 幅度阈值,幅度不足也归 limited
+  if (target > 0 && Math.abs(m.value ?? 0) / target < 0.8) return 'limited';  // 幅度不足 → 降级(下调目标后仍可练)
   return 'available';
 }
 
@@ -46,7 +56,7 @@ export const healthAssessmentStub = {
 
     const neck = {};
     for (const ax of NECK_AXES) {
-      if (romNeck[ax]) neck[ax] = { effectiveRom: romNeck[ax].value ?? 0, status: axisStatus(romNeck[ax], calibOk) };
+      if (romNeck[ax]) neck[ax] = { effectiveRom: romNeck[ax].value ?? 0, status: axisStatus(romNeck[ax], calibOk, NECK_TARGET_ROM[ax] || 0) };
     }
     const shoulder = {};
     for (const k of ['flexionL', 'flexionR', 'scapularRetraction']) {
@@ -76,10 +86,27 @@ export const healthAssessmentStub = {
     if (feedback.dizziness) referSignals.push('眩晕');
     if (feedback.romDropped) referSignals.push('练后活动度下降');
     if (feedback.painPersist) referSignals.push('疼痛持续加重');
-    // TODO: 与 stub.analyze 的逐轴 insights 合并输出,保持前端 insights[].level 契约不变
+
+    // 复用 stub.analyze 出本次逐轴点评,再把练后异常信号作为 warn 级 insight 叠加,
+    // 保持前端 insights[].level ∈ {good,warn,todo} 契约不变。
+    let insights = [];
+    let headline = '', advice = '';
+    try {
+      const a = await stubAdapter.analyze({ session });
+      insights = a.insights || [];
+      headline = a.headline || '';
+      advice = a.advice || '';
+    } catch {}
+    for (const sig of referSignals) {
+      insights.unshift({ axis: 'safety', level: 'warn', text: `⚠️ ${sig} —— 建议停止并做线下评估。` });
+    }
+
     return {
       gate: referSignals.length ? 'refer' : 'pass',
       referReasons: referSignals,
+      headline: referSignals.length ? '有几个信号要留意' : headline,
+      insights,
+      advice,
       tone: referSignals.length ? 'gentle' : 'cheer',
     };
   },

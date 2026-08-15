@@ -267,10 +267,10 @@ const ZONES = {
     plays: [
       { name: '拳击派对', diff: 'easy', diffTxt: '轻度', time: '约 40 秒', action: '四向挥拳',
         sub: '跟着节拍左钩右钩上勾下勾,挥拳时颈部随之转动发力,综合灵活度拉满。',
-        url: 'mock-boxing-video.html', video: 'img/boxing.mp4' },
+        url: 'mock-joy-boxing.html', video: 'img/boxing.mp4', assess: true },
       { name: 'Doga 餐厅', diff: 'mid', diffTxt: '中度', time: '约 40 秒', action: '左右转头',
         sub: '转头对准饿了的 Doga,金勺圈闭合一秒喂饱它 —— 温和的左右转动,唤醒颈部。',
-        url: 'mock-lunch-video.html', video: 'img/lunch.mp4' },
+        url: 'mock-lunch-restaurant.html', video: 'img/lunch.mp4', assess: true },
       { name: '颈椎迷宫', diff: 'hard', diffTxt: '重度', time: '开发中', action: '转头控向',
         sub: '转头操控小球走迷宫,大范围多方向转动 —— 进阶挑战,敬请期待。',
         soon: true },
@@ -347,7 +347,7 @@ if (z.plays.length === 0) {
         <div class="lock-foot">敬请期待</div>
       </div>
     </div>` : `
-    <div class="play-card" onclick="location.href='${p.url}'">
+    <div class="play-card" onclick="enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})">
       <div class="play-visual">
         <video src="${p.video}" muted loop playsinline autoplay></video>
         <div class="scrim"></div>
@@ -361,12 +361,31 @@ if (z.plays.length === 0) {
           <span class="meta-chip">${ICO_MOVE}${p.action}</span>
         </div>
         <div class="play-foot">
-          <span class="hint">演示版</span>
-          <button class="play-cta" onclick="event.stopPropagation();location.href='${p.url}'">开始 ${ICO_ARROW}</button>
+          <span class="hint">${p.assess ? '先做健康评估' : '演示版'}</span>
+          <button class="play-cta" onclick="event.stopPropagation();enterPlay('${p.url}', ${p.assess ? 'true' : 'false'})">开始 ${ICO_ARROW}</button>
         </div>
       </div>
     </div>`).join('');
 }
+
+// 进关卡:需评估的先跑健康评估闸门(assessment.js 挂在 window.runAssessment)。
+// gate=pass 才放行;refer 则 runAssessment 内部已提示、这里不跳。
+// 降级:评估模块没加载好 / 返回 degraded → 直接进关卡,绝不阻断。
+async function enterPlay(url, needAssess) {
+  if (needAssess && typeof window.runAssessment === 'function') {
+    try {
+      const r = await window.runAssessment('neck');
+      if (r && r.pass === false) return;   // 转介,不进游戏
+    } catch (e) { /* 评估异常 → 降级放行 */ }
+  }
+  location.href = url;
+}
+</script>
+<script type="module">
+  // 评估闸门(ES module)挂到 window,供上面非 module 脚本的 enterPlay 调用
+  import('./js/assessment.js')
+    .then(m => { window.runAssessment = m.runAssessment; })
+    .catch(() => { /* 加载失败 → enterPlay 走降级直接进关卡 */ });
 </script>
 </body>
 </html>

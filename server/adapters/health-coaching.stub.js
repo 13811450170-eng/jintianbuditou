@@ -15,8 +15,14 @@ function openMoves(flow, baseline = {}) {
     .map(k => {
       const s = baseline[part][k];
       const cap = s.effectiveRom ?? 0;
-      // limited 方向进一步下调目标(这里取 80% 占位,TODO: 换成临床阈值曲线)
-      const targetRom = s.status === 'limited' ? Math.round(cap * 0.8) : cap;
+      // 下调分档:available 用满基线;limited 保守(有代偿/低置信更省力)。
+      // ⚠️ 系数为临床起点值,需真机+康复专业校准。绝不超过 safetyCap。
+      let factor = 1;
+      if (s.status === 'limited') {
+        const shaky = (s.confidence != null && s.confidence < 0.6) || (s.compensation && s.compensation.length >= 1);
+        factor = shaky ? 0.65 : 0.75;
+      }
+      const targetRom = Math.round(cap * factor);
       return { axis: k, targetRom, safetyCap: cap, cues: SAFETY_CUES.slice(0, 3) };
     });
 
