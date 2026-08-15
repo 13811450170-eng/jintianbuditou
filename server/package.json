@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "今天不低头 · 本地后端代理(持有 LLM key + 两个 AI 端点 + 同源静态托管)。零依赖,node >=18。",
+  "description": "今天不低头 · 本地后端代理(持有 LLM key + /api/* 端点 + 同源静态托管)。零依赖,node >=18。",
   "scripts": {
     "start": "node index.js"
   },

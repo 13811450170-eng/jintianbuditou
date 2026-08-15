@@ -2,7 +2,9 @@
 // ------------------------------------------------------------
 // 职责:
 //   1. 持有 LLM key(走环境变量),前端永不接触 key —— 这是引入后端的根本理由。
-//   2. 暴露两个端点:POST /api/intro、POST /api/analyze。
+//   2. 暴露 /api/* 端点(POST):intro / analyze / recommend / screen / coach /
+//      profile / intake / game-report —— 覆盖开局问诊、结果分析、关卡推荐、
+//      评估闸门、练习指导、档案画像、对话录入,以及游戏结果闭环(结论+方案+商品)。
 //   3. 同源托管静态文件(index.html / mock-*.html / js / img …),
 //      前端 fetch('/api/...') 无跨域,一个端口跑全部,摄像头也满足 localhost 安全上下文。
 //
