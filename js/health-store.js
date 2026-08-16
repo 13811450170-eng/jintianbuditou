@@ -14,6 +14,7 @@ const KEY = 'health_profile_v1';
 const DEFAULT_PROFILE = {
   updatedAt: 0,
   totalSessions: 0,
+  onboardedAt: 0,   // 走完 onboarding 引导流程的时间戳(0=新用户,首页会引导去测评)
   // 基础个人/体检资料(onboarding 对话式录入写入)。null=未填。隐私:纯数值/文本,无画面。
   profile: {
     nickname: null, age: null, gender: null,
@@ -99,6 +100,19 @@ export function saveTodayFatigue(answers = {}) {
   p.fatigue = { score: r.score, level: r.level, date: todayStr(), factors: r.factors, answers, ts: Date.now() };
   save(p);
   return r;
+}
+
+// 是否已走过 onboarding 引导(首页据此决定:新用户先去测评,老用户直接进首页)
+export function isOnboarded() {
+  const p = loadProfile();
+  return !!(p.onboardedAt || (p.profile && p.profile.filledAt));
+}
+
+// 标记已完成 onboarding(走到完成页时调用,无论是否填了资料)
+export function markOnboarded() {
+  const p = loadProfile();
+  if (!p.onboardedAt) { p.onboardedAt = Date.now(); save(p); }
+  return p;
 }
 
 // 基础资料录入写入(onboarding 对话式录入调用)。只覆盖传入的非空字段,自动算 BMI。
