@@ -204,14 +204,15 @@
   }
   .subtitle{font-size:15px;color:rgba(255,255,255,.82);line-height:1.7;max-width:440px;}
   .subtitle b{color:var(--gold-bright);}
-  .how-grid{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;justify-content:center;}
+  .how-grid{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
   .how-item{
-    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-    border-radius:var(--r-sm);padding:12px 14px;min-width:92px;
-    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);
+    border-radius:var(--r-md);padding:22px 20px;min-width:150px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
   }
-  .how-item .ico{width:22px;height:22px;color:#fff;}
-  .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
+  .how-item .ico{width:40px;height:40px;color:#fff;}
+  .how-item .lb{font-size:17px;color:var(--gold-bright);font-weight:800;}
+  .how-item .sub2{font-size:13px;color:rgba(255,255,255,.65);}
   .btn{
     margin-top:8px;border:none;cursor:pointer;
     background:var(--brand);
@@ -244,32 +245,18 @@
   .result-up{font-size:14px;color:var(--ok);font-weight:700;display:flex;align-items:center;gap:6px;}
   .result-up .ico{width:15px;height:15px;stroke:var(--ok);}
 
-  /* ---- 结算 · 评级 Hero(星星 + Rank + 一句判语) ---- */
+  /* ---- 结算 · 判语 + 星级并排一行 ---- */
   #result{gap:10px;overflow-y:auto;}
-  .res-hero{display:flex;flex-direction:column;align-items:center;gap:6px;}
-  .res-stars{display:flex;gap:6px;filter:drop-shadow(0 3px 10px rgba(255,201,77,.32));}
-  .res-stars svg{width:30px;height:30px;transition:opacity .3s;}
-  .res-stars svg.dim{opacity:.24;}
-  .res-stars svg.lit{animation:starPop .55s ease-out backwards;}
+  .res-verdict-row{display:flex;align-items:center;gap:14px;}
+  .res-verdict{font-size:19px;font-weight:900;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);letter-spacing:.5px;}
+  .res-stars{display:inline-flex;gap:7px;filter:drop-shadow(0 3px 10px rgba(255,201,77,.32));}
+  .res-stars svg{width:30px;height:30px;opacity:1;transition:opacity .3s;}
+  .res-stars svg.dim{opacity:.22;}
+  .res-stars svg.lit{animation:starPop .55s ease-out;}
   .res-stars svg.lit:nth-child(1){animation-delay:.10s;}
   .res-stars svg.lit:nth-child(2){animation-delay:.24s;}
   .res-stars svg.lit:nth-child(3){animation-delay:.38s;}
   @keyframes starPop{0%{transform:scale(0) rotate(-160deg);opacity:0;}60%{transform:scale(1.2) rotate(12deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
-  .res-rank{display:flex;align-items:baseline;gap:10px;}
-  .res-grade{font-size:52px;font-weight:900;line-height:1;letter-spacing:-.03em;
-    background:linear-gradient(135deg,#fff 0%,var(--gold-bright) 48%,var(--brand) 100%);
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-  .res-rank .lbl{font-size:12px;font-weight:800;letter-spacing:2px;color:rgba(255,255,255,.55);}
-  .res-verdict{font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);letter-spacing:.5px;}
-
-  /* ---- Joy 一句点评 ---- */
-  .joy-say{
-    display:inline-flex;align-items:center;gap:8px;max-width:430px;
-    padding:9px 18px;border-radius:var(--r-pill);
-    background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
-    font-size:13px;color:rgba(255,255,255,.9);line-height:1.5;
-  }
-  .joy-say b{color:var(--gold-bright);font-weight:800;flex-shrink:0;}
 
   /* ---- 练完感觉 ---- */
   .feel-block{display:flex;flex-direction:column;align-items:center;gap:8px;}
@@ -287,16 +274,23 @@
   .feel-btn.on{background:rgba(255,214,107,.16);border-color:var(--gold);}
   .feel-btn.on .fl{color:var(--gold-bright);}
 
-  /* ---- 看完整报告入口 ---- */
+  /* ---- 看完整报告入口(尺寸与主按钮一致,描边区分主次) ---- */
   .btn-report{
     margin-top:2px;border:1px solid rgba(255,214,107,.42);cursor:pointer;
     background:rgba(255,214,107,.08);color:var(--gold-bright);
-    font-family:var(--font);padding:12px 26px;border-radius:var(--r-pill);
-    font-size:14px;font-weight:800;letter-spacing:.5px;
-    display:inline-flex;align-items:center;gap:8px;transition:background .15s;
+    font-family:var(--font);padding:16px 46px;border-radius:var(--r-pill);
+    font-size:18px;font-weight:900;letter-spacing:1.5px;
+    display:inline-flex;align-items:center;gap:9px;transition:background .15s;
   }
   .btn-report:hover{background:rgba(255,214,107,.17);}
-  .btn-report .ico{width:16px;height:16px;stroke:var(--gold-bright);}
+  .btn-report .ico{width:18px;height:18px;stroke:var(--gold-bright);}
+
+  /* 结算页:「再喂一次」这组按钮起整体下移;两个主按钮固定同宽 */
+  #result .btn{margin-top:30px;}
+  #result .btn,#result .btn-report{width:300px;justify-content:center;padding-left:0;padding-right:0;}
+  /* 拉开间距:数据卡↔感受、报告按钮↔返回 */
+  #result .feel-block{margin-top:18px;}
+  #result .btn-ghost{margin-top:20px;}
 
   .toast{
     position:absolute;top:78px;left:50%;transform:translateX(-50%) translateY(-10px);
@@ -443,17 +437,7 @@
 
     <!-- 结算 -->
     <div class="overlay hide" id="result">
-      <!-- 评级 Hero:本局星星 + Rank + 判语 -->
-      <div class="res-hero">
-        <div class="res-stars" id="resStars">
-          <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
-          <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
-          <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
-        </div>
-        <div class="res-rank"><span class="res-grade" id="rGrade">A</span><span class="lbl">RANK</span></div>
-        <div class="res-verdict" id="rVerdict">喂饱了大半桌 Doga</div>
-      </div>
-
+      <!-- 火苗 streak(+1 · 连续锻炼 N 天) -->
       <div class="streak-win" id="streakWin">
         <div class="flame-stage">
           <svg class="flame" viewBox="0 0 78 96">
@@ -473,8 +457,17 @@
           <div class="flame-spark" style="--sr:-30deg"></div><div class="flame-spark" style="--sr:-12deg"></div>
           <div class="flame-spark" style="--sr:12deg"></div><div class="flame-spark" style="--sr:30deg"></div>
         </div>
-        <div class="streak-days">连续 <span class="big">6</span> 天</div>
-        <div class="streak-sub">火苗更旺了 · 别断哦</div>
+        <div class="streak-days">连续锻炼 <span class="big">6</span> 天</div>
+      </div>
+
+      <!-- 判语 + 星级并排一行 -->
+      <div class="res-verdict-row">
+        <span class="res-verdict" id="rVerdict">喂饱了大半桌 Doga</span>
+        <span class="res-stars" id="resStars">
+          <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+          <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+          <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+        </span>
       </div>
 
       <div class="result-card glass">
@@ -485,9 +478,6 @@
         </div>
         <div class="result-up"><svg class="ico"><use href="#i-spark"/></svg>转头追踪 +6° · 颈部更灵活了</div>
       </div>
-
-      <!-- Joy 一句点评 -->
-      <div class="joy-say"><b>Joy:</b><span id="joySay">大部分都喂到嘴里了，不错。</span></div>
 
       <!-- 练完感觉 -->
       <div class="feel-block">
@@ -777,12 +767,12 @@ function playStreakFlame(){
   win.classList.add('go');
 }
 
-/* ============ 本局评级(喂饱比例 → rank/星星/判语,与报告页口吻一致) ============ */
+/* ============ 本局评级(喂饱比例 → 星星数 + 判语) ============ */
 const RANK_TABLE = [
-  { min:1.0,  rank:'S', stars:3, verdict:'全场吃饱 · 满星！', joy:'全场吃饱，饭店给你颁星了。' },
-  { min:0.66, rank:'A', stars:3, verdict:'喂饱了大半桌 Doga',  joy:'大部分都喂到嘴里了，不错。' },
-  { min:0.33, rank:'B', stars:2, verdict:'还有几只没吃上',      joy:'有几只饿着走的，下次快点。' },
-  { min:0,    rank:'C', stars:1, verdict:'桌子快空了',          joy:'你把餐厅端了么？人都跑了。' },
+  { min:1.0,  stars:3, verdict:'全场吃饱 · 满星！' },
+  { min:0.66, stars:3, verdict:'喂饱了大半桌 Doga' },
+  { min:0.33, stars:2, verdict:'还有几只没吃上' },
+  { min:0,    stars:1, verdict:'桌子快空了' },
 ];
 function gradeRun(){
   const ratio = TOTAL_FEEDS ? fed/TOTAL_FEEDS : 0;
@@ -801,11 +791,9 @@ function endShow(){
   $('rFed').textContent = fed + '/' + TOTAL_FEEDS;
   $('rCombo').textContent = '×' + maxCombo;
 
-  // 评级 Hero:星星按档点亮 + Rank + 判语 + Joy 点评
+  // 判语 + 星级:按喂饱比例点亮
   const g = gradeRun();
-  $('rGrade').textContent = g.rank;
   $('rVerdict').textContent = g.verdict;
-  $('joySay').textContent = g.joy;
   document.querySelectorAll('#resStars svg').forEach((s,i)=>{
     s.classList.remove('lit','dim');
     s.classList.add(i<g.stars ? 'lit' : 'dim');

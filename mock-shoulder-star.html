@@ -469,15 +469,15 @@
   }
   .subtitle{font-size:15px;color:rgba(255,255,255,.82);line-height:1.7;max-width:440px;}
   .subtitle b{color:var(--gold-bright);}
-  .how-grid{display:flex;gap:10px;margin-top:4px;flex-wrap:wrap;justify-content:center;}
+  .how-grid{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;justify-content:center;}
   .how-item{
-    background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
-    border-radius:var(--r-sm);padding:12px 14px;min-width:92px;
-    display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.14);
+    border-radius:var(--r-md);padding:22px 20px;min-width:150px;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
   }
-  .how-item .ico{width:22px;height:22px;color:#fff;}
-  .how-item .lb{font-size:12px;color:var(--gold-bright);font-weight:700;}
-  .how-item .sub2{font-size:10px;color:rgba(255,255,255,.6);}
+  .how-item .ico{width:40px;height:40px;color:#fff;}
+  .how-item .lb{font-size:17px;color:var(--gold-bright);font-weight:800;}
+  .how-item .sub2{font-size:13px;color:rgba(255,255,255,.65);}
   .btn{
     margin-top:8px;border:none;cursor:pointer;
     background:var(--brand);
@@ -508,6 +508,52 @@
   .result-stat .lb{font-size:13px;color:rgba(255,255,255,.75);margin-top:7px;}
   .result-up{font-size:14px;color:var(--ok);font-weight:700;display:flex;align-items:center;gap:6px;}
   .result-up .ico{width:15px;height:15px;stroke:var(--ok);}
+
+  /* ---- 结算 · 判语 + 星级并排一行 ---- */
+  #result{gap:10px;overflow-y:auto;}
+  .res-verdict-row{display:flex;align-items:center;gap:14px;}
+  .res-verdict{font-size:19px;font-weight:900;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.5);letter-spacing:.5px;}
+  .res-stars{display:inline-flex;gap:7px;filter:drop-shadow(0 3px 10px rgba(255,201,77,.32));}
+  .res-stars svg{width:30px;height:30px;opacity:1;transition:opacity .3s;}
+  .res-stars svg.dim{opacity:.22;}
+  .res-stars svg.lit{animation:starPop .55s ease-out;}
+  .res-stars svg.lit:nth-child(1){animation-delay:.10s;}
+  .res-stars svg.lit:nth-child(2){animation-delay:.24s;}
+  .res-stars svg.lit:nth-child(3){animation-delay:.38s;}
+  @keyframes starPop{0%{transform:scale(0) rotate(-160deg);opacity:0;}60%{transform:scale(1.2) rotate(12deg);}100%{transform:scale(1) rotate(0);opacity:1;}}
+
+  /* ---- 练完感觉 ---- */
+  .feel-block{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .feel-q{font-size:13px;color:rgba(255,255,255,.68);font-weight:700;letter-spacing:.5px;}
+  .feel-row{display:flex;gap:8px;}
+  .feel-btn{
+    border:2px solid transparent;background:rgba(255,255,255,.07);
+    border-radius:var(--r-sm);padding:7px 13px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;font-family:var(--font);
+    transition:background .18s,border-color .18s;
+  }
+  .feel-btn:hover{background:rgba(255,255,255,.13);}
+  .feel-btn .em{font-size:22px;line-height:1;}
+  .feel-btn .fl{font-size:11px;color:rgba(255,255,255,.68);font-weight:700;}
+  .feel-btn.on{background:rgba(255,214,107,.16);border-color:var(--gold);}
+  .feel-btn.on .fl{color:var(--gold-bright);}
+
+  /* ---- 看完整报告入口(尺寸与主按钮一致,描边区分主次) ---- */
+  .btn-report{
+    margin-top:2px;border:1px solid rgba(255,214,107,.42);cursor:pointer;
+    background:rgba(255,214,107,.08);color:var(--gold-bright);
+    font-family:var(--font);padding:16px 46px;border-radius:var(--r-pill);
+    font-size:18px;font-weight:900;letter-spacing:1.5px;
+    display:inline-flex;align-items:center;gap:9px;transition:background .15s;
+  }
+  .btn-report:hover{background:rgba(255,214,107,.17);}
+  .btn-report .ico{width:18px;height:18px;stroke:var(--gold-bright);}
+
+  /* 结算页:按钮组整体下移;两个主按钮固定同宽 */
+  #result .btn{margin-top:30px;}
+  #result .btn,#result .btn-report{width:300px;justify-content:center;padding-left:0;padding-right:0;}
+  #result .feel-block{margin-top:18px;}
+  #result .btn-ghost{margin-top:20px;}
 
   /* ---- 3秒倒计时(参考老拳击版:超大弹跳数字 + 品牌辉光) ---- */
   .countdown{
@@ -609,6 +655,7 @@
 
   <!-- 结算 -->
   <div class="overlay hide" id="result">
+    <!-- 火苗 streak -->
     <div class="streak-win" id="streakWin">
         <div class="flame-stage">
           <svg class="flame" viewBox="0 0 78 96">
@@ -628,9 +675,18 @@
           <div class="flame-spark" style="--sr:-30deg"></div><div class="flame-spark" style="--sr:-12deg"></div>
           <div class="flame-spark" style="--sr:12deg"></div><div class="flame-spark" style="--sr:30deg"></div>
         </div>
-        <div class="streak-days">连续 <span class="big">6</span> 天</div>
-        <div class="streak-sub">火苗更旺了 · 别断哦</div>
+        <div class="streak-days">连续锻炼 <span class="big">6</span> 天</div>
       </div>
+
+    <!-- 判语 + 星级并排一行 -->
+    <div class="res-verdict-row">
+      <span class="res-verdict" id="rVerdict">满天星都被你够到</span>
+      <span class="res-stars" id="resStars">
+        <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+        <svg viewBox="0 0 24 24" fill="#FFC94D" stroke="#FFA500" stroke-width="1.5" stroke-linejoin="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+      </span>
+    </div>
 
     <div class="result-card glass">
       <div class="result-stat">
@@ -640,7 +696,21 @@
       </div>
       <div class="result-up"><svg class="ico"><use href="#i-spark"/></svg>比上周舒展 5°，肩膀更开阔了</div>
     </div>
+
+    <!-- 练完感觉 -->
+    <div class="feel-block">
+      <div class="feel-q">练完感觉怎么样?</div>
+      <div class="feel-row">
+        <button class="feel-btn" onclick="pickFeel(this)"><span class="em">😩</span><span class="fl">累</span></button>
+        <button class="feel-btn" onclick="pickFeel(this)"><span class="em">😐</span><span class="fl">一般</span></button>
+        <button class="feel-btn on" onclick="pickFeel(this)"><span class="em">🙂</span><span class="fl">舒展</span></button>
+        <button class="feel-btn" onclick="pickFeel(this)"><span class="em">😊</span><span class="fl">舒服</span></button>
+        <button class="feel-btn" onclick="pickFeel(this)"><span class="em">🥰</span><span class="fl">通透</span></button>
+      </div>
+    </div>
+
     <button class="btn" id="againBtn">再摘一轮</button>
+    <button class="btn-report" onclick="location.href='mock-report.html?branch=star'"><svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>看完整训练报告</button>
     <button class="btn-ghost" onclick="location.href='zone.html?zone=shoulder'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回肩部训练营</button>
     <div class="status">今天不低头 · 关注你的肩颈健康</div>
   </div>
@@ -877,10 +947,37 @@ function playStreakFlame(){
   win.classList.add('go');
 }
 
+/* ============ 本局评级(点亮星星比例 → 星星数 + 判语) ============ */
+const STAR_TOTAL = 12;
+const RANK_TABLE = [
+  { min:0.9,  stars:3, verdict:'满天星都被你够到' },
+  { min:0.6,  stars:3, verdict:'够到了大半星空' },
+  { min:0.3,  stars:2, verdict:'还有几颗没够着' },
+  { min:0,    stars:1, verdict:'手再举高一点点' },
+];
+function gradeRun(){
+  const ratio = STAR_TOTAL ? codexCount/STAR_TOTAL : 0;
+  return RANK_TABLE.find(t=>ratio>=t.min) || RANK_TABLE[RANK_TABLE.length-1];
+}
+function pickFeel(el){
+  document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+window.pickFeel = pickFeel;
+
 function endShow(){
   hush();
   document.getElementById('rStars').textContent=codexCount;
   document.getElementById('rFw').textContent=fwCount;
+
+  // 判语 + 星级:按点亮星星比例点亮
+  const g = gradeRun();
+  document.getElementById('rVerdict').textContent = g.verdict;
+  document.querySelectorAll('#resStars svg').forEach((s,i)=>{
+    s.classList.remove('lit','dim');
+    s.classList.add(i<g.stars ? 'lit' : 'dim');
+  });
+
   document.getElementById('result').classList.remove('hide');
   setTimeout(playStreakFlame,800);   // 数据出现后再点燃火苗
 }
@@ -916,13 +1013,14 @@ document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();
 
 // 截图/自动演示:带 auto=1 直接开始
 if(location.search.indexOf('auto=1')>=0){ setTimeout(start,300); }
-// end=1 调试入口:直接看结算页火苗+1
+// end=1 调试入口:直接看结算页(满分演示,走 endShow 填判语+星星)
 if(location.search.indexOf('end=1')>=0){
-  document.getElementById('intro').classList.add('hide');
-  document.getElementById('rStars').textContent=6;
-  document.getElementById('rFw').textContent=7;
-  document.getElementById('result').classList.remove('hide');
-  setTimeout(playStreakFlame,600);
+  const introEl=document.getElementById('intro');
+  introEl.classList.add('hide'); introEl.style.display='none';
+  codexCount=STAR_TOTAL; fwCount=7;
+  endShow();
+  const r=document.getElementById('result');
+  r.style.transition='none'; r.style.opacity='1';
 }
 
 </script>
