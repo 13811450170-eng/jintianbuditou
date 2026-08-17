@@ -120,10 +120,10 @@ body::before {
 
 /* ========== Streak 5 态系统 (多邻国式) ========== */
 .streak-pill {
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 16px;
   height: 48px;
   background: var(--card);
-  padding: 6px 32px 6px 12px;
+  padding: 6px 22px 6px 14px;
   border-radius: 100px;
   cursor: pointer;
   transition: all 0.25s;
@@ -131,6 +131,16 @@ body::before {
   border: 1px solid transparent;
 }
 .streak-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
+
+/* 进入奖品页箭头引导 */
+.streak-arrow {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-4);
+  margin-left: 4px;
+  transition: transform 0.2s, color 0.2s;
+}
+.streak-arrow svg { width: 18px; height: 18px; }
+.streak-pill:hover .streak-arrow { transform: translateX(3px); color: var(--fire); }
 
 /* 身体档案 pill */
 .body-pill {
@@ -215,7 +225,7 @@ body::before {
   z-index: 1;
 }
 .streak-text {
-  display: flex; flex-direction: column; gap: 1px;
+  display: flex; flex-direction: column; gap: 3px;
   line-height: 1.2;
 }
 .streak-num {
@@ -230,6 +240,7 @@ body::before {
   color: var(--fire);
   font-weight: 600;
   letter-spacing: 0.2px;
+  margin-top: 2px;
 }
 
 /* 保护卡 icon */
@@ -1078,7 +1089,7 @@ body::before {
 
     <div class="topbar-spacer"></div>
 
-    <div class="streak-pill" id="streakPill" data-state="achieve">
+    <div class="streak-pill" id="streakPill" data-state="achieve" onclick="location.href='mock-rewards.html'" title="查看连续打卡奖品">
       <div class="streak-flame" id="streakFlame">🔥</div>
       <div class="streak-text">
         <div class="streak-num" id="streakNum">连续打卡 32 天</div>
@@ -1086,6 +1097,9 @@ body::before {
       </div>
       <div class="streak-badge" id="streakBadge">
         <span>🏆</span><span>历史最长 32 天</span>
+      </div>
+      <div class="streak-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
       </div>
     </div>
 

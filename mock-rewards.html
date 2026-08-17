@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今天不低头 · 连续打卡奖品</title>
+<style>
+:root {
+  --bg:          #F0F1F8;
+  --bg-hover:    #E7E8F2;
+  --card:        #FFFFFF;
+  --line:        rgba(10, 10, 15, 0.06);
+  --line-hard:   rgba(10, 10, 15, 0.1);
+
+  --ink:         #0A0A0F;
+  --ink-2:       #3A3A45;
+  --ink-3:       #6B6B7A;
+  --ink-4:       #A8A8B3;
+
+  --neck:        #00A3FF;
+  --neck-bg:     #E1F2FF;
+  --shoulder:    #7C5AFF;
+  --shoulder-bg: #EBE5FF;
+  --eye:         #4CAF88;
+  --eye-bg:      #E1F5EC;
+
+  --gold:        #FFB800;
+  --gold-bg:     #FFF6DA;
+  --fire:        #FF6B4A;
+  --fire-2:      #FFB74D;
+  --jd-red:      #E1251B;
+
+  --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
+  --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
+  --shadow-3:    0 12px 32px rgba(10, 10, 15, 0.1);
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(680px 420px at 78% -6%, rgba(255, 183, 77, 0.16), transparent 60%),
+    radial-gradient(560px 380px at 12% 4%, rgba(255, 107, 74, 0.08), transparent 60%);
+}
+
+.page {
+  position: relative; z-index: 1;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 32px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* ========== 顶栏 ========== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+}
+.topbar-left {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--ink-3);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.topbar-left:hover { color: var(--ink); }
+.topbar-left svg { width: 16px; height: 16px; }
+.topbar-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.topbar-spacer { width: 74px; }
+
+/* ========== 打卡 Hero ========== */
+.hero {
+  background: linear-gradient(140deg, #FFFBF2 0%, #FFFFFF 62%);
+  border: 1px solid rgba(255, 183, 77, 0.28);
+  border-radius: 22px;
+  padding: 20px 26px;
+  box-shadow: var(--shadow-1);
+}
+.hero-top {
+  display: flex; align-items: center; gap: 16px;
+}
+.hero-flame {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 27px;
+  background: linear-gradient(180deg, #FFD54F, #FF5722);
+  box-shadow: 0 6px 16px rgba(255, 87, 34, 0.35);
+  position: relative;
+}
+.hero-flame::before {
+  content: ""; position: absolute; inset: -6px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,183,77,0.5), transparent 70%);
+  z-index: -1;
+  animation: heroGlow 2.4s ease-in-out infinite;
+}
+@keyframes heroGlow {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 1; transform: scale(1.28); }
+}
+.hero-txt { flex: 1; }
+.hero-days {
+  font-size: 24px; font-weight: 800; color: var(--ink);
+  display: flex; align-items: baseline; gap: 4px;
+}
+.hero-days b {
+  font-size: 36px;
+  background: linear-gradient(135deg, #FF8A3D, #FF5722);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 0 2px;
+}
+.hero-sub {
+  font-size: 13px; color: var(--ink-3); margin-top: 3px; font-weight: 500;
+}
+.hero-sub b { color: var(--fire); font-weight: 800; }
+
+/* 里程碑进度轨 */
+.track {
+  margin-top: 18px;
+  position: relative;
+  padding: 0 6px;
+}
+.track-bar {
+  position: relative;
+  height: 8px;
+  border-radius: 100px;
+  background: #F0ECE4;
+  overflow: hidden;
+}
+.track-fill {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #FFB74D, #FF5722);
+  width: 0;
+  transition: width 1.1s cubic-bezier(.2,.8,.2,1);
+}
+.track-nodes {
+  display: flex; justify-content: space-between;
+  margin-top: 12px;
+}
+.track-node {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; color: var(--ink-4); font-weight: 700;
+  flex: 1;
+}
+.track-node.start { align-items: flex-start; }
+.track-node .d { font-size: 13px; color: var(--ink-2); font-weight: 800; }
+.track-node .lb { font-size: 10px; color: var(--ink-4); font-weight: 600; }
+
+/* ========== 区块标题 ========== */
+.sec-head { display: flex; align-items: baseline; gap: 10px; padding: 0 4px; }
+.sec-title { font-size: 18px; font-weight: 800; color: var(--ink); }
+.sec-sub { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+
+/* ========== 奖品卡(两列紧凑) ========== */
+.rewards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.reward {
+  position: relative;
+  display: flex; align-items: center; gap: 15px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 18px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.reward:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.reward.wide { grid-column: 1 / -1; }
+.reward.selected {
+  border-color: var(--fire);
+  box-shadow: 0 8px 24px rgba(255, 107, 74, 0.16);
+}
+.reward.selected::after {
+  content: "";
+  position: absolute; top: 12px; right: 12px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--fire) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/14px no-repeat;
+  z-index: 2;
+}
+
+/* 奖品主图 + 天数徽章 */
+.reward-thumb {
+  position: relative;
+  width: 96px; height: 96px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--bg-hover);
+}
+.reward-thumb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.reward-day {
+  position: absolute; top: 0; left: 0;
+  display: flex; align-items: baseline; gap: 1px;
+  padding: 3px 9px 4px;
+  background: rgba(10, 10, 15, 0.62);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  border-bottom-right-radius: 12px;
+  color: #fff;
+}
+.reward-day .n { font-size: 17px; font-weight: 800; line-height: 1; }
+.reward-day .u { font-size: 10px; font-weight: 700; opacity: 0.85; }
+
+.reward-info { flex: 1; min-width: 0; }
+.reward-cat {
+  display: inline-block;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+  padding: 2px 8px; border-radius: 6px;
+  margin-bottom: 6px;
+}
+.reward-cat.a { color: var(--neck); background: var(--neck-bg); }
+.reward-cat.b { color: #C8850A; background: var(--gold-bg); }
+.reward-cat.c { color: var(--shoulder); background: var(--shoulder-bg); }
+.reward-name { font-size: 15px; font-weight: 800; color: var(--ink); }
+.reward-desc {
+  font-size: 11.5px; color: var(--ink-3); margin-top: 4px; line-height: 1.45;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.reward-remain {
+  font-size: 11.5px; font-weight: 700; color: var(--ink-4); margin-top: 7px;
+  display: flex; align-items: center; gap: 5px;
+}
+.reward-remain b { color: var(--fire); font-size: 14px; font-weight: 800; }
+.reward-lock {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; color: var(--ink-4); font-weight: 600;
+}
+.reward-lock svg { width: 11px; height: 11px; }
+
+/* ========== 底部选择确认 ========== */
+.footer {
+  position: sticky; bottom: 16px;
+  display: flex; align-items: center; gap: 16px;
+  background: rgba(255,255,255,0.86);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 18px 14px 22px;
+  box-shadow: var(--shadow-2);
+}
+.footer-txt { flex: 1; min-width: 0; }
+.footer-label { font-size: 12px; color: var(--ink-3); font-weight: 500; }
+.footer-goal { font-size: 15px; font-weight: 800; color: var(--ink); margin-top: 2px; }
+.footer-goal b { color: var(--fire); }
+.footer-btn {
+  flex-shrink: 0;
+  border: none; cursor: pointer;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 15px; font-weight: 800; letter-spacing: 0.5px;
+  padding: 14px 32px;
+  border-radius: 100px;
+  transition: transform 0.15s, background 0.2s, opacity 0.2s;
+}
+.footer-btn:hover { transform: translateY(-1px); }
+.footer-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+.footer-btn.set { background: var(--fire); }
+
+.note {
+  font-size: 11.5px; color: var(--ink-4); line-height: 1.6;
+  padding: 0 6px;
+  text-align: center;
+}
+.note b { color: var(--ink-3); font-weight: 700; }
+
+.toast {
+  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(12px);
+  background: var(--ink); color: #fff;
+  font-size: 13px; font-weight: 700;
+  padding: 12px 22px; border-radius: 100px;
+  box-shadow: var(--shadow-3);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 50;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+  <div class="page">
+    <!-- 顶栏:返回首页 -->
+    <header class="topbar">
+      <div class="topbar-left" onclick="location.href='index.html'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        返回首页
+      </div>
+      <div class="topbar-title">连续打卡奖品</div>
+      <div class="topbar-spacer"></div>
+    </header>
+
+    <!-- 当前打卡 Hero + 里程碑进度轨 -->
+    <section class="hero">
+      <div class="hero-top">
+        <div class="hero-flame">🔥</div>
+        <div class="hero-txt">
+          <div class="hero-days">连续打卡 <b>32</b> 天</div>
+          <div class="hero-sub">再坚持 <b>28 天</b> 解锁第一份礼物 · 别让火苗断了</div>
+        </div>
+      </div>
+      <div class="track">
+        <div class="track-bar"><div class="track-fill" id="trackFill"></div></div>
+        <div class="track-nodes">
+          <div class="track-node start"><span class="d">今天</span><span class="lb">32 天</span></div>
+          <div class="track-node"><span class="d">60</span><span class="lb">颈枕</span></div>
+          <div class="track-node"><span class="d">90</span><span class="lb">按摩券</span></div>
+          <div class="track-node"><span class="d">120</span><span class="lb">按摩仪</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 奖品选择 -->
+    <div class="sec-head">
+      <span class="sec-title">选一份坚持的目标</span>
+      <span class="sec-sub">选定后首页会为你倒数达成天数</span>
+    </div>
+
+    <div class="rewards" id="rewards">
+      <!-- 60 天 · 颈枕 -->
+      <div class="reward" data-goal="记忆棉护颈枕" data-day="60" data-remain="28" onclick="pick(this)">
+        <div class="reward-thumb">
+          <img src="img/颈枕.png" alt="记忆棉护颈枕">
+          <div class="reward-day"><span class="n">60</span><span class="u">天</span></div>
+        </div>
+        <div class="reward-info">
+          <span class="reward-cat a">颈部放松</span>
+          <div class="reward-name">记忆棉护颈枕</div>
+          <div class="reward-desc">贴合颈椎曲线,午休、通勤靠一靠,承托放松斜方肌。</div>
+          <div class="reward-remain">还需 <b>28</b> 天<span class="reward-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>未解锁</span></div>
+        </div>
+      </div>
+
+      <!-- 90 天 · 门店按摩体验券 -->
+      <div class="reward" data-goal="线下门店按摩体验券" data-day="90" data-remain="58" onclick="pick(this)">
+        <div class="reward-thumb">
+          <img src="img/按摩服务.png" alt="线下门店按摩体验券">
+          <div class="reward-day"><span class="n">90</span><span class="u">天</span></div>
+        </div>
+        <div class="reward-info">
+          <span class="reward-cat b">线下体验</span>
+          <div class="reward-name">线下门店按摩体验券</div>
+          <div class="reward-desc">合作门店专业肩颈按摩一次,凭券到店核销,让人手帮你松一松。</div>
+          <div class="reward-remain">还需 <b>58</b> 天<span class="reward-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>未解锁</span></div>
+        </div>
+      </div>
+
+      <!-- 120 天 · 妙界肩颈按摩仪(独占一行) -->
+      <div class="reward wide" data-goal="妙界肩颈按摩仪" data-day="120" data-remain="88" onclick="pick(this)">
+        <div class="reward-thumb">
+          <img src="img/秒界按摩仪.png" alt="妙界肩颈按摩仪">
+          <div class="reward-day"><span class="n">120</span><span class="u">天</span></div>
+        </div>
+        <div class="reward-info">
+          <span class="reward-cat c">智能按摩</span>
+          <div class="reward-name">妙界肩颈按摩仪</div>
+          <div class="reward-desc">可穿戴式肩颈按摩,热敷 + 揉捏,在家随时给肩颈来一场深度放松。</div>
+          <div class="reward-remain">还需 <b>88</b> 天<span class="reward-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>未解锁</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部选择确认 -->
+    <div class="footer">
+      <div class="footer-txt">
+        <div class="footer-label">当前目标</div>
+        <div class="footer-goal" id="footerGoal">还没选目标,点上面选一个吧</div>
+      </div>
+      <button class="footer-btn" id="footerBtn" disabled onclick="confirmGoal()">选为目标</button>
+    </div>
+
+    <div class="note">
+      奖品由京东提供 · 连续打卡天数不中断即视为达成,使用保护卡不影响累计。达成后可在此页领取。
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+const CURRENT = 32;      // 当前连续打卡天数
+const MILESTONES = [60, 90, 120];
+let selected = null;
+
+// 进度轨:32 天在 0~120 轴上的位置(留一点起步量,视觉更自然)
+window.addEventListener('load', () => {
+  const pct = Math.min(100, (CURRENT / 120) * 100);
+  document.getElementById('trackFill').style.width = pct + '%';
+
+  // 默认选中最近的里程碑(第一张卡),用户可自行更换
+  const first = document.querySelector('.reward');
+  if (first) pick(first);
+});
+
+function pick(el) {
+  document.querySelectorAll('.reward').forEach(r => r.classList.remove('selected'));
+  el.classList.add('selected');
+  selected = { goal: el.dataset.goal, day: el.dataset.day, remain: el.dataset.remain };
+
+  const fg = document.getElementById('footerGoal');
+  fg.innerHTML = `<b>${selected.goal}</b> · 连续打卡满 ${selected.day} 天 · 还需 ${selected.remain} 天`;
+
+  const btn = document.getElementById('footerBtn');
+  btn.disabled = false;
+  btn.classList.remove('set');
+  btn.textContent = '选为目标';
+}
+
+function confirmGoal() {
+  if (!selected) return;
+  const btn = document.getElementById('footerBtn');
+  btn.classList.add('set');
+  btn.textContent = '已设为目标 ✓';
+  showToast(`已锁定目标:${selected.goal} · 还需 ${selected.remain} 天`);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+</script>
+</body>
+</html>
