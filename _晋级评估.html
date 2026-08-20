@@ -1,0 +1,318 @@
+<title>今天不低头晋级评估</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --surface-2:#FBF8F4;
+  --ink:#221D17; --ink-2:#655D52; --ink-3:#9A9084;
+  --line:rgba(34,29,23,.10); --line-2:rgba(34,29,23,.16);
+  --accent:#E8591F; --accent-ink:#B23F14; --accent-wash:rgba(232,89,31,.10);
+  --strong:#1E9A62; --strong-ink:#137347; --strong-wash:rgba(30,154,98,.12);
+  --watch:#C77A12; --watch-ink:#9A5D08; --watch-wash:rgba(199,122,18,.13);
+  --crit:#CD463A; --crit-ink:#A5342A; --crit-wash:rgba(205,70,58,.12);
+  --shadow:0 1px 2px rgba(34,29,23,.04),0 8px 28px rgba(34,29,23,.06);
+  --radius:16px;
+  --cjk:"PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --num:"SF Pro Display",-apple-system,"Segoe UI",Roboto,var(--cjk);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+    --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+    --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+    --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+    --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+    --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+    --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+  --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+  --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+  --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+  --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+  --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+  --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--cjk); background:var(--bg); color:var(--ink);
+  line-height:1.62; -webkit-font-smoothing:antialiased;
+  padding:clamp(20px,5vw,64px) clamp(16px,5vw,24px) 80px;
+}
+.wrap{max-width:840px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+.num{font-variant-numeric:tabular-nums;font-family:var(--num)}
+
+/* eyebrow */
+.eyebrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* verdict banner */
+.verdict{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:clamp(22px,4vw,34px);position:relative;overflow:hidden;
+}
+.verdict::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;
+  background:linear-gradient(var(--watch),var(--accent))}
+.verdict h1{font-size:clamp(23px,4.4vw,33px);line-height:1.24;letter-spacing:-.01em;
+  font-weight:800;text-wrap:balance;margin:14px 0 6px}
+.verdict h1 em{font-style:normal;color:var(--accent-ink)}
+.verdict .lede{font-size:15.5px;color:var(--ink-2);max-width:60ch}
+
+/* confidence meter */
+.meter{margin-top:22px}
+.meter-head{display:flex;justify-content:space-between;align-items:baseline;
+  font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--ink-3);margin-bottom:9px}
+.meter-head b{color:var(--watch-ink);font-size:13.5px}
+.meter-track{position:relative;height:10px;border-radius:999px;
+  background:linear-gradient(90deg,var(--crit-wash),var(--watch-wash) 55%,var(--strong-wash));
+  border:1px solid var(--line)}
+.meter-fill{position:absolute;inset:0 34% 0 0;border-radius:999px;
+  background:linear-gradient(90deg,var(--watch),var(--accent));opacity:.9}
+.meter-mark{position:absolute;top:50%;left:66%;width:15px;height:15px;border-radius:50%;
+  background:var(--surface);border:3px solid var(--accent);transform:translate(-50%,-50%);
+  box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.meter-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-3);margin-top:7px}
+
+/* section title */
+.sec-title{display:flex;align-items:baseline;gap:11px;margin-bottom:2px}
+.sec-title h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.sec-title span{font-size:13px;color:var(--ink-3);font-weight:500}
+
+/* weight matrix */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow)}
+.matrix-scroll{overflow-x:auto}
+table.matrix{width:100%;border-collapse:collapse;min-width:520px}
+.matrix th,.matrix td{padding:13px 12px;text-align:center;border-bottom:1px solid var(--line)}
+.matrix thead th{font-size:13px;font-weight:800;color:var(--ink-2);letter-spacing:.02em}
+.matrix tbody tr:last-child td{border-bottom:none}
+.matrix .rowh{text-align:left;font-weight:700;font-size:14px;white-space:nowrap}
+.matrix .rowh small{display:block;font-weight:600;font-size:10.5px;color:var(--ink-3);letter-spacing:.08em;margin-top:2px}
+.matrix td.w{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:800;font-size:16px}
+.matrix td.off{color:var(--ink-3);font-weight:600;font-size:14px}
+.matrix .col-now{background:var(--accent-wash);position:relative}
+.matrix thead .col-now{border-radius:10px 10px 0 0}
+.matrix .col-now.tag::after{content:"当前";position:absolute;top:-1px;right:0;left:0;margin:auto;
+  font-size:9.5px;letter-spacing:.1em;color:var(--accent-ink);font-weight:800}
+.matrix thead th.col-now{padding-top:22px}
+.big-pct{color:var(--accent-ink)}
+
+/* dimension cards */
+.dims{display:flex;flex-direction:column;gap:14px}
+.dim{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:20px 22px;position:relative;overflow:hidden}
+.dim::before{content:"";position:absolute;inset:0 auto 0 0;width:4px}
+.dim.s-strong::before{background:var(--strong)}
+.dim.s-watch::before{background:var(--watch)}
+.dim.s-crit::before{background:var(--crit)}
+.dim-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.dim-w{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:800;
+  font-size:30px;line-height:1;letter-spacing:-.02em}
+.dim-name{font-size:17px;font-weight:800}
+.dim-name small{font-weight:600;font-size:11px;color:var(--ink-3);letter-spacing:.1em;margin-left:6px}
+.chip{margin-left:auto;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;white-space:nowrap}
+.chip.strong{background:var(--strong-wash);color:var(--strong-ink)}
+.chip.watch{background:var(--watch-wash);color:var(--watch-ink)}
+.chip.crit{background:var(--crit-wash);color:var(--crit-ink)}
+.dim-def{font-size:13px;color:var(--ink-3);margin-bottom:14px;line-height:1.55}
+.lines{display:flex;flex-direction:column;gap:8px}
+.line{display:flex;gap:10px;font-size:14px;line-height:1.55}
+.line .mk{flex-shrink:0;width:18px;height:18px;border-radius:50%;margin-top:2px;
+  display:grid;place-items:center;font-size:11px;font-weight:900;color:#fff}
+.line.ok .mk{background:var(--strong)}
+.line.risk .mk{background:var(--watch)}
+.line.risk.hot .mk{background:var(--crit)}
+.line b{font-weight:750}
+
+/* foresight + actions */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.two{grid-template-columns:1fr}}
+.panel{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px}
+.panel h3{font-size:15px;font-weight:800;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.panel h3 .tg{font-family:var(--num);font-size:12px;font-weight:800;padding:3px 9px;border-radius:999px;
+  background:var(--accent-wash);color:var(--accent-ink)}
+.panel p{font-size:13.5px;color:var(--ink-2);line-height:1.6}
+.actions{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:8px 22px}
+.act{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.act:last-child{border-bottom:none}
+.act .n{flex-shrink:0;font-family:var(--num);font-weight:800;font-size:14px;color:var(--accent-ink);
+  width:26px;height:26px;border-radius:8px;background:var(--accent-wash);display:grid;place-items:center;margin-top:1px}
+.act .txt{font-size:14px;line-height:1.55}
+.act .txt b{font-weight:800}
+.act .txt .meta{display:block;font-size:12px;color:var(--ink-3);margin-top:3px}
+
+.foot{font-size:11.5px;color:var(--ink-3);line-height:1.6;text-align:center;
+  border-top:1px solid var(--line);padding-top:20px}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span>今天不低头 · 京东黑马 · 初赛复盘</div>
+    <div class="verdict">
+      <div class="eyebrow" style="color:var(--accent-ink)">评估结论</div>
+      <h1>有希望但悬 —— 演示托底,<em>评委的软肋提问没完全接住</em></h1>
+      <p class="lede">据答辩录音复盘:5 个评委问题全部精准命中 5C 高权重项。演示完整可跑(可行性硬底子在)、团队诚实有思考(黑马加分)托底;但「光线鲁棒性」「留存」两题答得偏弱,晋级与否可能就看评委怎么权衡这两边。</p>
+      <div class="meter">
+        <div class="meter-head"><span>晋级把握度</span><b>中等偏上 · 条件性看好</b></div>
+        <div class="meter-track"><div class="meter-fill"></div><div class="meter-mark"></div></div>
+        <div class="meter-scale"><span>悬</span><span>看讲述</span><span>稳</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-title"><h2>5C 评审模型</h2><span>官方每轮权重不同 —— 初赛这一列才是现在的尺子</span></div>
+    <div class="card matrix-scroll" style="margin-top:12px">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th class="rowh"></th>
+            <th>海选</th>
+            <th class="col-now tag">初赛</th>
+            <th>复赛</th>
+            <th>决赛</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="rowh">创新性<small>CREATIVE</small></td>
+            <td class="w">50%</td>
+            <td class="w col-now">20%</td>
+            <td class="w">20%</td>
+            <td class="w">20%</td>
+          </tr>
+          <tr>
+            <td class="rowh">聚焦性<small>CENTRAL</small></td>
+            <td class="w">30%</td>
+            <td class="off col-now">—</td>
+            <td class="off">—</td>
+            <td class="off">—</td>
+          </tr>
+          <tr>
+            <td class="rowh">可行性<small>CREDIBLE</small></td>
+            <td class="off">—</td>
+            <td class="w col-now"><span class="big-pct">50%</span></td>
+            <td class="off">—</td>
+            <td class="off">—</td>
+          </tr>
+          <tr>
+            <td class="rowh">价值贡献<small>CONTRIBUTORY</small></td>
+            <td class="w">20%</td>
+            <td class="w col-now">30%</td>
+            <td class="w">50%</td>
+            <td class="w">30%</td>
+          </tr>
+          <tr>
+            <td class="rowh">孵化潜力<small>CHANCE</small></td>
+            <td class="off">—</td>
+            <td class="off col-now">—</td>
+            <td class="w">30%</td>
+            <td class="w">50%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>逐项打分</h2><span>按初赛权重从高到低</span></div>
+    <div class="dims" style="margin-top:12px">
+
+      <article class="dim s-watch">
+        <div class="dim-head">
+          <span class="dim-w">50%</span>
+          <span class="dim-name">可行性<small>CREDIBLE</small></span>
+          <span class="chip watch">有底子 · 要守住</span>
+        </div>
+        <p class="dim-def">能否真正解决痛点、思路是否完整、是否具备落地可行性。—— 这是初赛最重的一项。</p>
+        <div class="lines">
+          <div class="line ok"><span class="mk">✓</span><span>技术不是 PPT:<b>真 MediaPipe 头姿/上肢检测内核</b>、8 个后端 API、真接京东内网 DeepSeek 网关(带 stub 降级),医学护栏 + ROM 校准都落了地。</span></div>
+          <div class="line risk"><span class="mk">!</span><span>评委会追:<b>摄像头识别的稳定性、环境光、误判率</b> —— 现场演示要经得起真实光线。</span></div>
+          <div class="line risk"><span class="mk">!</span><span>部分关卡是<b>视频底 + HUD 演示</b>而非全程实时接姿态,被问到「这关是真识别还是录屏」时要能坦诚说清哪些真、哪些演示。</span></div>
+        </div>
+      </article>
+
+      <article class="dim s-crit">
+        <div class="dim-head">
+          <span class="dim-w">30%</span>
+          <span class="dim-name">价值贡献<small>CONTRIBUTORY</small></span>
+          <span class="chip crit">最需补强</span>
+        </div>
+        <p class="dim-def">具体收益 —— 成本/效率优化、体验提升与业务增长,或具备商业化变现的可能。</p>
+        <div class="lines">
+          <div class="line ok"><span class="mk">✓</span><span>奖品页(颈枕 / 门店按摩券 / 妙界按摩仪)本身是个<b>天然商业化钩子</b>;久坐颈椎痛痛点真实、受众极广。</span></div>
+          <div class="line risk hot"><span class="mk">!</span><span>目前故事偏「<b>员工关怀 / 健康</b>」,对「<b>给京东带来什么</b>」论证不足 —— 京东健康类目引流、企业 EAP 采购、京东云 AI 能力复用这条线要讲透。</span></div>
+          <div class="line risk hot"><span class="mk">!</span><span>变现路径<b>没有量化目标</b>(带动多少 GMV / 触达多少久坐员工),评委难以给高分。</span></div>
+        </div>
+      </article>
+
+      <article class="dim s-strong">
+        <div class="dim-head">
+          <span class="dim-w">20%</span>
+          <span class="dim-name">创新性<small>CREATIVE</small></span>
+          <span class="chip strong">强项</span>
+        </div>
+        <p class="dim-def">技术/产品/组织协作是否有创新点,是否京东独创或对现有的优化改进。</p>
+        <div class="lines">
+          <div class="line ok"><span class="mk">✓</span><span>摄像头 + AI 把<b>康复训练游戏化</b>(拳击躲闪 = 颈椎 ROM、喂食 = 转头),Joy / Doga IP 化 —— 海选就是靠这一维度过的关。</span></div>
+          <div class="line risk"><span class="mk">!</span><span>体感健康游戏已有先例(Ring Fit / Switch Sports),需讲清「<b>颈椎微理疗 + 办公场景 + 京东生态</b>」的独占差异,而非泛泛的「体感游戏」。</span></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>答辩实况复盘</h2><span>据录音逐字稿 —— 评委 5 问全部命中 5C 高权重项</span></div>
+    <div class="card" style="margin-top:12px;padding:6px 22px">
+      <div class="act"><span class="n num" style="background:var(--crit-wash);color:var(--crit-ink)">Q1</span><span class="txt"><b>办公室光线/位置影响识别准确性,怎么解决?</b><span class="meta">命中<b>可行性 50%</b>。答:「强光没测试、极端环境没考虑过」—— <b style="color:var(--crit-ink)">本场最大失分点</b>。而代码里其实有 ROM 校准 + 置信度护栏,现场没答出来,白白丢分。</span></span></div>
+      <div class="act"><span class="n num" style="background:var(--watch-wash);color:var(--watch-ink)">Q2</span><span class="txt"><b>产品是什么形态?</b><span class="meta">命中可行性。答:网页,计划做 H5、与京东健康 agent 配合 —— 中规中矩。</span></span></div>
+      <div class="act"><span class="n num" style="background:var(--watch-wash);color:var(--watch-ink)">Q3</span><span class="txt"><b>商业化价值考虑过吗?</b><span class="meta">命中<b>价值贡献 30%</b>。答:对比京东健康「推个 H5 无反馈」讲了差异化(教练记录数据)+ 推保健品/按摩仪/坐具 —— 有想法,但<b>没有量化</b>。</span></span></div>
+      <div class="act"><span class="n num" style="background:var(--strong-wash);color:var(--strong-ink)">Q4</span><span class="txt"><b>继续做会遇到的大困难?</b><span class="meta">答:动作单一,需更专业的多动作 + 语音「电子教练」实时纠错 —— <b style="color:var(--strong-ink)">诚实且有方向,黑马加分项</b>。</span></span></div>
+      <div class="act"><span class="n num" style="background:var(--watch-wash);color:var(--watch-ink)">Q5</span><span class="txt"><b>怎么解决长期留存?(还拿 VR 全身健身对比)</b><span class="meta">命中价值/孵化。答:京 ME 提醒 + 打卡送券 —— 偏传统;亮点是最后一句「把健康概念种进用户心里」。</span></span></div>
+    </div>
+    <div class="dims" style="margin-top:14px">
+      <article class="dim s-crit">
+        <div class="dim-head"><span class="dim-name">现场两处硬伤,值得记住</span></div>
+        <div class="lines">
+          <div class="line risk hot"><span class="mk">!</span><span><b>技术栈说错了:</b>口头把姿态识别说成「OpenCV」,实际用的是 <b>MediaPipe</b>。懂行评委会扣印象分,下次务必说准。</span></div>
+          <div class="line risk hot"><span class="mk">!</span><span><b>王牌被埋没:</b>「中国医学康复学院数据喂 AI 做康复知识库」是专业性 + 可行性的最强差异点,却只一句带过 —— 本该开场重锤。</span></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>复赛前瞻</h2><span>提前一步,别等进了再补</span></div>
+    <div class="two" style="margin-top:12px">
+      <div class="panel">
+        <h3>权重会再变 <span class="tg">价值 50%</span></h3>
+        <p>复赛「价值贡献」升到 <b>50%</b>、新增「孵化潜力 30%」(评委以<b>投资视角</b>看规模化)。也就是说 —— 现在补强的商业化叙事,复赛只会更吃重。这次打的底,是为下一轮攒的分。</p>
+      </div>
+      <div class="panel">
+        <h3>孵化潜力要提前铺 <span class="tg">+30%</span></h3>
+        <p>「能不能规模化落地」:接入京东健康 / 京 ME / 企业客户的路径、人力算力营销的投入与回报。初赛不计分,但复赛占 30% —— 答辩里埋一句伏笔不吃亏。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-title"><h2>行动清单</h2><span>按性价比排序</span></div>
+    <div class="actions" style="margin-top:12px">
+      <div class="act"><span class="n num">1</span><span class="txt"><b>把「价值贡献」叙事讲成闭环。</b><span class="meta">奖品页升级为完整商业故事:京东健康类目引流 → 企业 EAP 采购 → 京东云 AI 能力复用,并给一个可量化目标(带动 X 类目 GMV / 触达 Y 久坐员工)。这是性价比最高的一步。</span></span></div>
+      <div class="act"><span class="n num">2</span><span class="txt"><b>守住「可行性」的现场说服力。</b><span class="meta">演示至少一关全程真实时姿态识别、敢在现场光线下开摄像头;准备好「视频版 vs 真识别」的诚实回答脚本。</span></span></div>
+      <div class="act"><span class="n num">3</span><span class="txt"><b>为复赛埋「孵化潜力」伏笔。</b><span class="meta">答辩收尾用投资视角讲一句规模化路径,让评委记住「这个能长大」。</span></span></div>
+      <div class="act"><span class="n num">4</span><span class="txt"><b>收口体验细节,拿观感分。</b><span class="meta">统一品牌名(妙界 / 秒界)、裁净奖品营销图 —— 小事,但评委的第一眼印象值钱。</span></span></div>
+    </div>
+  </section>
+
+  <p class="foot">5C 模型摘自官方《26 年京东黑客马拉松参赛指南》NO.5;完成度依据当前仓库实况(pose-kernel、server/ 8 端点、五关卡页);答辩复盘据现场录音逐字稿(通义听悟转写)。评估为策略参考,非官方结果。</p>
+
+</div>

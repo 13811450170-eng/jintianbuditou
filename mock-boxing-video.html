@@ -617,6 +617,7 @@
 
 <script type="module">
 import { createPoseKernel } from "./js/pose-kernel.js";
+import { track } from "./js/telemetry.js";
 
 const vid=document.getElementById('bgvid');
 const repVal=document.getElementById('repVal');
@@ -1017,6 +1018,9 @@ function endShow(){
     s.classList.remove('lit','dim');
     s.classList.add(i<g.stars ? 'lit' : 'dim');
   });
+
+  // 试点埋点:一局完成(用于算游玩次数/留存)
+  track('level_finish', { level:'boxing', dodges, combo:maxCombo, stars:g.stars });
 
   result.classList.remove('hide');
   setTimeout(playStreakFlame,800);   // 数据出现后再点燃火苗

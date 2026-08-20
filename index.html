@@ -1439,6 +1439,10 @@ document.querySelector('.toast-btn-ghost').addEventListener('click', () => toast
 <script type="module">
 // 填完 onboarding 录入后,首页读统一健康档案做个性化。无档案→完全不动,保持现有写死展示(降级铁律)。
 import { loadProfile, isOnboarded } from './js/health-store.js';
+import { track } from './js/telemetry.js';
+
+// 试点埋点:每次打开首页记一次(按日去重在后端聚合,用于算日活/留存)。
+track('app_open');
 
 // 新用户首访:没走过 onboarding → 先去信息测评区(replace 不留历史,避免返回键弹回又被踢)。
 // 老用户/已完成 → 正常进首页。之后更新资料走头像 → 身体档案页手动编辑。

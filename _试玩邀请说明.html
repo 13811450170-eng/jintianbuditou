@@ -1,0 +1,134 @@
+<title>试玩邀请说明</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --surface-2:#FBF8F4;
+  --ink:#221D17; --ink-2:#655D52; --ink-3:#9A9084;
+  --line:rgba(34,29,23,.10); --line-2:rgba(34,29,23,.16);
+  --accent:#E8591F; --accent-ink:#B23F14; --accent-wash:rgba(232,89,31,.10);
+  --strong:#1E9A62; --strong-ink:#137347; --strong-wash:rgba(30,154,98,.12);
+  --watch:#C77A12; --watch-ink:#9A5D08; --watch-wash:rgba(199,122,18,.13);
+  --shadow:0 1px 2px rgba(34,29,23,.04),0 8px 28px rgba(34,29,23,.06);
+  --radius:18px;
+  --cjk:"PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --num:"SF Pro Display",-apple-system,"Segoe UI",Roboto,var(--cjk);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+    --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+    --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+    --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+    --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+    --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+  --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+  --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+  --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+  --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+  --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--cjk);background:var(--bg);color:var(--ink);
+  line-height:1.65;-webkit-font-smoothing:antialiased;
+  padding:clamp(20px,5vw,56px) clamp(16px,5vw,24px) 72px}
+.wrap{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+.num{font-variant-numeric:tabular-nums;font-family:var(--num)}
+
+/* hero card */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:clamp(24px,5vw,34px);text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;
+  background:linear-gradient(90deg,var(--accent),var(--watch))}
+.flame{width:56px;height:56px;border-radius:50%;margin:6px auto 0;
+  background:linear-gradient(180deg,#FFD54F,#FF5722);display:grid;place-items:center;font-size:28px;
+  box-shadow:0 6px 16px rgba(255,87,34,.35)}
+.hero h1{font-size:clamp(22px,5vw,28px);font-weight:800;letter-spacing:-.01em;margin:16px 0 8px;text-wrap:balance}
+.hero p{font-size:14.5px;color:var(--ink-2);max-width:44ch;margin:0 auto}
+.hero .accent{color:var(--accent-ink);font-weight:700}
+
+/* meta pills */
+.meta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.pill{display:flex;flex-direction:column;gap:2px;align-items:center;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:11px 18px;min-width:92px}
+.pill .v{font-family:var(--num);font-weight:800;font-size:17px;color:var(--accent-ink);line-height:1}
+.pill .l{font-size:11.5px;color:var(--ink-3);font-weight:600}
+
+/* steps */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:8px 22px}
+.card-h{font-size:13px;font-weight:800;letter-spacing:.08em;color:var(--ink-3);
+  text-transform:uppercase;padding:16px 0 4px}
+.step{display:flex;gap:15px;padding:15px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.step:last-child{border-bottom:none}
+.step .n{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-family:var(--num);font-weight:800;font-size:14px;margin-top:1px}
+.step .t{font-size:15px;line-height:1.5}
+.step .t b{font-weight:800}
+.step .t .sub{display:block;font-size:12.5px;color:var(--ink-3);margin-top:2px}
+.link{display:inline-block;font-family:var(--num);font-weight:700;color:var(--accent-ink);
+  background:var(--accent-wash);padding:2px 10px;border-radius:7px;font-size:14px;letter-spacing:.02em;
+  word-break:break-all}
+
+/* camera note */
+.note{background:var(--watch-wash);border:1px solid var(--line);border-left:4px solid var(--watch);
+  border-radius:12px;padding:15px 18px;font-size:13.5px;line-height:1.55;color:var(--ink-2);display:flex;gap:11px}
+.note b{color:var(--watch-ink);font-weight:800}
+.note .ic{flex-shrink:0;font-weight:900}
+
+/* privacy + thanks */
+.soft{background:var(--strong-wash);border:1px solid var(--line);border-radius:12px;
+  padding:15px 18px;font-size:13.5px;line-height:1.55;color:var(--ink-2);display:flex;gap:11px}
+.soft b{color:var(--strong-ink);font-weight:800}
+.soft .ic{flex-shrink:0;font-weight:900}
+.thanks{text-align:center;font-size:15px;color:var(--ink-2);font-weight:600;padding:4px 0}
+.thanks b{color:var(--accent-ink);font-weight:800}
+
+/* internal note (for team, not participants) */
+.internal{border:1px dashed var(--line-2);border-radius:12px;padding:14px 18px;
+  font-size:12.5px;color:var(--ink-3);line-height:1.55}
+.internal b{color:var(--ink-2);font-weight:800}
+.internal .tag{display:inline-block;font-size:10.5px;font-weight:800;color:var(--ink-3);
+  background:var(--surface-2);border:1px solid var(--line);padding:2px 8px;border-radius:6px;margin-bottom:6px;letter-spacing:.06em}
+</style>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="flame">🔥</div>
+    <h1>帮我们测 5 天,一起「不低头」</h1>
+    <p>我们做了一个<span class="accent">用摄像头玩、顺便活动颈椎</span>的小游戏。每天花 2 分钟玩一关,帮我们看看它到底有没有让脖子舒服点 —— 你的每一次游玩都是最真实的反馈。</p>
+    <div class="meta">
+      <div class="pill"><span class="v">5 天</span><span class="l">8/24–8/28</span></div>
+      <div class="pill"><span class="v">2 分钟</span><span class="l">每天</span></div>
+      <div class="pill"><span class="v">2 关</span><span class="l">拳击 / 摘星</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h">怎么玩 · 5 步</div>
+    <div class="step"><span class="n num">1</span><span class="t"><b>用电脑浏览器打开</b>(Chrome / Edge 最佳)<span class="sub">手机也能玩,但电脑摄像头识别更稳</span></span></div>
+    <div class="step"><span class="n num">2</span><span class="t">访问 <span class="link">xdjoy.space.jd.com</span><span class="sub">建议存个书签,每天点一下就行</span></span></div>
+    <div class="step"><span class="n num">3</span><span class="t"><b>第一次进:花 1 分钟填个小测评</b><span class="sub">测一下你现在的颈椎灵活度,做基线对比用</span></span></div>
+    <div class="step"><span class="n num">4</span><span class="t"><b>玩「拳击派对」和「举臂摘星」</b><span class="sub">拳击练颈部(转头 / 抬头),摘星练肩膀手臂(举臂够星星),各 40 秒左右</span></span></div>
+    <div class="step"><span class="n num">5</span><span class="t"><b>之后每天来玩,连续 5 天</b><span class="sub">我们最想知道的就是「你愿不愿意第二天、第五天还来」</span></span></div>
+  </div>
+
+  <div class="note"><span class="ic">📷</span><span><b>会请求打开摄像头 —— 请点「允许」。</b>游戏靠它识别你的头部/手臂动作。画面只在你自己电脑上处理,<b>我们只记录动作角度这类数字,绝不上传任何画面或录像。</b></span></div>
+
+  <div class="soft"><span class="ic">🔒</span><span><b>放心玩:</b>不用注册、不填手机号。我们只匿名记录「玩了几次、颈椎活动度变化」这类数字,用来改进产品,不含任何个人身份信息。</span></div>
+
+  <div class="thanks">你玩的这 5 天,就是我们复赛答辩台上最硬的底气 —— <b>谢谢你 🙏</b></div>
+
+  <div class="internal">
+    <span class="tag">给团队 · 非参与者内容</span><br>
+    <b>发出去前务必确认两件事:</b>① 埋点新代码已发布到线上(否则参与者玩了收不到数据);② 拉个群每天戳一下提醒 —— 提醒动作本身也是产品「留存机制」的验证。数据随时用 <b>node server/scripts/pilot-report.mjs</b> 查看。
+  </div>
+
+</div>

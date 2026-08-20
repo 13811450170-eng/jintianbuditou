@@ -1,0 +1,273 @@
+<title>试点准备清单</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --surface-2:#FBF8F4;
+  --ink:#221D17; --ink-2:#655D52; --ink-3:#9A9084;
+  --line:rgba(34,29,23,.10); --line-2:rgba(34,29,23,.16);
+  --accent:#E8591F; --accent-ink:#B23F14; --accent-wash:rgba(232,89,31,.10);
+  --strong:#1E9A62; --strong-ink:#137347; --strong-wash:rgba(30,154,98,.12);
+  --watch:#C77A12; --watch-ink:#9A5D08; --watch-wash:rgba(199,122,18,.13);
+  --crit:#CD463A; --crit-ink:#A5342A; --crit-wash:rgba(205,70,58,.12);
+  --shadow:0 1px 2px rgba(34,29,23,.04),0 8px 28px rgba(34,29,23,.06);
+  --radius:16px;
+  --cjk:"PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --num:"SF Pro Display",-apple-system,"Segoe UI",Roboto,var(--cjk);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+    --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+    --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+    --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+    --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+    --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+    --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+  --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+  --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+  --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+  --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+  --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+  --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--cjk);background:var(--bg);color:var(--ink);
+  line-height:1.62;-webkit-font-smoothing:antialiased;
+  padding:clamp(20px,5vw,64px) clamp(16px,5vw,24px) 80px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+.num{font-variant-numeric:tabular-nums;font-family:var(--num)}
+.eyebrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:clamp(22px,4vw,32px);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;
+  background:linear-gradient(var(--accent),var(--strong))}
+.hero h1{font-size:clamp(21px,4vw,29px);line-height:1.26;letter-spacing:-.01em;
+  font-weight:800;text-wrap:balance;margin:13px 0 8px}
+.hero .lede{font-size:14.5px;color:var(--ink-2);max-width:64ch}
+.stat3{display:flex;gap:24px;margin-top:18px;flex-wrap:wrap}
+.st{display:flex;flex-direction:column;gap:2px}
+.st .v{font-family:var(--num);font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1}
+.st .v.a{color:var(--accent-ink)} .st .v.s{color:var(--strong-ink)} .st .v.w{color:var(--watch-ink)}
+.st .l{font-size:11.5px;color:var(--ink-3);font-weight:600}
+
+/* status: what exists vs missing */
+.status{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.status{grid-template-columns:1fr}}
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px}
+.scard h3{font-size:14px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.scard h3 .b{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px}
+.scard.have h3 .b{background:var(--strong-wash);color:var(--strong-ink)}
+.scard.gap h3 .b{background:var(--crit-wash);color:var(--crit-ink)}
+.li{display:flex;gap:9px;font-size:13px;line-height:1.5;color:var(--ink-2);padding:5px 0}
+.li .mk{flex-shrink:0;width:16px;height:16px;border-radius:50%;margin-top:2px;
+  display:grid;place-items:center;font-size:10px;font-weight:900;color:#fff}
+.have .li .mk{background:var(--strong)} .gap .li .mk{background:var(--crit)}
+.li b{color:var(--ink);font-weight:700}
+.li code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);
+  padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+/* priority group */
+.pgroup{display:flex;flex-direction:column;gap:12px}
+.ptitle{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin:2px 0}
+.ptag{font-family:var(--num);font-weight:800;font-size:13px;padding:5px 12px;border-radius:8px;white-space:nowrap}
+.ptag.p0{background:var(--crit-wash);color:var(--crit-ink)}
+.ptag.p1{background:var(--accent-wash);color:var(--accent-ink)}
+.ptag.p2{background:var(--watch-wash);color:var(--watch-ink)}
+.ptag.p3{background:var(--strong-wash);color:var(--strong-ink)}
+.ptitle h2{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.ptitle .why{font-size:12.5px;color:var(--ink-3);font-weight:500}
+
+/* task row */
+.task{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+  padding:15px 18px;display:flex;gap:14px;align-items:flex-start}
+.task.block{border-color:rgba(205,70,58,.3)}
+.ck{flex-shrink:0;width:20px;height:20px;border:2px solid var(--line-2);border-radius:6px;margin-top:1px}
+.tbody{flex:1;min-width:0}
+.thead{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:3px}
+.thead h4{font-size:14.5px;font-weight:800}
+.tchip{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.tchip.dev{background:var(--accent-wash);color:var(--accent-ink)}
+.tchip.design{background:var(--strong-wash);color:var(--strong-ink)}
+.tchip.small{background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line)}
+.tdesc{font-size:13px;color:var(--ink-2);line-height:1.5}
+.tdesc code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);
+  padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+.call{border-radius:12px;padding:15px 20px;font-size:13.5px;line-height:1.55;display:flex;gap:11px;align-items:flex-start}
+.call.crit{background:var(--crit-wash);border:1px solid var(--line);border-left:4px solid var(--crit)}
+.call.crit b{color:var(--crit-ink);font-weight:800}
+.call.tip{background:var(--surface-2);border:1px solid var(--line)}
+.call.tip b{color:var(--accent-ink);font-weight:800}
+.call .ic{flex-shrink:0;font-weight:900}
+
+/* metrics def */
+.mdef{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden}
+.mdef-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:13px}
+thead th{font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--ink-3);
+  text-transform:uppercase;background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:none}
+td .rowh{font-weight:750}
+td code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+.sec-title{display:flex;align-items:baseline;gap:11px;margin-bottom:2px;flex-wrap:wrap}
+.sec-title h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.sec-title span{font-size:13px;color:var(--ink-3);font-weight:500}
+
+.foot{font-size:11.5px;color:var(--ink-3);line-height:1.6;text-align:center;
+  border-top:1px solid var(--line);padding-top:20px}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span>今天不低头 · 复赛 · 试点准备清单</div>
+    <div class="hero">
+      <div class="eyebrow" style="color:var(--accent-ink)">目标 · 9/3 前拿到一个真实数据</div>
+      <h1>拉 10–30 人试玩 5 天,补上评委点了 4 次的「缺真实验证」</h1>
+      <p class="lede">一个真实留存数字,胜过所有市场推算。但试点跑之前,得先确认「要采什么数、系统采不采得到」—— 否则玩了几天才发现数据没落地,白跑。本清单按优先级分组,P0 是硬卡点,24 号开跑前必须就绪。</p>
+      <div class="stat3">
+        <div class="st"><span class="v a">10–30</span><span class="l">参与人数</span></div>
+        <div class="st"><span class="v a">5 天</span><span class="l">8/24–8/28</span></div>
+        <div class="st"><span class="v w">≈ 半天</span><span class="l">P0 开发量</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- STATUS -->
+  <section>
+    <div class="sec-title"><h2>先看家底</h2><span>决定了要补什么 —— 好消息:数据结构已有大半</span></div>
+    <div class="status" style="margin-top:12px">
+      <div class="scard have">
+        <h3><span class="b">已具备</span></h3>
+        <div class="li"><span class="mk">✓</span><span><code>health-store.js</code> 已存结构化数据:<b>总次数、逐次表现、颈部评分、ROM 角度、时间戳</b> —— 留存/改善字段底子基本都在。</span></div>
+        <div class="li"><span class="mk">✓</span><span>数据只存本地 <code>localStorage</code>,<b>隐私干净</b>(注释明写「绝无画面」)—— 答辩加分项。</span></div>
+        <div class="li"><span class="mk">✓</span><span>评估 <code>recordAssessment</code> 已支持,首尾各测一次即可出「改善」对比。</span></div>
+      </div>
+      <div class="scard gap">
+        <h3><span class="b">缺口 · 试点前补</span></h3>
+        <div class="li"><span class="mk">!</span><span><b>没有真埋点上报</b> —— 数据只在各自浏览器,你收不上来。15 人 = 15 台电脑,拿不到汇总。<b>最大卡点</b>。</span></div>
+        <div class="li"><span class="mk">!</span><span><b>没有按日活跃记录</b> —— 有时间戳但没「哪天来过」,算不出次日 / 7 日留存。</span></div>
+        <div class="li"><span class="mk">!</span><span><b>没有用户区分</b> —— 分不清哪条数据是谁的。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- P0 -->
+  <section>
+    <div class="pgroup">
+      <div class="ptitle"><span class="ptag p0">P0</span><h2>数据能收上来</h2><span class="why">不做这个,试点白跑</span></div>
+      <div class="task block">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>最小埋点上报</h4><span class="tchip dev">开发</span></div>
+        <div class="tdesc">加一个 <code>/api/track</code> 端点 + 前端每次关卡结束 <code>fetch</code> 上报,后端 <code>appendFile</code> 落成一个 log 文件。后端已有脚手架,工作量小。</div></div>
+      </div>
+      <div class="task block">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>匿名用户 ID</h4><span class="tchip dev">开发</span><span class="tchip small">极小</span></div>
+        <div class="tdesc">首次进入生成随机 ID 存 <code>localStorage</code>,每次上报带上 —— 才能区分用户、算个人留存。</div></div>
+      </div>
+      <div class="task block">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>按日活跃记录</h4><span class="tchip dev">开发</span><span class="tchip small">埋点顺带</span></div>
+        <div class="tdesc">上报里带日期,后端即可算「这个 ID 哪几天来过」→ 留存曲线。</div></div>
+      </div>
+      <div class="call tip" style="margin-top:2px"><span class="ic">↯</span><span><b>兜底(不想动后端):</b>让参与者每天玩完截图发群,手工记。15 人两周扛得住 —— 但有 <code>/api/track</code> 更体面,也是答辩里「我们有数据能力」的证据。</span></div>
+    </div>
+  </section>
+
+  <!-- P1 -->
+  <section>
+    <div class="pgroup">
+      <div class="ptitle"><span class="ptag p1">P1</span><h2>玩法够稳,经得起两周</h2><span class="why">别让 bug 毁了留存数据</span></div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>试点只放 1–2 个最稳的关卡</h4><span class="tchip design">产品</span></div>
+        <div class="tdesc">不是调玩法花样,是<b>先保稳定</b>。识别飘 / 卡住 / 报错 → 用户第 2 天就不来,测到的「留存低」是 bug 假数据。少而稳 &gt; 多而飘,选拳击或划船。</div></div>
+      </div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>顺带记录识别失败率</h4><span class="tchip dev">开发</span><span class="tchip design">产品</span></div>
+        <div class="tdesc">参与者在各自办公室真实光线下玩,记录识别失败次数 —— <b>正好回答评委初赛戳的 Q1「光线鲁棒性」</b>,一举两得。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- P2 -->
+  <section>
+    <div class="pgroup">
+      <div class="ptitle"><span class="ptag p2">P2</span><h2>采集「改善」和「主观反馈」</h2><span class="why">量化的另一半</span></div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>首尾各测一次 ROM 基线</h4><span class="tchip design">产品</span></div>
+        <div class="tdesc">第 1 天测基线、第 5 天再测 → 「颈部活动度平均 +X°」。<code>recordAssessment</code> 已支持,只需安排首尾各一次。</div></div>
+      </div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>每次玩完弹一句主观自评</h4><span class="tchip dev">开发</span><span class="tchip small">一行</span></div>
+        <div class="tdesc">「现在颈部感觉?轻松 / 一般 / 还紧」—— 一行代码,却是答辩最好用的话术:「Y% 用户自评更轻松」。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- P3 -->
+  <section>
+    <div class="pgroup">
+      <div class="ptitle"><span class="ptag p3">P3</span><h2>试点执行准备</h2><span class="why">非技术,队友可并行</span></div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>招募 10–30 人</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">优先<b>真久坐</b>的同事 / 朋友,样本才真实。</div></div>
+      </div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>一页参与说明</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">怎么打开、每天玩几次、玩哪关 —— 降低流失。</div></div>
+      </div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>拉群 + 每日提醒</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">每天戳一下 —— <b>提醒本身就是产品「留存机制」的人肉验证</b>。</div></div>
+      </div>
+      <div class="task">
+        <div class="ck"></div>
+        <div class="tbody"><div class="thead"><h4>提前写死指标定义</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">「什么算一次有效游玩」「留存怎么算」事先定好,别事后扯皮。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METRICS -->
+  <section>
+    <div class="sec-title"><h2>要采的 4 个数</h2><span>答辩就讲这几个</span></div>
+    <div class="mdef mdef-scroll" style="margin-top:12px">
+      <table>
+        <thead><tr><th>指标</th><th>怎么算</th><th>答辩话术</th></tr></thead>
+        <tbody>
+          <tr><td><span class="rowh">次日 / 5 日留存</span></td><td>ID 首玩后第 1 / 5 天是否再来</td><td>「5 日留存 X%」</td></tr>
+          <tr><td><span class="rowh">人均游玩次数</span></td><td>总次数 ÷ 人数</td><td>「5 天人均玩 N 次」</td></tr>
+          <tr><td><span class="rowh">颈部活动度改善</span></td><td>首尾 ROM 评分差</td><td>「活动度平均 +X°」</td></tr>
+          <tr><td><span class="rowh">主观改善率</span></td><td>自评「更轻松」占比</td><td>「Y% 自评更轻松」</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="call crit"><span class="ic">⏱</span><span><b>时间线(已定,今天 8/20):</b>8/20–8/23 补 P0 埋点 + 招募 + 对齐 → <b>8/24–8/28 试用跑数据(5 天)</b> → 8/29–9/2 整理数据、塞进答辩材料 → 9/3 答辩。5 天能算次日 + 5 日留存,够用。<b>P0 埋点是硬前置,24 号开跑前必须就绪,否则收不到数据</b> —— 现在就写。</span></div>
+
+  <p class="foot">基于当前仓库实况(health-store.js 已存结构化数据、server/ 有 8 端点脚手架、localStorage 本地存储)。清单为执行参考,开发量为粗估。</p>
+
+</div>

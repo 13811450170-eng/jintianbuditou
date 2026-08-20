@@ -1,0 +1,329 @@
+<title>复赛商业化作战板</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --surface-2:#FBF8F4;
+  --ink:#221D17; --ink-2:#655D52; --ink-3:#9A9084;
+  --line:rgba(34,29,23,.10); --line-2:rgba(34,29,23,.16);
+  --accent:#E8591F; --accent-ink:#B23F14; --accent-wash:rgba(232,89,31,.10);
+  --strong:#1E9A62; --strong-ink:#137347; --strong-wash:rgba(30,154,98,.12);
+  --watch:#C77A12; --watch-ink:#9A5D08; --watch-wash:rgba(199,122,18,.13);
+  --crit:#CD463A; --crit-ink:#A5342A; --crit-wash:rgba(205,70,58,.12);
+  --shadow:0 1px 2px rgba(34,29,23,.04),0 8px 28px rgba(34,29,23,.06);
+  --radius:16px;
+  --cjk:"PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --num:"SF Pro Display",-apple-system,"Segoe UI",Roboto,var(--cjk);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+    --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+    --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+    --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+    --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+    --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+    --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+  --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+  --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+  --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+  --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+  --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+  --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--cjk);background:var(--bg);color:var(--ink);
+  line-height:1.62;-webkit-font-smoothing:antialiased;
+  padding:clamp(20px,5vw,64px) clamp(16px,5vw,24px) 80px}
+.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.num{font-variant-numeric:tabular-nums;font-family:var(--num)}
+.eyebrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* hero */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:clamp(22px,4vw,34px);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;
+  background:linear-gradient(var(--accent),var(--strong))}
+.hero h1{font-size:clamp(22px,4vw,30px);line-height:1.26;letter-spacing:-.01em;
+  font-weight:800;text-wrap:balance;margin:13px 0 8px}
+.hero h1 em{font-style:normal;color:var(--accent-ink)}
+.hero .lede{font-size:15px;color:var(--ink-2);max-width:64ch}
+.countdown{display:flex;gap:22px;margin-top:18px;flex-wrap:wrap}
+.cd{display:flex;flex-direction:column;gap:2px}
+.cd .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:800;
+  font-size:23px;letter-spacing:-.02em;color:var(--accent-ink);line-height:1}
+.cd .v.strong{color:var(--strong-ink)}
+.cd .l{font-size:11.5px;color:var(--ink-3);font-weight:600;letter-spacing:.04em}
+
+/* legend for data confidence */
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-3);padding:0 4px}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.tag{font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px;white-space:nowrap;
+  font-family:var(--num)}
+.tag.ok{background:var(--strong-wash);color:var(--strong-ink)}
+.tag.chk{background:var(--watch-wash);color:var(--watch-ink)}
+
+/* reframe · core asset */
+.reframe{background:linear-gradient(135deg,var(--strong-wash),transparent);
+  border:1px solid var(--line);border-left:4px solid var(--strong);border-radius:var(--radius);
+  padding:20px 24px}
+.reframe h2{font-size:clamp(17px,3vw,21px);font-weight:800;margin-bottom:7px;text-wrap:balance;line-height:1.3}
+.reframe h2 em{font-style:normal;color:var(--strong-ink)}
+.reframe p{font-size:13.5px;color:var(--ink-2);line-height:1.55;max-width:64ch}
+.assets{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.asset{font-size:12.5px;font-weight:700;padding:6px 13px;border-radius:999px;
+  background:var(--strong-wash);color:var(--strong-ink);white-space:nowrap}
+
+.sec-title{display:flex;align-items:baseline;gap:11px;margin-bottom:6px;flex-wrap:wrap}
+.sec-title .k{font-family:var(--num);font-weight:800;font-size:13px;color:var(--accent-ink);
+  background:var(--accent-wash);width:26px;height:26px;border-radius:8px;
+  display:grid;place-items:center;flex-shrink:0}
+.sec-title h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.sec-title span{font-size:13px;color:var(--ink-3);font-weight:500}
+
+/* ladder deep cards */
+.lad{display:flex;flex-direction:column;gap:12px}
+.lc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;position:relative;overflow:hidden}
+.lc::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--line-2)}
+.lc.main::before{background:var(--accent)}
+.lc.cap::before{background:var(--strong)}
+.lc.base{opacity:.72}
+.lc-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-bottom:12px}
+.lc-lv{font-family:var(--num);font-weight:800;font-size:17px;letter-spacing:-.02em;color:var(--ink-2)}
+.lc.main .lc-lv{color:var(--accent-ink)} .lc.cap .lc-lv{color:var(--strong-ink)}
+.lc-name{font-size:16px;font-weight:800}
+.lc-chip{font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.lc-chip.main{background:var(--accent-wash);color:var(--accent-ink)}
+.lc-chip.cap{background:var(--strong-wash);color:var(--strong-ink)}
+.lc-chip.base{background:var(--crit-wash);color:var(--crit-ink)}
+.lc-chip.near{background:var(--watch-wash);color:var(--watch-ink)}
+.lc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media(max-width:600px){.lc-grid{grid-template-columns:1fr}}
+.cell{background:var(--surface);padding:11px 14px}
+.cell .h{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--ink-3);
+  text-transform:uppercase;margin-bottom:4px}
+.cell .c{font-size:13.5px;color:var(--ink);line-height:1.5}
+.cell .c b{font-weight:750;color:var(--accent-ink)}
+.lc.cap .cell .c b{color:var(--strong-ink)}
+.cell.full{grid-column:1/-1;background:var(--surface-2)}
+
+/* tables */
+.tbl-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);overflow:hidden;margin-top:12px}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:13.5px}
+thead th{font-size:11.5px;font-weight:800;letter-spacing:.05em;color:var(--ink-3);
+  text-transform:uppercase;background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:none}
+td.n,th.n{text-align:right;font-family:var(--num);font-variant-numeric:tabular-nums}
+.rowh{font-weight:750;white-space:nowrap}
+tr.total td{background:var(--accent-wash);font-weight:800}
+tr.total td b{color:var(--accent-ink)}
+.mini{font-size:11px;color:var(--ink-3);font-weight:500}
+
+/* funnel */
+.funnel{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.fn{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+  padding:13px 18px;display:flex;align-items:center;gap:16px;margin:0 auto;width:100%}
+.fn.t0{max-width:100%} .fn.t1{max-width:88%} .fn.t2{max-width:72%} .fn.t3{max-width:54%}
+.fn .fl{font-family:var(--num);font-weight:800;font-size:12px;color:var(--ink-3);width:52px;flex-shrink:0}
+.fn .fmid{flex:1;min-width:0}
+.fn .fname{font-size:13.5px;font-weight:750}
+.fn .fdesc{font-size:11.5px;color:var(--ink-3)}
+.fn .fv{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:800;font-size:16px;
+  color:var(--accent-ink);white-space:nowrap}
+.fn.t3 .fv{color:var(--strong-ink)}
+
+/* callout */
+.call{border-radius:12px;padding:16px 20px;font-size:14px;line-height:1.55;display:flex;gap:12px;align-items:flex-start}
+.call.hero-eq{background:linear-gradient(135deg,var(--accent-wash),transparent);
+  border:1px solid var(--line);border-left:4px solid var(--accent);font-weight:750;font-size:15.5px}
+.call.hero-eq b{color:var(--accent-ink)}
+.call.warn{background:var(--watch-wash);border:1px solid var(--line);color:var(--ink-2)}
+.call.warn b{color:var(--watch-ink);font-weight:800}
+.call .ic{flex-shrink:0;font-weight:900;font-size:15px}
+
+/* pilot */
+.pilot{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:8px 22px}
+.pr{display:flex;gap:14px;padding:15px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+.pr:last-child{border-bottom:none}
+.pr .n{flex-shrink:0;font-family:var(--num);font-weight:800;font-size:13px;color:var(--strong-ink);
+  width:26px;height:26px;border-radius:8px;background:var(--strong-wash);display:grid;place-items:center;margin-top:1px}
+.pr .t{font-size:14px;line-height:1.55}
+.pr .t b{font-weight:800}
+.pr .t .meta{display:block;font-size:12px;color:var(--ink-3);margin-top:2px}
+
+.foot{font-size:11.5px;color:var(--ink-3);line-height:1.6;text-align:center;
+  border-top:1px solid var(--line);padding-top:20px}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span>今天不低头 · 复赛作战板 · 商业化落地 + 量化</div>
+    <div class="hero">
+      <div class="eyebrow" style="color:var(--accent-ink)">复赛主攻 · 价值贡献 50% + 孵化潜力 30%</div>
+      <h1>把商业化从「想法」讲成<em>评委能算账的故事</em></h1>
+      <p class="lede">评委四次点名「缺量化 / 缺闭环」。这一页给出:L1–L4 每层的落地打法(卖什么·怎么接京东·谁付钱)+ 一套能站住的市场测算 + 9/3 前能补上「真实数据」的试点设计。</p>
+      <div class="countdown">
+        <div class="cd"><span class="v">9/3</span><span class="l">复赛答辩</span></div>
+        <div class="cd"><span class="v">300 → 32</span><span class="l">晋级 ≈ 10.7%</span></div>
+        <div class="cd"><span class="v strong">80%</span><span class="l">权重在价值+孵化</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span class="k"><span class="tag ok">公认量级</span>业内广泛引用 / 可自行复核</span>
+    <span class="k"><span class="tag chk">需核实</span>合理假设,答辩前须换成真数</span>
+  </div>
+
+  <!-- REFRAME: core asset -->
+  <div class="reframe">
+    <div class="eyebrow" style="color:var(--strong-ink);margin-bottom:4px">重新框定</div>
+    <h2>真正的资产不是游戏,是<em>「持续健康数据 + 每日触点」</em></h2>
+    <p>评委说「靠游戏带货转化很弱」—— 因为带货只用到资产最浅一层。京东生态里一堆健康业务,缺的正是「用户每天愿意来、还留下健康数据」这个入口。这,就是评委要的「和京东域内骨肉相连」。</p>
+    <div class="assets">
+      <span class="asset">测评 ROM 数据</span>
+      <span class="asset">每次运动数据</span>
+      <span class="asset">打卡留存行为</span>
+      <span class="asset">AI 健康画像</span>
+    </div>
+  </div>
+
+  <!-- PART 1: LADDER DEEP -->
+  <section>
+    <div class="sec-title"><span class="k num">1</span><h2>四层落地打法</h2><span>卖什么 · 怎么接京东 · 谁付钱</span></div>
+    <div class="lad">
+
+      <article class="lc base">
+        <div class="lc-head"><span class="lc-lv">L0</span><span class="lc-name">直接带货</span><span class="lc-chip base">现状 · 别当主线</span></div>
+        <div class="lc-grid">
+          <div class="cell full"><div class="h">问题</div><div class="c">游戏里推颈枕/按摩仪。一次性、转化弱、谁都能抄 —— 正是评委说的「靠游戏带货转化很弱」。</div></div>
+        </div>
+      </article>
+
+      <article class="lc">
+        <div class="lc-head"><span class="lc-lv">L1</span><span class="lc-name">数据驱动的精准健康推荐</span><span class="lc-chip near">近期 · 已验证赚钱</span></div>
+        <div class="lc-grid">
+          <div class="cell"><div class="h">卖什么</div><div class="c">不是「推按摩仪」,是「你颈椎活动度 62 分、斜方肌紧张偏高 → <b>精准匹配这 3 样</b>」。转化靠数据拉高,是抄不走的护城河。</div></div>
+          <div class="cell"><div class="h">怎么接京东</div><div class="c">京东健康器械/保健/护具类目,走 <b>CPS 分佣 / 京东联盟</b>。我们做精准流量入口,京东履约。</div></div>
+          <div class="cell"><div class="h">谁付钱</div><div class="c">C 端买货,京东给我们分佣(健康类目 <b>5–15%</b> <span class="tag chk">需核实</span>)。</div></div>
+          <div class="cell"><div class="h">落地 MVP</div><div class="c">现有奖品页升级:打卡送券 → <b>按测评结果推荐</b>。测评数据已有,几乎现成。</div></div>
+        </div>
+      </article>
+
+      <article class="lc main">
+        <div class="lc-head"><span class="lc-lv">L2</span><span class="lc-name">京东健康服务闭环</span><span class="lc-chip main">主线 · 「骨肉相连」核心</span></div>
+        <div class="lc-grid">
+          <div class="cell"><div class="h">卖什么</div><div class="c">不再是货,是<b>服务</b>。颈椎痛的人要的是解决方案,不是又一个物件 —— 直接回应「不仅仅是卖货」。</div></div>
+          <div class="cell"><div class="h">怎么接京东</div><div class="c">测评红旗 → <b>京东健康在线问诊</b>(骨科/康复科);<b>线下理疗 O2O 核销</b>(奖品页券已是雏形);康复服务包/家庭医生会员。</div></div>
+          <div class="cell"><div class="h">谁付钱</div><div class="c">C 端为服务付费(问诊几十元、理疗几百元),京东健康分成。<b>客单价高一个量级</b>。</div></div>
+          <div class="cell"><div class="h">复赛怎么证</div><div class="c">演示「测评 → 红旗 → 一键问诊」跳转链路(可 mock,但要可信)。</div></div>
+        </div>
+      </article>
+
+      <article class="lc main">
+        <div class="lc-head"><span class="lc-lv">L3</span><span class="lc-name">B 端 + 保险</span><span class="lc-chip main">主线 · 规模化故事</span></div>
+        <div class="lc-grid">
+          <div class="cell"><div class="h">卖什么</div><div class="c">从 to C 走向 <b>to B / B2B2C</b>,一次签一个企业 = 几百上千用户。</div></div>
+          <div class="cell"><div class="h">怎么接京东</div><div class="c"><b>企业健康福利/EAP</b>(京东企业购通道,工会经费本有预算);<b>体检场景衔接</b>(查出问题→我们是持续干预);<b>保险健康激励</b>(京东安联,打卡→健康险折扣)。</div></div>
+          <div class="cell"><div class="h">谁付钱</div><div class="c"><b>企业 / 保司买单</b> —— 最健康的模式,不靠 C 端自觉付费。</div></div>
+          <div class="cell"><div class="h">复赛怎么证</div><div class="c">一页「企业版」设想:团队健康分后台、员工排行。「500 人公司 = 一笔合同」,评委立刻算账。</div></div>
+        </div>
+      </article>
+
+      <article class="lc cap">
+        <div class="lc-head"><span class="lc-lv">L4</span><span class="lc-name">平台 / 数据价值</span><span class="lc-chip cap">天花板 · 只点一句</span></div>
+        <div class="lc-grid">
+          <div class="cell"><div class="h">想象空间</div><div class="c"><b>C2M 反哺选品</b>(数据告诉京东开发什么健康品);<b>数据连接硬件</b>(按摩仪→App 驱动+回传,回应「硬件差异性」);健康数据资产→保险精算。</div></div>
+          <div class="cell"><div class="h">怎么讲</div><div class="c"><b>只点一句</b>,别展开 —— 让评委看见天花板高、能长大,冲孵化潜力 30%。展开反显不聚焦。</div></div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- PART 2: MARKET SIZING -->
+  <section>
+    <div class="sec-title"><span class="k num">2</span><h2>市场规模</h2><span>TAM / SAM / SOM —— 敢收窄才可信</span></div>
+    <div class="funnel">
+      <div class="fn t0"><span class="fl">TAM</span><span class="fmid"><span class="fname">中国办公室 / 久坐人群</span><span class="fdesc">白领 + 学生 + 司机等久坐职业</span></span><span class="fv">2–3 亿 <span class="tag chk">需核实</span></span></div>
+      <div class="fn t1"><span class="fl">↓ 患病</span><span class="fmid"><span class="fname">有颈肩不适症状</span><span class="fdesc">久坐人群患病率约 60–70%,行业常引</span></span><span class="fv">~1.5 亿 <span class="tag ok">公认量级</span></span></div>
+      <div class="fn t2"><span class="fl">SAM</span><span class="fmid"><span class="fname">京东生态内 + 健康消费意愿</span><span class="fdesc">京东年活跃约 5.8 亿中的健康敏感白领</span></span><span class="fv">3000–5000 万 <span class="tag chk">需核实</span></span></div>
+      <div class="fn t3"><span class="fl">SOM</span><span class="fmid"><span class="fname">3 年内可实际渗透</span><span class="fdesc">SAM 的 1–3%,创业公司现实值</span></span><span class="fv">50–150 万</span></div>
+    </div>
+    <div class="call warn" style="margin-top:14px"><span class="ic">→</span><span><b>讲法:</b>TAM 讲痛点普遍到吓人,SOM 讲「我们只要 1%」。评委反感吹 TAM、认可敢收窄 —— 收窄本身就是「不画大饼」的证明。</span></div>
+  </section>
+
+  <!-- PART 3: UNIT ECONOMICS -->
+  <section>
+    <div class="sec-title"><span class="k num">3</span><h2>单位经济 · ARPU</h2><span>一个用户一年值多少钱 —— 评委最在意</span></div>
+    <div class="tbl-card tbl-scroll">
+      <table>
+        <thead><tr><th>收入线</th><th>阶梯</th><th class="n">单用户年收入</th><th>假设</th></tr></thead>
+        <tbody>
+          <tr><td class="rowh">精准电商分佣</td><td>L1</td><td class="n">¥15–30</td><td class="mini">年买 1–2 件 × 客单 ¥150 × 佣金 10%</td></tr>
+          <tr><td class="rowh">健康服务分成</td><td>L2</td><td class="n">¥20–50</td><td class="mini">部分用户问诊/理疗 × 分成</td></tr>
+          <tr><td class="rowh">会员 / 增值</td><td>L2</td><td class="n">¥10–20</td><td class="mini">少数付费会员摊薄</td></tr>
+          <tr class="total"><td class="rowh">C 端合计 ARPU</td><td></td><td class="n"><b>¥45–100</b></td><td class="mini">/ 年</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tbl-card tbl-scroll">
+      <table>
+        <thead><tr><th>B 端(L3,另算)</th><th class="n">定价</th><th>一单价值</th></tr></thead>
+        <tbody>
+          <tr><td class="rowh">企业采购 / EAP</td><td class="n">¥50–100 / 员工 / 年 <span class="tag chk">需核实</span></td><td>500 人公司 = <b>¥2.5–5 万 / 单</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call hero-eq" style="margin-top:14px"><span class="ic">∑</span><span>一句话让评委算得出账:<b>50 万 SOM 用户 × ¥70 ARPU = 3500 万年营收(C 端)</b>,B 端企业单另算。</span></div>
+  </section>
+
+  <!-- PART 4: 3-YEAR -->
+  <section>
+    <div class="sec-title"><span class="k num">4</span><h2>三年目标</h2><span>能长多快 —— 冲孵化潜力 30%</span></div>
+    <div class="tbl-card tbl-scroll">
+      <table>
+        <thead><tr><th>指标</th><th class="n">第 1 年</th><th class="n">第 2 年</th><th class="n">第 3 年</th></tr></thead>
+        <tbody>
+          <tr><td class="rowh">累计用户</td><td class="n">10 万</td><td class="n">50 万</td><td class="n">150 万</td></tr>
+          <tr><td class="rowh">C 端 ARPU</td><td class="n">¥45</td><td class="n">¥70</td><td class="n">¥90</td></tr>
+          <tr><td class="rowh">B 端企业数</td><td class="n">5 家试点</td><td class="n">50 家</td><td class="n">200 家</td></tr>
+          <tr class="total"><td class="rowh">年营收(量级)</td><td class="n"><b>~500 万</b></td><td class="n"><b>~4000 万</b></td><td class="n"><b>~1.5 亿</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="call warn" style="margin-top:14px"><span class="ic">!</span><span><b>敏感度(一句话展示你想过风险):</b>留存率是最敏感变量 —— 次年留存从 20% 提到 40%,3 年营收翻倍。所以评委担心的留存,正是我们的第一优先级。这句把「留存质疑」和「商业模型」焊在一起。</span></div>
+    <div class="mini" style="padding:0 4px;margin-top:8px">※ 上表数字为框架示例,用于展示「用户 × ARPU + B 端」的结构。答辩前请用真实假设替换 —— 评委认结构,更认真数。</div>
+  </section>
+
+  <!-- PART 5: PILOT -->
+  <section>
+    <div class="sec-title"><span class="k num">5</span><h2>最关键一步 · 补真实数据</h2><span>评委点了 4 次「缺真实验证」</span></div>
+    <div class="call hero-eq" style="margin-bottom:14px"><span class="ic">★</span><span>上面全是推算。评委真正想看到的是<b>一个真实数字</b>。9/3 前做个小样本试点,一个真数据胜过所有测算。</span></div>
+    <div class="pilot">
+      <div class="pr"><span class="n num">1</span><span class="t"><b>拉 10–30 个同事/朋友,试用 5 天(8/24–8/28)。</b><span class="meta">每天玩一关,门槛极低,5 天内完成,给答辩留整理缓冲。</span></span></div>
+      <div class="pr"><span class="n num">2</span><span class="t"><b>记录四个数:次日留存 · 5 日留存 · 人均次数 · 颈部自评改善。</b><span class="meta">这四个正好覆盖评委最关心的「留存 + 有没有用」。</span></span></div>
+      <div class="pr"><span class="n num">3</span><span class="t"><b>答辩说:「我们做了真实试点,5 日留存 X%,Y% 的人自评颈部更轻松。」</b><span class="meta">哪怕只有 15 人 —— 同时回应留存(有真数据)+ 可行性(真有人用),这是性价比最高的一步。</span></span></div>
+    </div>
+  </section>
+
+  <div class="call hero-eq" style="font-size:16.5px"><span class="ic">“</span><span>一句话钩子:游戏是<b>入口</b>,健康数据是<b>资产</b>,京东健康生态是<b>变现场</b> —— 我们是唯一每天把用户带回来、还留下数据的那个入口。</span></div>
+
+  <p class="foot">据 9 位评委反馈聚类 + 复赛权重(价值贡献 50% / 孵化潜力 30%)推导。市场数字按可信度标注:【公认量级】可自行复核,【需核实】为合理假设、答辩前须换真数。测算展示的是结构与量级,非承诺业绩。</p>
+
+</div>

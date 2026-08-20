@@ -78,6 +78,14 @@
   }
   @keyframes celebGlow{ 0%{opacity:0;} 35%{opacity:1;} 100%{opacity:0;} }
 
+  /* 举臂保持中:整场景泛起一层柔和暖光(判定同源的"做对了"氛围) */
+  #stage.reaching::before{
+    content:""; position:absolute; inset:0; pointer-events:none; z-index:1;
+    background: radial-gradient(ellipse 70% 50% at 50% 34%, rgba(255,220,150,.14), transparent 72%);
+    animation: reachGlow .5s ease-out forwards;
+  }
+  @keyframes reachGlow{ from{opacity:0;} to{opacity:1;} }
+
   /* 银河 / 星云带 */
   .galaxy {
     position:absolute;
@@ -431,6 +439,52 @@
   .you-cam .you-dot{width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 8px #ff4d5e;animation:dotBlink 1.2s infinite;}
   @keyframes dotBlink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
 
+  /* ==================== 举臂高度条(判定同源反馈) ==================== */
+  .reach-meter{
+    position:absolute;
+    left:3.2%; top:50%; transform:translateY(-50%);
+    width:58px; height:250px;
+    z-index:38;
+    border-radius:var(--r-pill);
+    padding:12px 8px 10px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    opacity:0; transition:opacity .5s;
+  }
+  .reach-meter.show{ opacity:1; }
+  .reach-meter .rm-top{ width:20px;height:20px;color:var(--gold-bright); }
+  .reach-meter .rm-track{
+    position:relative;
+    flex:1; width:16px;
+    border-radius:var(--r-pill);
+    background:rgba(255,255,255,.10);
+    overflow:hidden;
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.45);
+  }
+  .reach-meter .rm-fill{
+    position:absolute; left:0; right:0; bottom:0; height:0%;
+    background:linear-gradient(180deg, var(--gold-bright), var(--gold));
+    border-radius:var(--r-pill);
+    transition:height .1s linear, background .2s, box-shadow .2s;
+  }
+  .reach-meter.reached .rm-fill{
+    background:linear-gradient(180deg,#fff,var(--gold-bright));
+    box-shadow:0 0 16px var(--gold);
+  }
+  /* 达标刻度线 */
+  .reach-meter .rm-mark{
+    position:absolute; left:-4px; right:-4px; height:2px;
+    background:rgba(255,255,255,.55);
+  }
+  .reach-meter .rm-mark::after{
+    content:""; position:absolute; right:-3px; top:-2px;
+    border:3px solid transparent; border-right-color:var(--gold-bright);
+  }
+  .reach-meter .rm-cap{
+    font-size:11px; font-weight:800; letter-spacing:.5px;
+    color:rgba(255,255,255,.75); white-space:nowrap;
+  }
+  .reach-meter.reached .rm-cap{ color:var(--gold-bright); }
+
   /* 中部引导文案 */
   .coach-tip{
     position:absolute;
@@ -632,6 +686,16 @@
 
   <div class="coach-tip glass" id="coachTip"><svg class="ico"><use href="#i-hands-up"/></svg>举起双手 · 够向星空</div>
 
+  <!-- 举臂高度条(判定同源:随举臂角度填充,过线变金) -->
+  <div class="reach-meter glass" id="reachMeter">
+    <svg class="rm-top"><use href="#i-hands-up"/></svg>
+    <div class="rm-track">
+      <div class="rm-mark" id="rmMark"></div>
+      <div class="rm-fill" id="rmFill"></div>
+    </div>
+    <div class="rm-cap" id="rmCap">举臂</div>
+  </div>
+
   <!-- 右下角 · 真人点阵脸小窗 -->
   <div class="you-cam" data-track="pose-reach">
     <video autoplay playsinline muted></video>
@@ -643,14 +707,15 @@
   <div class="overlay" id="intro">
     <div class="brand"><svg class="ico"><use href="#i-moon"/></svg>JOY · 星光派对</div>
     <div class="big-title">今晚一起摘星</div>
-    <div class="subtitle">举起手臂，够向夜空的星星<br>稳稳保持，舒展你的肩膀，赶走圆肩酸痛</div>
+    <div class="subtitle">对着摄像头<b>举起手臂</b>，够向夜空的星星<br>星星在哪边、就举哪只手，稳稳保持 1.5 秒舒展肩膀</div>
     <div class="how-grid">
-      <div class="how-item"><svg class="ico"><use href="#i-hands-up"/></svg><div class="lb">举臂过头</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-star"/></svg><div class="lb">够向星星</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-spark"/></svg><div class="lb">稳住保持</div></div>
+      <div class="how-item"><svg class="ico"><use href="#i-hands-up"/></svg><div class="lb">看星星位置</div><div class="sub2">左边举左手</div></div>
+      <div class="how-item"><svg class="ico"><use href="#i-star"/></svg><div class="lb">举得够高</div><div class="sub2">星星就点亮</div></div>
+      <div class="how-item"><svg class="ico"><use href="#i-spark"/></svg><div class="lb">稳住保持</div><div class="sub2">1.5 秒绽放</div></div>
     </div>
     <button class="btn" id="startBtn"><svg class="ico"><use href="#i-star"/></svg>开始摘星 · STAR TIME!</button>
-    <button class="btn-ghost" style="margin-top:18px;" onclick="location.href='zone.html?zone=shoulder'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回肩部训练营</button>
+    <div class="status">开始后将请求摄像头 · 没有摄像头也能用 ← ↑ → 键举臂</div>
+    <button class="btn-ghost" style="margin-top:14px;" onclick="location.href='zone.html?zone=shoulder'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回肩部训练营</button>
   </div>
 
   <!-- 结算 -->
@@ -717,10 +782,35 @@
 
   <!-- 3秒倒计时 -->
   <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+
+  <!-- 调试读数(?debug=1 显示,真机核对举臂角用) -->
+  <div id="dbgAngle" style="position:absolute;left:10px;bottom:10px;z-index:80;font:12px monospace;color:#6bff9d;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;display:none;"></div>
 </div>
 
-<script>
+<script type="module">
+import { createPoseBodyKernel } from "./js/pose-body-kernel.js";
+import { track } from "./js/telemetry.js";
+
 const stage = document.getElementById('stage');
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ============ URL 旋钮(真机标定用):?reach=&hold=&sm=&debug=&film=&auto= ============ */
+const Q=new URLSearchParams(location.search);
+const qn=(k,d)=>{ const v=parseFloat(Q.get(k)); return isFinite(v)?v:d; };
+const REACH   = qn('reach',120);   // 举臂达标角(度):上臂向量 vs 躯干竖直,过头≈180°
+const HOLD_MS = qn('hold',1500);   // 到位后需保持的毫秒
+const SM      = qn('sm',0.3);      // 内核 EMA 平滑
+const DEBUG   = Q.has('debug');
+const FILM    = Q.get('film')==='1' || Q.get('auto')==='1';   // 纯脚本自动演示(无摄像头,供录屏/截图/兜底)
+
+const TARGET   = 8;      // 本局星星数
+const BIG_INDEX= 5;      // 第几颗是"双手大烟花"高潮
+const REST_MS  = 1500;   // 每颗之间的休息拍(医学:低 BPM + 单动作间歇)
+const LOST_TIMEOUT = 8000;  // 仅当"持续检测不到人"这么久才放行(摄像头挂/掉线兜底);有人在画面里则永不自动过关
+
+const dbgEl = document.getElementById('dbgAngle');
+if(DEBUG && dbgEl) dbgEl.style.display='block';
 
 /* ============ 闪烁星点(叠在底图星空上,增加"活"的感觉) ============ */
 (function genStars(){
@@ -751,10 +841,6 @@ function starSVG(){
       fill="url(#sg)" stroke="#fff3c4" stroke-width="1"/>
   </svg>`;
 }
-// 星星散在中上部(15%~40% 高度区,举到120-140°够得到)
-const STAR_SLOTS = [
-  {x:26, y:26}, {x:44, y:20}, {x:60, y:28}, {x:74, y:23}, {x:37, y:34}, {x:66, y:38}
-];
 function placeStar(xPct, yPct){
   const el=document.createElement('div');
   el.className='pick-star';
@@ -808,8 +894,6 @@ function spawnFirework(xPct, yPct, big){
   stage.appendChild(fw);
   setTimeout(()=>fw.remove(),2000);
 }
-
-/* 多发爆发:围绕中心点错开时间/位置放 n 朵烟花(演示更盛大) */
 function burstFireworks(cx, cy, n, big){
   for(let i=0;i<n;i++){
     const dx=(i===0?0:(Math.random()-0.5)*38);
@@ -838,16 +922,17 @@ function dogasCheer(){
   stage.classList.add('celebrate');
   setTimeout(()=>stage.classList.remove('celebrate'), 700);
 }
-// 够星保持:此版狗在底图中,无需单独举臂(保留空函数不改状态机结构)
-function heroReach(on){ /* no-op: dogs are baked into the background image */ }
+// 够星保持:狗烘死在视频里,这里只做轻量场景强调(不改状态机结构)
+function heroReach(on){ stage.classList.toggle('reaching', !!on); }
 
 /* ============ 倒计时圈 ============ */
-function spawnRing(xPct, yPct){
+function spawnRing(xPct, yPct, ms){
   const r=document.createElement('div');
   r.className='aim-ring';
   r.style.left=xPct+'%'; r.style.top=yPct+'%';
   r.innerHTML='<svg viewBox="0 0 80 80"><circle cx="40" cy="40" r="36"/></svg>';
   stage.appendChild(r);
+  if(ms){ const c=r.querySelector('circle'); if(c) c.style.animationDuration=(ms/1000)+'s'; }
   void r.offsetWidth;
   r.classList.add('run');
   return r;
@@ -855,31 +940,247 @@ function spawnRing(xPct, yPct){
 
 /* ============ 旁白 ============ */
 const tipEl=document.getElementById('coachTip');
-function say(txt){
-  tipEl.innerHTML=`<svg class="ico"><use href="#i-spark"/></svg>${txt}`;
+function say(txt, icon){
+  tipEl.innerHTML=`<svg class="ico"><use href="#${icon||'i-spark'}"/></svg>${txt}`;
   tipEl.style.opacity='1';
 }
 function hush(){ tipEl.style.opacity='0'; }
 
-/* ============ 自动播放导演状态机 ============ */
-// 星星落点(中上部,举到 120-140° 够得到;不逼顶不逼边)
+/* ============ 星星落点(中上部,举到 120-140° 够得到;左右交替练两侧肩) ============ */
+// x<50=屏幕左侧(举左手)/ x>50=右侧(举右手);第 6 颗(BIG_INDEX=5)是双手,配 slot0 一左一右
 const SLOTS=[
-  {x:30,y:24},{x:46,y:19},{x:62,y:26},{x:72,y:21},
-  {x:38,y:31},{x:56,y:22},{x:68,y:33},{x:44,y:27}
+  {x:30,y:24},  // 0 左
+  {x:70,y:21},  // 1 右
+  {x:34,y:31},  // 2 左
+  {x:66,y:26},  // 3 右
+  {x:28,y:27},  // 4 左
+  {x:72,y:22},  // 5 右(big:本颗+slot0 = 一左一右)
+  {x:64,y:33},  // 6 右
+  {x:38,y:29}   // 7 左
 ];
-let round=0;
-const HOLD_MS=1500;
 
-function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+/* ============================================================
+ * 上肢姿态桥接(内核 → 游戏侧)+ 键盘兜底
+ * ============================================================ */
+let kernel=null, camOK=false, playing=false;
+let pose={ present:false, elevation:{left:0,right:0}, elevationMax:0, landmarks:null };
+let keyHeldUp=false, keyHeldLeft=false, keyHeldRight=false;   // 键盘兜底:↑=双手 ←=左手 →=右手
+let activeSide=null;       // 当前该举哪只手:'left' | 'right' | 'both' | null
+function syncPose(p){ if(p) pose=p; }
 
-async function playRound(){
-  const isBig = (round===2);            // 第 3 轮演双手大烟花高潮
-  round++;
+// 是否检测到人(摄像头或键盘任一)——给"检测不到才兜底放行"用
+function reachData(){
+  let present=false;
+  if(camOK && pose.present) present=true;
+  if(keyHeldUp||keyHeldLeft||keyHeldRight) present=true;
+  return { present };
+}
 
+// 按【屏幕左右侧】取该侧手臂的举臂角(度)。核心:不信 MediaPipe 解剖学左右标签,
+// 只看手腕落在屏幕中线哪一边(显示镜像后 screenX = 1 - 原始x,<0.5 为左半屏)。
+function armReachByScreenSide(side){   // side: 'left' | 'right'
+  let best=0;
+  const lm=pose.landmarks;
+  if(camOK && pose.present && lm){
+    // 手腕 15/16 分别配对内核算好的 elevation.left/right
+    const arms=[
+      { ev:pose.elevation.left||0,  w:lm[15] },
+      { ev:pose.elevation.right||0, w:lm[16] },
+    ];
+    for(const a of arms){
+      if(!a.w) continue;
+      const onLeft = (1 - a.w.x) < 0.5;         // 该手腕在屏幕左半边?
+      if((side==='left') === onLeft) best=Math.max(best, a.ev);
+    }
+  }
+  // 键盘兜底
+  if(keyHeldUp) best=Math.max(best, REACH+30);
+  if(side==='left'  && keyHeldLeft)  best=Math.max(best, REACH+30);
+  if(side==='right' && keyHeldRight) best=Math.max(best, REACH+30);
+  return best;
+}
+
+// 挑战达标:单侧=该屏幕侧手臂举够;双手=左右屏幕侧各有一只手举够
+function isReached(spec){   // spec: 'left' | 'right' | 'both'
+  if(spec==='both') return armReachByScreenSide('left')>=REACH && armReachByScreenSide('right')>=REACH;
+  return armReachByScreenSide(spec)>=REACH;
+}
+
+/* ============ 举臂高度条(判定同源反馈) ============ */
+const meterEl=document.getElementById('reachMeter');
+const rmFill=document.getElementById('rmFill');
+const rmCap=document.getElementById('rmCap');
+const rmMark=document.getElementById('rmMark');
+// 达标刻度线位置:REACH 在 0..180 量程里的高度
+if(rmMark) rmMark.style.bottom=clamp(REACH/180*100,0,100)+'%';
+function updateMeter(){
+  const present = reachData().present;
+  // 高度条跟随"当前该举的那只手";双手时取较低的一只(两只都要够)
+  let raw=0;
+  if(activeSide==='both') raw=Math.min(armReachByScreenSide('left'), armReachByScreenSide('right'));
+  else if(activeSide)     raw=armReachByScreenSide(activeSide);
+  else                    raw=Math.max(armReachByScreenSide('left'), armReachByScreenSide('right'));
+  const pct = clamp((present?raw:0)/180*100, 0, 100);
+  rmFill.style.height=pct+'%';
+  const reached = present && raw>=REACH;
+  meterEl.classList.toggle('reached', reached);
+  if(!present){ rmCap.textContent = camOK?'找不到手':'举臂'; }
+  else if(reached){ rmCap.textContent='够到了'; }
+  else { rmCap.textContent = activeSide==='left'?'举左手' : activeSide==='right'?'举右手' : activeSide==='both'?'举双手' : '再高些'; }
+}
+
+/* ============ 右下角小窗:真人上肢骨架(内联自 you-facecam.js drawSkeleton/drawPoseReal) ============ */
+const meshCanvas=document.querySelector('.you-cam .you-mesh');
+const meshCtx=meshCanvas?meshCanvas.getContext('2d'):null;
+const GOLD_DOT='rgba(255,204,0,0.55)', GOLD_LINE='rgba(255,230,120,0.9)', WHITE='rgba(255,255,255,0.95)';
+function mkRnd(seed){ let s=(seed>>>0)||1; return ()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; }; }
+function fillQuad(dots,a,b,c,d,n,rnd){ if(!a||!b||!c||!d)return; for(let i=0;i<n;i++){ const u=rnd(),v=rnd(); const tx=a.x+(b.x-a.x)*u,ty=a.y+(b.y-a.y)*u, bx=d.x+(c.x-d.x)*u,by=d.y+(c.y-d.y)*u; dots.push([tx+(bx-tx)*v, ty+(by-ty)*v]); } }
+function fillDisc(dots,cx,cy,r,n,rnd){ for(let i=0;i<n;i++){ const t=rnd()*Math.PI*2,rr=Math.sqrt(rnd())*r; dots.push([cx+Math.cos(t)*rr,cy+Math.sin(t)*rr]); } }
+function addArc(dots,cx,cy,r,n){ n=n||30; for(let i=0;i<n;i++){const t=i/n*Math.PI*2;dots.push([cx+Math.cos(t)*r,cy+Math.sin(t)*r]);} }
+function meshBg(){ const W=meshCanvas.width,H=meshCanvas.height; meshCtx.clearRect(0,0,W,H); meshCtx.fillStyle='rgba(255,204,0,0.03)'; meshCtx.fillRect(0,0,W,H); }
+function meshHint(text){ meshBg(); meshCtx.fillStyle='rgba(255,204,0,0.4)'; meshCtx.font='12px -apple-system, sans-serif'; meshCtx.textAlign='center'; meshCtx.fillText(text, meshCanvas.width/2, meshCanvas.height/2); }
+function drawSkeleton(J){
+  meshBg();
+  const rnd=mkRnd(20240816);
+  const perp=(a,b,w)=>{ const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1; return {x:-dy/L*w,y:dx/L*w}; };
+  const limb=(a,b,w,n)=>{ if(!a||!b)return; const p=perp(a,b,w); fillQuad(cloud,{x:a.x+p.x,y:a.y+p.y},{x:b.x+p.x,y:b.y+p.y},{x:b.x-p.x,y:b.y-p.y},{x:a.x-p.x,y:a.y-p.y},n,rnd); };
+  const cloud=[];
+  if(J.shL&&J.shR&&J.hipL&&J.hipR) fillQuad(cloud,J.shL,J.shR,J.hipR,J.hipL,210,rnd);
+  limb(J.shL,J.elL,7.5,52); limb(J.elL,J.wrL,6,44);
+  limb(J.shR,J.elR,7.5,52); limb(J.elR,J.wrR,6,44);
+  let mid=null, neck=null;
+  if(J.shL&&J.shR){ mid={x:(J.shL.x+J.shR.x)/2,y:(J.shL.y+J.shR.y)/2}; if(J.nose) neck=[mid,J.nose]; }
+  if(neck) limb(neck[0],neck[1],5,24);
+  if(J.nose&&J.headR){ fillDisc(cloud,J.nose.x,J.nose.y,J.headR*0.92,150,rnd); addArc(cloud,J.nose.x,J.nose.y,J.headR,48); }
+  if(J.wrL) fillDisc(cloud,J.wrL.x,J.wrL.y,7.5,36,rnd);
+  if(J.wrR) fillDisc(cloud,J.wrR.x,J.wrR.y,7.5,36,rnd);
+  meshCtx.fillStyle=GOLD_DOT;
+  for(let i=0;i<cloud.length;i++){ meshCtx.fillRect(cloud[i][0]-0.5,cloud[i][1]-0.5,1.4,1.4); }
+  const bones=[]; const B=(a,b)=>{ if(J[a]&&J[b]) bones.push([J[a],J[b]]); };
+  B('shL','shR'); B('shL','elL'); B('elL','wrL'); B('shR','elR'); B('elR','wrR'); B('shL','hipL'); B('shR','hipR'); B('hipL','hipR');
+  meshCtx.strokeStyle=GOLD_LINE; meshCtx.lineWidth=0.9;
+  for(const [a,b] of bones){ meshCtx.beginPath(); meshCtx.moveTo(a.x,a.y); meshCtx.lineTo(b.x,b.y); meshCtx.stroke(); }
+  if(neck){ meshCtx.beginPath(); meshCtx.moveTo(neck[0].x,neck[0].y); meshCtx.lineTo(neck[1].x,neck[1].y); meshCtx.stroke(); }
+  if(J.nose&&J.headR){ meshCtx.beginPath(); meshCtx.arc(J.nose.x,J.nose.y,J.headR,0,Math.PI*2); meshCtx.stroke(); }
+  meshCtx.fillStyle=WHITE;
+  for(const k of ['shL','shR','wrL','wrR']){ if(J[k]){ meshCtx.beginPath(); meshCtx.arc(J[k].x,J[k].y,2.4,0,Math.PI*2); meshCtx.fill(); } }
+  meshCtx.fillStyle='rgba(255,255,255,0.6)';
+  for(const k of ['elL','elR']){ if(J[k]){ meshCtx.beginPath(); meshCtx.arc(J[k].x,J[k].y,1.7,0,Math.PI*2); meshCtx.fill(); } }
+}
+function drawPoseReal(lm){
+  const W=meshCanvas.width,H=meshCanvas.height;
+  const IDX=[0,11,12,13,14,15,16,23,24];
+  let minX=1,minY=1,maxX=0,maxY=0,any=false;
+  const vis=p=>(p.visibility==null?1:p.visibility);
+  for(const i of IDX){ const p=lm[i]; if(!p||vis(p)<0.3)continue; const x=1-p.x,y=p.y; any=true; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+  if(!any){ meshHint('SEARCHING…'); return; }
+  const bw=Math.max(0.001,maxX-minX), bh=Math.max(0.001,maxY-minY), PAD=22;
+  let scale=Math.min((W-2*PAD)/(bw*W),(H-2*PAD)/(bh*H)); scale=Math.min(scale,2.6);
+  const offX=(W-bw*W*scale)/2-minX*W*scale, offY=(H-bh*H*scale)/2-minY*H*scale;
+  const g=i=>{ const p=lm[i]; if(!p||vis(p)<0.3)return null; return { x:(1-p.x)*W*scale+offX, y:p.y*H*scale+offY }; };
+  const shL=g(11),shR=g(12);
+  let headR=16; if(shL&&shR) headR=Math.max(12,Math.hypot(shR.x-shL.x,shR.y-shL.y)*0.34);
+  drawSkeleton({ nose:g(0), shL, shR, elL:g(13), elR:g(14), wrL:g(15), wrR:g(16), hipL:g(23), hipR:g(24), headR });
+}
+function drawYou(){
+  if(!meshCtx) return;
+  if(camOK && pose.landmarks){ drawPoseReal(pose.landmarks); }
+  else meshHint(camOK ? 'SEARCHING…' : '键盘模式 · 按住 ↑ 举臂');
+}
+
+/* ============================================================
+ * 真玩:举臂保持(hold-to-fill)· 单颗挑战驱动
+ * ============================================================ */
+let challenge=null;
+
+function makeChallenge(i, resolve){
+  const big = (i===BIG_INDEX);
+  const slot  = SLOTS[i%SLOTS.length];
+  const slot2 = big ? SLOTS[(i+3)%SLOTS.length] : null;
+  // 单颗星按它在屏幕的左右半边,决定该举哪只手
+  const spec = big ? 'both' : (slot.x < 50 ? 'left' : 'right');
+  const sideTxt = spec==='left' ? '举左手' : spec==='right' ? '举右手' : '举双手';
+  const star  = placeStar(slot.x, slot.y);
+  const star2 = big ? placeStar(slot2.x, slot2.y) : null;
+  activeSide = spec;
+  say(big?'双手一起 · 够两颗星!':(spec==='left'?'举左手 · 够左边的星':'举右手 · 够右边的星'), 'i-hands-up');
+  let holding=false, holdStart=0, ring=null, ring2=null, done=false;
+  let lostSince=0;   // 持续"检测不到人"的起点(0=当前有人/未开始计)
+
+  function cancelHold(){
+    holding=false;
+    if(ring){ ring.remove(); ring=null; }
+    if(ring2){ ring2.remove(); ring2=null; }
+    star.classList.remove('aiming'); if(star2) star2.classList.remove('aiming');
+    heroReach(false);
+  }
+  function finish(soft){
+    if(done) return; done=true;
+    activeSide=null;
+    if(ring){ ring.remove(); ring=null; }
+    if(ring2){ ring2.remove(); ring2=null; }
+    star.remove(); if(star2) star2.remove();
+    if(big){ burstFireworks((slot.x+slot2.x)/2,(slot.y+slot2.y)/2-2, 9, true); say('大烟花!星屑 +10','i-fire'); }
+    else   { burstFireworks(slot.x, slot.y, 4, false); say(soft?'够到啦 ✨':'点亮!星屑 +5','i-spark'); }
+    heroReach(false);
+    dogasCheer();
+    addScore(big);
+    challenge=null;
+    resolve();
+  }
+  return {
+    tick(now){
+      const reached=isReached(spec);
+      if(reached){
+        if(!holding){
+          holding=true; holdStart=now;
+          star.classList.add('aiming'); if(star2) star2.classList.add('aiming');
+          heroReach(true);
+          ring=spawnRing(slot.x, slot.y, HOLD_MS);
+          if(big) ring2=spawnRing(slot2.x, slot2.y, HOLD_MS);
+          say(big?'双手稳住 · 保持 1.5 秒':'稳住 · 保持 1.5 秒','i-spark');
+        } else if(now-holdStart>=HOLD_MS){
+          finish(false);
+        }
+      } else {
+        if(holding){ cancelHold(); say(big?'双手再举高些':(sideTxt+' · 再举高点'),'i-hands-up'); }
+      }
+      // 兜底:只在"检测不到人"持续 LOST_TIMEOUT 时才放行(摄像头挂/掉线,别死等)。
+      // 摄像头正常、人在画面里时 present=true → 永不自动过关,一直等你举手。
+      const present = reachData().present;
+      if(present){ lostSince=0; }
+      else if(!lostSince){ lostSince=now; }
+      else if(now-lostSince>LOST_TIMEOUT){ finish(true); }
+    },
+    _cleanup(){ cancelHold(); star.remove(); if(star2) star2.remove(); }
+  };
+}
+
+function runChallenge(i){
+  return new Promise(resolve=>{ challenge=makeChallenge(i, resolve); });
+}
+
+async function playReal(){
+  playing=true;
+  say('举起手臂 · 够向夜空的星星','i-hands-up');
+  await sleep(1200);
+  for(let i=0;i<TARGET && playing;i++){
+    await runChallenge(i);
+    if(!playing) return;
+    hush();
+    await sleep(REST_MS);
+  }
+  if(playing){ await sleep(300); endShow(); }
+}
+
+/* ============================================================
+ * 录屏/兜底演示(旧自动导演,?film=1 / ?auto=1 触发,不接摄像头)
+ * ============================================================ */
+async function playAutoRound(round){
+  const isBig=(round===2);
   if(isBig){
-    // 双手够两颗星
     const a=SLOTS[1], b=SLOTS[5];
-    say('双手一起 · 够两颗星!');
+    say('双手一起 · 够两颗星!','i-hands-up');
     const s1=placeStar(a.x,a.y), s2=placeStar(b.x,b.y);
     await sleep(500);
     heroReach(true);
@@ -887,57 +1188,60 @@ async function playRound(){
     await sleep(400);
     const r1=spawnRing(a.x,a.y), r2=spawnRing(b.x,b.y);
     await sleep(HOLD_MS);
-    r1.remove(); r2.remove();
-    s1.remove(); s2.remove();
-    // 高潮:满屏多发大烟花
+    r1.remove(); r2.remove(); s1.remove(); s2.remove();
     burstFireworks((a.x+b.x)/2, (a.y+b.y)/2 - 2, 9, true);
-    heroReach(false);
-    dogasCheer();
-    addScore(true);
-    say('大烟花!星屑 +10');
-    await sleep(2200);
-    hush();
-    await sleep(700);
+    heroReach(false); dogasCheer(); addScore(true);
+    say('大烟花!星屑 +10','i-fire');
+    await sleep(2200); hush(); await sleep(700);
   } else {
-    // 单手够一颗星
     const slot=SLOTS[(round*3)%SLOTS.length];
-    say('举起手 · 够向星星');
+    say('举起手 · 够向星星','i-hands-up');
     const star=placeStar(slot.x,slot.y);
     await sleep(600);
     heroReach(true);
     star.classList.add('aiming');
     await sleep(350);
     const ring=spawnRing(slot.x,slot.y);
-    say('稳住 · 保持 1.5 秒');
+    say('稳住 · 保持 1.5 秒','i-spark');
     await sleep(HOLD_MS);
-    ring.remove();
-    star.remove();
+    ring.remove(); star.remove();
     burstFireworks(slot.x, slot.y, 4, false);
-    heroReach(false);
-    dogasCheer();
-    addScore(false);
-    say('点亮!星屑 +5');
-    await sleep(1400);
-    hush();
-    await sleep(650);
+    heroReach(false); dogasCheer(); addScore(false);
+    say('点亮!星屑 +5','i-spark');
+    await sleep(1400); hush(); await sleep(650);
   }
 }
-
-async function runShow(){
-  round=0;
+async function runAutoShow(){
+  playing=true;
   await sleep(600);
-  say('今晚一起看星星吧');
-  await sleep(1600);
-  hush();
-  await sleep(400);
-  // 有限 6 轮演示,结束进结算
-  for(let i=0;i<6;i++){
-    await playRound();
-  }
+  say('今晚一起看星星吧','i-moon');
+  await sleep(1600); hush(); await sleep(400);
+  for(let i=0;i<6 && playing;i++){ await playAutoRound(i); }
   await sleep(300);
-  endShow();
+  if(playing) endShow();
 }
 
+/* ============ 主循环(全程常驻:供帧 + 画骨架 + 高度条 + 跑挑战) ============ */
+let angleVel=0, prevMax=0;
+function loop(now){
+  requestAnimationFrame(loop);
+  now=now||performance.now();
+  if(kernel && kernel.ready()){
+    syncPose(kernel.tick(now));
+    const m=pose.present?pose.elevationMax:0;
+    angleVel=Math.abs(m-prevMax); prevMax=m;
+  }
+  drawYou();
+  updateMeter();
+  if(challenge) challenge.tick(now);
+  if(DEBUG && dbgEl){
+    const present = reachData().present;
+    dbgEl.textContent=`屏左臂:${armReachByScreenSide('left').toFixed(0)}° 屏右臂:${armReachByScreenSide('right').toFixed(0)}° reach:${REACH} 该举:${activeSide||'-'} present:${present?1:0} cam:${camOK?1:0} hold:${challenge?'run':'-'}`;
+  }
+}
+requestAnimationFrame(loop);
+
+/* ============ 结算 streak 火苗 +1 ============ */
 function playStreakFlame(){
   const win=document.getElementById('streakWin');
   if(!win) return;
@@ -966,11 +1270,16 @@ function pickFeel(el){
 window.pickFeel = pickFeel;
 
 function endShow(){
+  playing=false;
+  if(challenge){ challenge._cleanup&&challenge._cleanup(); challenge=null; }
+  if(kernel) kernel.stopCamera();   // 隐私红线:关卡结束立即释放摄像头
+  camOK=false; pose={ present:false, elevation:{left:0,right:0}, elevationMax:0, landmarks:null };
+  activeSide=null;
+  meterEl.classList.remove('show');
   hush();
   document.getElementById('rStars').textContent=codexCount;
   document.getElementById('rFw').textContent=fwCount;
 
-  // 判语 + 星级:按点亮星星比例点亮
   const g = gradeRun();
   document.getElementById('rVerdict').textContent = g.verdict;
   document.querySelectorAll('#resStars svg').forEach((s,i)=>{
@@ -978,8 +1287,11 @@ function endShow(){
     s.classList.add(i<g.stars ? 'lit' : 'dim');
   });
 
+  // 试点埋点:一局完成(用于算游玩次数/留存)
+  track('level_finish', { level:'star', stars_picked:codexCount, fireworks:fwCount, stars:g.stars });
+
   document.getElementById('result').classList.remove('hide');
-  setTimeout(playStreakFlame,800);   // 数据出现后再点燃火苗
+  setTimeout(playStreakFlame,800);
 }
 
 /* ============ 3秒倒计时(三关统一) ============ */
@@ -997,22 +1309,58 @@ function runCountdown(done){
   })();
 }
 
-function start(){
+/* ============ 开始 ============ */
+async function start(){
   document.getElementById('intro').classList.add('hide');
   document.getElementById('result').classList.add('hide');
   // 重置分数
   fwCount=0; dustCount=0; codexCount=0;
   fwEl.textContent=0; dustEl.textContent=0; renderCodex();
+  playing=false;
+  activeSide=null;
+  if(challenge){ challenge._cleanup&&challenge._cleanup(); challenge=null; }
   const v=document.getElementById('bgvid');
   if(v){ v.currentTime=0; v.play().catch(()=>{}); }
-  runCountdown(runShow);   // 先 3 秒倒计时,再开始
+
+  // 演示/录屏模式:不接摄像头,纯脚本自动播放
+  if(FILM){
+    meterEl.classList.remove('show');
+    runCountdown(runAutoShow);
+    return;
+  }
+
+  // 真玩:唤起摄像头 + 上肢检测(失败则降级为键盘 ↑,不阻断)
+  camOK=false;
+  const statusEl=document.querySelector('#intro .status');
+  try{
+    if(!kernel){
+      kernel=createPoseBodyKernel({ video:document.querySelector('.you-cam video'), smooth:SM });
+      await kernel.loadModel(txt=>{ if(statusEl && txt) statusEl.textContent=txt; });
+    }
+    await kernel.startCamera();
+    camOK=true;
+  }catch(e){
+    camOK=false;   // 摄像头被拒/无设备 → 键盘兜底
+  }
+  meterEl.classList.add('show');
+  runCountdown(()=>{ playReal(); });
 }
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();start();}});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); if(!playing) start(); return; }
+  if(e.code==='ArrowUp'){ e.preventDefault(); keyHeldUp=true; }
+  if(e.code==='ArrowLeft'){ e.preventDefault(); keyHeldLeft=true; }
+  if(e.code==='ArrowRight'){ e.preventDefault(); keyHeldRight=true; }
+});
+document.addEventListener('keyup',e=>{
+  if(e.code==='ArrowUp') keyHeldUp=false;
+  if(e.code==='ArrowLeft') keyHeldLeft=false;
+  if(e.code==='ArrowRight') keyHeldRight=false;
+});
 
-// 截图/自动演示:带 auto=1 直接开始
-if(location.search.indexOf('auto=1')>=0){ setTimeout(start,300); }
+// 演示模式 ?film=1 / ?auto=1:进入即自动开始(自动导演,无摄像头,供录屏/截图)
+if(FILM){ setTimeout(start,300); }
 // end=1 调试入口:直接看结算页(满分演示,走 endShow 填判语+星星)
 if(location.search.indexOf('end=1')>=0){
   const introEl=document.getElementById('intro');
@@ -1024,8 +1372,6 @@ if(location.search.indexOf('end=1')>=0){
 }
 
 </script>
-<!-- 右下角「● YOU」点阵脸小窗:载入即装饰脸保底,摄像头就绪后自动升级为真脸点云 -->
-<script src="js/you-facecam.js"></script>
 <!-- 右下角小窗:实写⇄点阵开关(默认实写,悬停黑蒙版,点击切点阵) -->
 <script src="js/facecam-toggle.js"></script>
 </body>

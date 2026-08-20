@@ -13,6 +13,7 @@
 
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { appendFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -68,6 +69,28 @@ function readBody(req, limitBytes = 512 * 1024) {
     });
     req.on('error', reject);
   });
+}
+
+// ——— 试点埋点:把前端上报的数值事件按行落到 jsonl,给试点算留存/次数 ———
+// 隐私红线延续:只收 {uid, event, 数值字段},绝不收画面。uid 是前端生成的匿名随机串。
+const EVENTS_FILE = join(__dirname, 'data', 'pilot-events.jsonl');
+async function handleTrack(req, res) {
+  let payload = {};
+  try { payload = await readBody(req, 64 * 1024); } catch { return sendJSON(res, 400, { error: 'bad json' }); }
+  const uid = typeof payload.uid === 'string' ? payload.uid.slice(0, 64) : 'anon';
+  const event = typeof payload.event === 'string' ? payload.event.slice(0, 40) : 'unknown';
+  // 服务端时间戳为准(前端时钟不可信);date 用本地日,便于按日算留存
+  const now = new Date();
+  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const rec = { ts: now.toISOString(), date, uid, event, data: payload.data ?? null };
+  try {
+    await mkdir(join(__dirname, 'data'), { recursive: true });
+    await appendFile(EVENTS_FILE, JSON.stringify(rec) + '\n', 'utf8');
+    return sendJSON(res, 200, { ok: true });
+  } catch (e) {
+    console.warn('[track] 落地失败:', e.code || e.message);
+    return sendJSON(res, 200, { ok: false });   // 埋点失败绝不影响前端体验
+  }
 }
 
 // ——— API：调 provider,任何错误都降级为 200 + degraded 标记,让前端静默兜底 ———
@@ -135,7 +158,9 @@ const server = http.createServer((req, res) => {
   const path = req.url || '/';
   if (path.startsWith('/api/')) {
     if (req.method !== 'POST') { res.writeHead(405); return res.end('use POST'); }
-    return handleApi(req, res, path.split('?')[0]);
+    const apiPath = path.split('?')[0];
+    if (apiPath === '/api/track') return handleTrack(req, res);   // 试点埋点,不走 provider
+    return handleApi(req, res, apiPath);
   }
   return handleStatic(req, res, path);
 });
