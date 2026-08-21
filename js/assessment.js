@@ -15,7 +15,8 @@
 // ============================================================
 
 import { createPoseKernel } from './pose-kernel.js';
-import { recordAssessment, getTodayFatigue, saveTodayFatigue } from './health-store.js';
+import { createPoseBodyKernel } from './pose-body-kernel.js';
+import { recordAssessment, recordZoneRating, getTodayFatigue, saveTodayFatigue } from './health-store.js';
 
 // 红旗项(命中任一 → 转介线下,不进游戏)。按部位分流,取不到用通用兜底。
 const RED_FLAGS_NECK = [
@@ -54,6 +55,118 @@ const ROM_STEPS = [
 ];
 
 const HOLD_TO_CONFIRM_MS = 800;   // 转到位后保持这么久算完成该向(慢而稳,不甩)
+
+// 肩部举臂 ROM 两步:左臂上举 → 右臂上举
+// target:上举正常值约 170°,这里取 120° 为"基本可玩"门槛(60% 个人极限规则同颈部)
+const SHOULDER_ROM_STEPS = [
+  { key: 'elevL', side: 'left',  name: '左臂往上举高', emoji: '🙋', target: 120 },
+  { key: 'elevR', side: 'right', name: '右臂往上举高', emoji: '🙋', target: 120 },
+];
+const SHOULDER_HOLD_MS = 1000;   // 举到位保持 1s
+
+// 采集单侧最大上举角:持续读 snapshot().elevation[side],记峰值,到目标 80% 保持 1s 完成
+function captureElevPeak(k, side, barEl, isSkipped) {
+  return new Promise(resolve => {
+    let peak = 0, holdStart = 0;
+    const target = 120;
+    const t0 = performance.now();
+    function poll() {
+      if (isSkipped && isSkipped()) { resolve(peak); return; }
+      const snap = k.snapshot ? k.snapshot() : null;
+      const v = (snap && snap.elevation && snap.elevation[side]) || 0;
+      if (v > peak) peak = v;
+      barEl.style.width = Math.min(100, (peak / target) * 100) + '%';
+      if (peak >= target * 0.6) {
+        if (!holdStart) holdStart = performance.now();
+        else if (performance.now() - holdStart >= SHOULDER_HOLD_MS) { resolve(peak); return; }
+      } else { holdStart = 0; }
+      if (performance.now() - t0 > 9000) { resolve(peak); return; }  // 9s 超时兜底
+      requestAnimationFrame(poll);
+    }
+    requestAnimationFrame(poll);
+  });
+}
+
+// 等双臂回到自然下垂位(elevation 都小于 30°)
+function waitArmsDown(k, isSkipped) {
+  return new Promise(resolve => {
+    const t0 = performance.now();
+    function poll() {
+      if (isSkipped && isSkipped()) { resolve(); return; }
+      const snap = k.snapshot ? k.snapshot() : null;
+      const e = snap && snap.elevation;
+      const down = e ? (e.left < 30 && e.right < 30) : true;
+      if (down || performance.now() - t0 > 3000) { resolve(); return; }
+      requestAnimationFrame(poll);
+    }
+    requestAnimationFrame(poll);
+  });
+}
+
+// 肩部举臂 ROM 采集步骤(UI 复用颈部卡片样式,内核换 pose-body-kernel)
+async function romStepShoulder(c) {
+  c.innerHTML = `
+    <div class="asmt-kicker">活动度测量 · 肩部</div>
+    <div class="asmt-title" id="asmtRomTitle">先坐正,手自然垂放</div>
+    <div class="asmt-cam"><video id="asmtVideo" playsinline muted></video></div>
+    <div class="asmt-desc" id="asmtRomDesc">让摄像头看清你的上半身,保持自然…</div>
+    <div class="asmt-bar"><div class="asmt-bar-fill" id="asmtBar"></div></div>
+    <div class="asmt-progress" id="asmtProg">校准中</div>
+    <button class="asmt-btn ghost" id="asmtRomSkip">跳过评估,直接开始</button>
+  `;
+  const shownVideo = c.querySelector('#asmtVideo');
+  const titleEl = c.querySelector('#asmtRomTitle');
+  const descEl  = c.querySelector('#asmtRomDesc');
+  const barEl   = c.querySelector('#asmtBar');
+  const progEl  = c.querySelector('#asmtProg');
+
+  let skipped = false;
+  c.querySelector('#asmtRomSkip').addEventListener('click', () => { skipped = true; });
+
+  // 用隐藏 video 给内核,把摄像头流镜像到可见小窗
+  const hiddenVideo = document.createElement('video');
+  hiddenVideo.setAttribute('playsinline', ''); hiddenVideo.muted = true;
+  hiddenVideo.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;';
+  document.body.appendChild(hiddenVideo);
+  const k = createPoseBodyKernel({ video: hiddenVideo });
+
+  const bail = () => { running = false; k.stopCamera(); hiddenVideo.remove(); return 'SKIP'; };
+
+  try { await k.loadModel(); } catch { hiddenVideo.remove(); return null; }
+  try { await k.startCamera(); } catch { hiddenVideo.remove(); return null; }
+  if (hiddenVideo.srcObject) {
+    shownVideo.srcObject = hiddenVideo.srcObject;
+    shownVideo.play().catch(() => {});
+  }
+
+  let running = true;
+  (function tickLoop() { if (!running) return; k.tick(performance.now()); requestAnimationFrame(tickLoop); })();
+
+  // 稳定 1 秒后开始(等模型热身)
+  await new Promise(r => setTimeout(r, 1000));
+  if (skipped) return bail();
+
+  const romShoulder = {};
+  for (let i = 0; i < SHOULDER_ROM_STEPS.length; i++) {
+    if (skipped) return bail();
+    const step = SHOULDER_ROM_STEPS[i];
+    titleEl.textContent = `${step.emoji} 请${step.name}`;
+    descEl.textContent  = '慢慢举到最高,停住保持一下 —— 稳稳就好';
+    progEl.textContent  = `第 ${i + 1} / ${SHOULDER_ROM_STEPS.length} 侧`;
+    const peak = await captureElevPeak(k, step.side, barEl, () => skipped);
+    if (skipped) return bail();
+    romShoulder[step.key] = { value: Math.round(peak), confidence: 0.8 };
+    titleEl.textContent = '放下手臂,放松';
+    descEl.textContent  = '';
+    barEl.style.width = '0%';
+    await waitArmsDown(k, () => skipped);
+  }
+
+  running = false;
+  k.stopCamera();
+  hiddenVideo.remove();
+  return romShoulder;
+}
 
 let styleInjected = false;
 function injectStyle() {
@@ -348,8 +461,23 @@ export async function runAssessment(zone = 'neck') {
       return { pass: false, referReasons: ['命中红旗自评项'] };
     }
 
-    // 通用两步(问诊+红旗)后:非颈部暂无 ROM 采集(仅颈部有6向ROM),直接放行进关卡。
+    // 通用两步(问诊+红旗)后:按 zone 分流 ROM 采集
+    if (zone === 'shoulder') {
+      // 肩部:采集左右臂最大上举角
+      const romShoulder = await romStepShoulder(c);
+      close();
+      if (!romShoulder || romShoulder === 'SKIP') return { pass: true, degraded: true, skipped: romShoulder === 'SKIP' };
+      // 折算肩部评分(左右均值 / 目标 120° → 0-100):存健康档案供档案页展示
+      const elevL = romShoulder.elevL ? romShoulder.elevL.value : 0;
+      const elevR = romShoulder.elevR ? romShoulder.elevR.value : 0;
+      const avgElev = (elevL + elevR) / 2;
+      const rating = Math.round(Math.min(100, (avgElev / 120) * 100));
+      try { recordZoneRating('shoulder', rating, { elevL, elevR }, Date.now()); } catch {}
+      return { pass: true, romShoulder, rating };
+    }
+
     if (zone !== 'neck') {
+      // 其他部位(眼部等)暂无 ROM,直接放行
       close();
       return { pass: true, degraded: true };
     }
