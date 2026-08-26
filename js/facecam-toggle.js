@@ -23,23 +23,57 @@
   const style = document.createElement('style');
   style.textContent = `
   .you-cam .you-label{ z-index:3; }
+  /* 常驻底部控制条:始终可见,让用户第一眼就知道能关 */
   .fc-toggle{
-    position:absolute; inset:0; z-index:4;
-    display:flex; align-items:center; justify-content:center; gap:6px;
-    margin:0; padding:0; border:0; cursor:pointer; white-space:nowrap;
-    background:rgba(0,0,0,0); color:#fff;
-    font:900 12px/1 -apple-system,system-ui,sans-serif; letter-spacing:1px;
+    position:absolute; left:0; right:0; bottom:0; z-index:4;
+    display:flex; align-items:center; justify-content:center; gap:5px;
+    margin:0; padding:7px 6px; border:0; cursor:pointer; white-space:nowrap;
+    background:linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,.32) 70%, rgba(0,0,0,0));
+    color:#fff; font:800 11px/1 -apple-system,system-ui,sans-serif; letter-spacing:.5px;
     transition:background .18s ease;
     -webkit-tap-highlight-color:transparent;
   }
-  .fc-toggle .fc-ico, .fc-toggle .fc-txt{ opacity:0; transition:opacity .18s ease; }
+  .fc-toggle:hover, .fc-toggle:focus-visible{ background:linear-gradient(to top, rgba(0,0,0,.88), rgba(0,0,0,.5) 70%, rgba(0,0,0,.1)); outline:none; }
   .fc-toggle .fc-ico{ display:inline-flex; }
-  .fc-toggle .fc-ico svg{ width:15px; height:15px; display:block; }
-  .fc-toggle:hover, .fc-toggle:focus-visible{ background:rgba(0,0,0,.55); outline:none; }
-  .fc-toggle:hover .fc-ico, .fc-toggle:hover .fc-txt,
-  .fc-toggle:focus-visible .fc-ico, .fc-toggle:focus-visible .fc-txt{ opacity:1; }
+  .fc-toggle .fc-ico svg{ width:14px; height:14px; display:block; }
+  /* 首次进入引导气泡:指向小窗,4s 后自动消失或点击关闭 */
+  .fc-tip{
+    position:absolute; right:0; bottom:calc(100% + 10px); z-index:6;
+    width:184px; padding:10px 13px; border-radius:10px; cursor:pointer;
+    background:rgba(20,20,22,.92); border:1px solid rgba(255,204,0,.4);
+    color:#fff; font:500 12px/1.55 -apple-system,system-ui,sans-serif;
+    box-shadow:0 6px 20px rgba(0,0,0,.4);
+    animation:fcTipIn .28s ease;
+  }
+  .fc-tip b{ color:#ffcc00; font-weight:800; }
+  .fc-tip::after{
+    content:''; position:absolute; right:26px; bottom:-7px;
+    border:7px solid transparent; border-top-color:rgba(20,20,22,.92); border-bottom:none;
+  }
+  .fc-tip.fc-hide{ display:none; }
+  @keyframes fcTipIn{ from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
   `;
   document.head.appendChild(style);
+
+  // ---- 首次进入引导气泡(全页面只弹一次,localStorage 记忆)----
+  const TIP_KEY = 'chinup_facecam_tip_seen';
+  let tipEl = null, tipTimer = 0, tipDone = false;
+  function dismissTip() {
+    tipDone = true;
+    if (tipTimer) { clearTimeout(tipTimer); tipTimer = 0; }
+    if (tipEl) { tipEl.remove(); tipEl = null; }
+    try { localStorage.setItem(TIP_KEY, '1'); } catch (e) {}
+  }
+  function maybeShowTip(camBox) {
+    if (tipDone || tipEl) return;                       // 已弹过 / 本次已在展示
+    try { if (localStorage.getItem(TIP_KEY)) { tipDone = true; return; } } catch (e) {}
+    tipEl = document.createElement('div');
+    tipEl.className = 'fc-tip';
+    tipEl.innerHTML = '在意隐私？点下方<b>关闭人脸影像</b><br>改用点阵形象,不影响游戏';
+    tipEl.addEventListener('click', dismissTip);
+    camBox.appendChild(tipEl);
+    tipTimer = setTimeout(dismissTip, 5000);
+  }
 
   boxes.forEach(setup);
 
@@ -81,7 +115,10 @@
     btn.addEventListener('click', () => {
       mode = mode === 'camera' ? 'mesh' : 'camera';
       syncLabel();
+      dismissTip();          // 用户已发现按钮,气泡任务完成
     });
+
+    maybeShowTip(camBox);
 
     let shown = null;
     (function loop() {

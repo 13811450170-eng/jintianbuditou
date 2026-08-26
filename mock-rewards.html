@@ -57,7 +57,7 @@ body::before {
 
 .page {
   position: relative; z-index: 1;
-  max-width: 960px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 20px 32px 64px;
   display: flex;
@@ -165,20 +165,51 @@ body::before {
 .track-node .d { font-size: 13px; color: var(--ink-2); font-weight: 800; }
 .track-node .lb { font-size: 10px; color: var(--ink-4); font-weight: 600; }
 
+/* 战队信息条(嵌入 Hero 底部) */
+.squad {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(200, 136, 10, 0.28);
+  display: flex; align-items: center; gap: 22px;
+  flex-wrap: wrap;
+}
+.squad-name-block { display: flex; align-items: center; gap: 10px; }
+.squad-emoji {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; background: rgba(255, 183, 77, 0.16);
+}
+.squad-name { font-size: 15px; font-weight: 800; color: var(--ink); }
+.squad-meta { font-size: 11.5px; color: var(--ink-3); margin-top: 2px; }
+.squad-divider { width: 1px; height: 34px; background: var(--line-hard); flex-shrink: 0; }
+.squad-stat { text-align: center; }
+.squad-stat .n { font-size: 20px; font-weight: 800; color: #B87A00; line-height: 1; }
+.squad-stat .l { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+.squad-spacer { flex: 1; }
+.squad-invite {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border-radius: 100px; border: 1px solid rgba(200, 136, 10, 0.4);
+  font-size: 13px; font-weight: 700; color: #B87A00;
+  background: none; cursor: pointer; transition: background .15s;
+  font-family: var(--font);
+}
+.squad-invite:hover { background: rgba(255, 183, 77, 0.12); }
+.squad-invite svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
 /* ========== 区块标题 ========== */
 .sec-head { display: flex; align-items: baseline; gap: 10px; padding: 0 4px; }
 .sec-title { font-size: 18px; font-weight: 800; color: var(--ink); }
 .sec-sub { font-size: 12px; color: var(--ink-3); font-weight: 500; }
 
-/* ========== 奖品卡(两列紧凑) ========== */
+/* ========== 奖品卡(三列横版·左图右文) ========== */
 .rewards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
 .reward {
   position: relative;
-  display: flex; align-items: center; gap: 15px;
+  display: flex; align-items: center; gap: 14px;
   background: var(--card);
   border: 1.5px solid var(--line);
   border-radius: 18px;
@@ -187,7 +218,6 @@ body::before {
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 .reward:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
-.reward.wide { grid-column: 1 / -1; }
 .reward.selected {
   border-color: var(--fire);
   box-shadow: 0 8px 24px rgba(255, 107, 74, 0.16);
@@ -195,15 +225,15 @@ body::before {
 .reward.selected::after {
   content: "";
   position: absolute; top: 12px; right: 12px;
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--fire) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/14px no-repeat;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--fire) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='13' height='13' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/13px no-repeat;
   z-index: 2;
 }
 
 /* 奖品主图 + 天数徽章 */
 .reward-thumb {
   position: relative;
-  width: 96px; height: 96px;
+  width: 88px; height: 88px;
   border-radius: 14px;
   flex-shrink: 0;
   overflow: hidden;
@@ -217,14 +247,14 @@ body::before {
 .reward-day {
   position: absolute; top: 0; left: 0;
   display: flex; align-items: baseline; gap: 1px;
-  padding: 3px 9px 4px;
+  padding: 2px 8px 3px;
   background: rgba(10, 10, 15, 0.62);
   backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-  border-bottom-right-radius: 12px;
+  border-bottom-right-radius: 11px;
   color: #fff;
 }
-.reward-day .n { font-size: 17px; font-weight: 800; line-height: 1; }
-.reward-day .u { font-size: 10px; font-weight: 700; opacity: 0.85; }
+.reward-day .n { font-size: 15px; font-weight: 800; line-height: 1; }
+.reward-day .u { font-size: 9px; font-weight: 700; opacity: 0.85; }
 
 .reward-info { flex: 1; min-width: 0; }
 .reward-cat {
@@ -289,6 +319,112 @@ body::before {
 }
 .note b { color: var(--ink-3); font-weight: 700; }
 
+/* ========== 战队周排行(两列榜单) ========== */
+.boards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.board {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.board.streak { border-top: 3px solid #F5A623; }
+.board.streak .board-title { color: #C87800; }
+.board.score { border-top: 3px solid var(--neck); }
+.board.score .board-title { color: var(--neck); }
+.board-head {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.board-title { font-size: 15px; font-weight: 800; }
+.board-unit  { font-size: 12px; color: var(--ink-3); }
+.board table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.board th, .board td { padding: 11px 20px; text-align: left; font-size: 13px; }
+.board th {
+  font-size: 12px; font-weight: 600; color: var(--ink-3);
+  background: #FAFBFC; border-bottom: 1px solid var(--line);
+}
+.board td { border-bottom: 1px solid var(--line); }
+.board tbody tr:last-child td { border-bottom: none; }
+/* 前三名 */
+.board tr.rank-1 td { background: #FFFBEE; }
+.board tr.rank-2 td { background: #F8F8FA; }
+.board tr.rank-3 td { background: #FFF8F4; }
+.board tr.rank-1 td:first-child { border-left: 3px solid #F5A623; padding-left: 17px; }
+.board tr.rank-2 td:first-child { border-left: 3px solid #9E9EA8; padding-left: 17px; }
+.board tr.rank-3 td:first-child { border-left: 3px solid #C07848; padding-left: 17px; }
+.board tr.is-me td { background: #F3F6FF; }
+.board tr.extra { display: none; }
+.board.expanded tr.extra { display: table-row; }
+.rank-col { width: 40px; color: var(--ink-3); font-weight: 600; }
+.medal { font-size: 15px; }
+.name-col { font-weight: 700; }
+.dept-col { color: var(--ink-3); font-size: 12px; }
+.score-col { text-align: right; font-weight: 700; font-size: 14px; color: var(--neck); }
+.streak .score-col { color: #C87800; }
+.rank-1 .score-col { color: var(--gold) !important; }
+.me-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+  background: #DDEAFF; color: var(--neck);
+  margin-left: 6px; vertical-align: middle;
+}
+.board-more {
+  width: 100%; border: none; background: none; cursor: pointer;
+  padding: 12px; font-size: 13px; font-weight: 700; color: var(--ink-3);
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  font-family: var(--font); transition: background .15s, color .15s;
+}
+.board-more:hover { background: #FAFBFC; color: var(--ink); }
+.board-more svg { width: 14px; height: 14px; transition: transform .2s; }
+.board.expanded .board-more svg { transform: rotate(180deg); }
+
+/* ========== 邀请弹层 ========== */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,10,15,0.3);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+.invite-sheet {
+  width: 400px; background: var(--card);
+  border-radius: 16px; padding: 28px 28px 24px;
+  box-shadow: var(--shadow-3);
+  transform: translateY(8px);
+  transition: transform .25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.overlay.show .invite-sheet { transform: translateY(0); }
+.sheet-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+.sheet-sub   { font-size: 13px; color: var(--ink-3); margin-bottom: 20px; line-height: 1.6; }
+.code-box {
+  background: var(--bg); border-radius: 10px;
+  padding: 14px 18px; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.invite-code { font-size: 24px; font-weight: 900; letter-spacing: 5px; color: var(--neck); }
+.copy-btn {
+  font-size: 13px; font-weight: 700; color: var(--neck);
+  background: var(--neck-bg); border: none; border-radius: 8px;
+  padding: 7px 14px; cursor: pointer; transition: opacity .15s;
+}
+.copy-btn:hover { opacity: .8; }
+.sheet-btns { display: flex; gap: 10px; }
+.sheet-btn {
+  flex: 1; padding: 11px; border-radius: 10px; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+  font-family: var(--font);
+}
+.sheet-btn.primary { background: var(--ink); color: #fff; }
+.sheet-btn.primary:hover { opacity: .88; }
+.sheet-btn.secondary { background: var(--bg); color: var(--ink-2); }
+.sheet-btn.secondary:hover { background: var(--line-hard); }
+
 .toast {
   position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%) translateY(12px);
   background: var(--ink); color: #fff;
@@ -332,6 +468,28 @@ body::before {
           <div class="track-node"><span class="d">120</span><span class="lb">按摩仪</span></div>
         </div>
       </div>
+
+      <!-- 战队信息条 -->
+      <div class="squad">
+        <div class="squad-name-block">
+          <div class="squad-emoji">💪</div>
+          <div>
+            <div class="squad-name">北极星战队</div>
+            <div class="squad-meta">随机匹配 · 10 人 · 第 3 周 · 每 4 周重置</div>
+          </div>
+        </div>
+        <div class="squad-divider"></div>
+        <div class="squad-stat"><div class="n">47</div><div class="l">本周总打卡(天)</div></div>
+        <div class="squad-divider"></div>
+        <div class="squad-stat"><div class="n">4.7</div><div class="l">人均天数</div></div>
+        <div class="squad-divider"></div>
+        <div class="squad-stat"><div class="n">3</div><div class="l">满勤成员</div></div>
+        <div class="squad-spacer"></div>
+        <button class="squad-invite" onclick="showInvite()">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          邀请队友
+        </button>
+      </div>
     </section>
 
     <!-- 奖品选择 -->
@@ -369,8 +527,8 @@ body::before {
         </div>
       </div>
 
-      <!-- 120 天 · 妙界肩颈按摩仪(独占一行) -->
-      <div class="reward wide" data-goal="妙界肩颈按摩仪" data-day="120" data-remain="88" onclick="pick(this)">
+      <!-- 120 天 · 妙界肩颈按摩仪 -->
+      <div class="reward" data-goal="妙界肩颈按摩仪" data-day="120" data-remain="88" onclick="pick(this)">
         <div class="reward-thumb">
           <img src="img/秒界按摩仪.png" alt="妙界肩颈按摩仪">
           <div class="reward-day"><span class="n">120</span><span class="u">天</span></div>
@@ -383,6 +541,13 @@ body::before {
         </div>
       </div>
     </div>
+
+    <!-- 战队周排行(嵌入) -->
+    <div class="sec-head">
+      <span class="sec-title">战队周排行</span>
+      <span class="sec-sub" id="weekLabel">和队友一起坚持,榜单每周结算</span>
+    </div>
+    <div class="boards" id="boards"></div>
 
     <!-- 底部选择确认 -->
     <div class="footer">
@@ -399,6 +564,22 @@ body::before {
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- 邀请弹层 -->
+  <div class="overlay" id="overlay" onclick="hideInvite(event)">
+    <div class="invite-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-title">邀请队友</div>
+      <div class="sheet-sub">把邀请码发给同事,Ta 输入后直接加入你的战队。<br>战队最多 10 人,每周末结算排名。</div>
+      <div class="code-box">
+        <div class="invite-code">NJ-4821</div>
+        <button class="copy-btn" id="copyBtn" onclick="copyCode()">复制</button>
+      </div>
+      <div class="sheet-btns">
+        <button class="sheet-btn primary" onclick="hideInvite()">分享给同事</button>
+        <button class="sheet-btn secondary" onclick="hideInvite()">关闭</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 const CURRENT = 32;      // 当前连续打卡天数
@@ -444,6 +625,119 @@ function showToast(msg) {
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 2600);
 }
+
+/* ========== 战队周排行 ========== */
+const BOARDS = [
+  {
+    key: 'streak', title: '连续打卡', unit: '历史连续天数', col: '连续天数',
+    data: [
+      { name:'王雪梅', dept:'算法部',   score:'14 天' },
+      { name:'刘四喜', dept:'体验设计', score:'12 天', isMe:true },
+      { name:'张明宇', dept:'前端部',   score:'8 天' },
+      { name:'陈佳慧', dept:'产品部',   score:'6 天' },
+      { name:'吴静怡', dept:'数据部',   score:'5 天' },
+      { name:'林浩然', dept:'后端部',   score:'4 天' },
+      { name:'孙晓燕', dept:'设计部',   score:'3 天' },
+      { name:'赵大鹏', dept:'运营部',   score:'3 天' },
+      { name:'周俊杰', dept:'安全部',   score:'2 天' },
+      { name:'郭思远', dept:'质量部',   score:'1 天' },
+    ]
+  },
+  {
+    key: 'score', title: '训练得分', unit: '本周累计', col: '得分',
+    data: [
+      { name:'陈佳慧', dept:'产品部',   score:'2840 分' },
+      { name:'王雪梅', dept:'算法部',   score:'2710 分' },
+      { name:'张明宇', dept:'前端部',   score:'2490 分' },
+      { name:'林浩然', dept:'后端部',   score:'2120 分' },
+      { name:'刘四喜', dept:'体验设计', score:'1980 分', isMe:true },
+      { name:'吴静怡', dept:'数据部',   score:'1650 分' },
+      { name:'孙晓燕', dept:'设计部',   score:'1400 分' },
+      { name:'赵大鹏', dept:'运营部',   score:'1100 分' },
+      { name:'周俊杰', dept:'安全部',   score:'720 分'  },
+      { name:'郭思远', dept:'质量部',   score:'310 分'  },
+    ]
+  }
+];
+const MEDAL = {0:'🥇', 1:'🥈', 2:'🥉'};
+const TOP_N = 5;
+
+function renderBoards() {
+  const container = document.getElementById('boards');
+  BOARDS.forEach(board => {
+    const el = document.createElement('div');
+    el.className = 'board ' + board.key;
+
+    const rows = board.data.map((p, i) => {
+      const rankClass = i===0?'rank-1': i===1?'rank-2': i===2?'rank-3':'';
+      const extraClass = i >= TOP_N ? 'extra' : '';
+      const trClass = [rankClass, extraClass, p.isMe?'is-me':''].filter(Boolean).join(' ');
+      const pos = i < 3 ? `<span class="medal">${MEDAL[i]}</span>` : i+1;
+      const badge = p.isMe ? '<span class="me-badge">我</span>' : '';
+      return `<tr class="${trClass}">
+        <td class="rank-col">${pos}</td>
+        <td class="name-col">${p.name}${badge}</td>
+        <td class="dept-col">${p.dept}</td>
+        <td class="score-col">${p.score}</td>
+      </tr>`;
+    }).join('');
+
+    const hidden = board.data.length - TOP_N;
+    const moreBtn = hidden > 0 ? `<button class="board-more" onclick="toggleBoard(this)">
+      <span class="more-txt">展开剩余 ${hidden} 名</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </button>` : '';
+
+    el.innerHTML = `
+      <div class="board-head">
+        <span class="board-title">${board.title}</span>
+        <span class="board-unit">${board.unit}</span>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="width:40px">排名</th>
+          <th>用户名</th>
+          <th>部门</th>
+          <th style="text-align:right">${board.col}</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${moreBtn}`;
+    container.appendChild(el);
+  });
+}
+
+function toggleBoard(btn) {
+  const board = btn.closest('.board');
+  const expanded = board.classList.toggle('expanded');
+  const txt = btn.querySelector('.more-txt');
+  const hidden = board.querySelectorAll('tr.extra').length;
+  txt.textContent = expanded ? '收起' : `展开剩余 ${hidden} 名`;
+}
+
+function setWeekLabel() {
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const fmt = d => `${d.getMonth()+1}月${d.getDate()}日`;
+  document.getElementById('weekLabel').textContent = `本周 ${fmt(mon)} – ${fmt(sun)} · 榜单每周结算`;
+}
+
+function showInvite() { document.getElementById('overlay').classList.add('show'); }
+function hideInvite(e) {
+  if (!e || e.target === document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('show');
+}
+function copyCode() {
+  navigator.clipboard.writeText('NJ-4821').catch(()=>{});
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = '已复制 ✓';
+  setTimeout(() => btn.textContent = '复制', 1500);
+}
+
+setWeekLabel();
+renderBoards();
 </script>
 </body>
 </html>

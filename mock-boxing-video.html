@@ -308,6 +308,15 @@
   .you-cam .you-dot{width:7px;height:7px;border-radius:50%;background:#ff4d5e;box-shadow:0 0 8px #ff4d5e;animation:youBlink 1.2s infinite;}
   @keyframes youBlink{50%{opacity:.3;}}
 
+  /* 开场隐私提示 — 打消面部采集顾虑 */
+  .privacy-note{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    margin-top:14px;
+    font-size:13px;color:rgba(255,255,255,.62);letter-spacing:.3px;
+  }
+  .privacy-note svg{width:15px;height:15px;color:var(--gold,#ffcc00);flex-shrink:0;}
+  .privacy-note b{color:rgba(255,255,255,.9);font-weight:700;}
+
   /* ==================== 开场 / 结算 ==================== */
   .overlay{
     position:absolute;inset:0;z-index:60;
@@ -541,6 +550,10 @@
       <div class="how-item"><div class="arrow">▲</div><div class="lb">抬起头</div><div class="sub2">躲下勾拳</div></div>
     </div>
     <button class="btn" id="startBtn"><svg class="ico"><use href="#i-boxglove"/></svg>开始对战 · BOXING TIME!</button>
+    <div class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      画面只在本机处理，<b>绝不上传</b>
+    </div>
     <button class="btn-ghost" style="margin-top:18px;" onclick="location.href='zone.html?zone=neck'"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 19l-7-7 7-7"/></svg>返回颈部训练营</button>
   </div>
 
