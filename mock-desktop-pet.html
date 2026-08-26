@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<title>Joy 桌宠原型</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root {
+    --accent: #F5BC30;
+    --accent-deep: #C8800A;
+    --accent-ink: #1A1200;
+    --teal: #3EC6B5;
+    --teal-deep: #12897B;
+    --purple: #9B8BF0;
+    --purple-deep: #6D5BD0;
+    --green: #52D98A;
+    --coral: #FF7A52;
+    --ink: #1A1200;
+    --font-display: 'Sora', system-ui, sans-serif;
+    --font-body: 'Noto Sans SC', system-ui, sans-serif;
+
+    /* fake desktop wallpaper */
+    --desk-1: #1a2740;
+    --desk-2: #2d4468;
+    --desk-3: #4a6a94;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    font-family: var(--font-body);
+    color: #EDE8DF;
+    background: var(--desk-1);
+    position: relative;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── REAL DESKTOP (你的真实桌面截图) ────────── */
+  /* menubar.png 是全屏宽的真实桌面顶部。让它按宽度铺满、顶部对齐,
+     底部用截图真实底边色(#FB88A2 取样)补足屏高,消除深浅分界。 */
+  .desktop {
+    position: fixed; inset: 0;
+    background: #FB88A2;
+    overflow: hidden;
+  }
+  .desktop .wp-img {
+    position:absolute; top:0; left:0; width:100%;
+    display:block;
+  }
+  /* 羽化过渡:图底边到补色之间加一条渐变,吸收任何 1px 误差 */
+  .desktop .wp-img::after,
+  .wp-blend {
+    content:""; position:absolute; left:0; right:0;
+    height: 120px; background: linear-gradient(180deg, rgba(251,136,162,0) 0%, #FB88A2 100%);
+    pointer-events:none;
+  }
+  .desktop .wp-fill { display:none; }
+
+  /* menu bar / files / cam-overlay / astronaut are now part of the image — hide the drawn ones */
+  .menubar, .files, .cam-overlay, .doc-window,
+  .wp-planet, .wp-orbit, .wp-star, .wp-text, .wp-staff, .wp-astro { display:none !important; }
+
+  /* ── GLASS DOCK (面板我画 · icon 你提供透明PNG) ── */
+  .dock {
+    position: fixed; left:50%; transform: translateX(-50%);
+    bottom: 10px; z-index: 30;
+    display:flex; align-items:flex-end; gap:12px;
+    padding: 9px 14px;
+    /* iOS/Tahoe 液态玻璃:半透明 + 毛玻璃 + 内发光 + 柔投影,透出壁纸底色 */
+    background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0.16));
+    backdrop-filter: blur(28px) saturate(1.7);
+    -webkit-backdrop-filter: blur(28px) saturate(1.7);
+    border:1px solid rgba(255,255,255,0.35);
+    border-radius: 26px;
+    box-shadow:
+      0 18px 48px rgba(120,30,60,0.28),
+      inset 0 1px 0 rgba(255,255,255,0.55),
+      inset 0 -1px 6px rgba(255,255,255,0.15);
+  }
+  .dock-icon {
+    width: 52px; height: 52px; position:relative; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .dock-icon img { width:100%; height:100%; object-fit:contain; display:block;
+    filter: drop-shadow(0 3px 6px rgba(120,30,60,0.22)); }
+  /* Mac 原生:hover 不上浮,只弹名字气泡(tooltip) */
+  .dock-icon .tip {
+    position:absolute; bottom: calc(100% + 14px); left:50%; transform: translateX(-50%) scale(0.94);
+    background: rgba(250,245,248,0.96); color:#2a2230;
+    font-family: var(--font-body); font-size:13px; font-weight:500; white-space:nowrap;
+    padding: 5px 12px; border-radius: 9px;
+    box-shadow: 0 6px 20px rgba(120,30,60,0.22), inset 0 0 0 1px rgba(255,255,255,0.6);
+    opacity:0; pointer-events:none; transition: opacity .12s, transform .12s;
+  }
+  .dock-icon .tip::after {
+    content:""; position:absolute; top:100%; left:50%; transform:translateX(-50%);
+    border-width:6px 6px 0; border-style:solid; border-color: rgba(250,245,248,0.96) transparent transparent;
+  }
+  .dock-icon:hover .tip { opacity:1; transform: translateX(-50%) scale(1); }
+  /* placeholder shown until the real transparent PNG is dropped in */
+  .dock-icon .ph {
+    position:absolute; inset:0; border-radius:13px;
+    background: rgba(255,255,255,0.35); border:1px dashed rgba(120,30,60,0.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:10px; color:rgba(120,30,60,0.6); font-family:var(--font-display); text-align:center;
+  }
+  .dock-icon .run-dot {
+    position:absolute; bottom:-6px; left:50%; transform:translateX(-50%);
+    width:4px; height:4px; border-radius:50%; background:rgba(120,30,60,0.5);
+  }
+  .dock-sep { width:1px; height:44px; background:rgba(255,255,255,0.4); margin:0 3px; align-self:center; }
+  .dock-icon.joy { }   /* our own app — always our SVG, never a placeholder */
+
+  /* ── PET CONTAINER (draggable) ────────────── */
+  .pet {
+    position: fixed; left:50%; bottom: 74px; transform: translateX(-50%); z-index: 40;
+    width: 150px;
+    display:flex; flex-direction:column; align-items:center;
+    cursor: grab;
+    touch-action: none;
+  }
+  .pet.dragging { cursor: grabbing; }
+  .pet.quiet { opacity: 0.4; filter: grayscale(0.3); transition: opacity .5s, filter .5s; }
+
+  .pet-stage {
+    width: 130px; height: 130px; position: relative;
+    display:flex; align-items:flex-end; justify-content:center;
+  }
+  .pet-stage svg { width: 118px; height: 118px; overflow: visible; display:block; }
+
+  /* shadow under joy */
+  .pet-shadow {
+    position:absolute; bottom: 4px; left:50%; transform:translateX(-50%);
+    width: 74px; height: 13px; border-radius:50%;
+    background: rgba(0,0,0,0.28); filter: blur(4px);
+  }
+
+  /* idle breathing on the whole joy */
+  #joy-root { transform-origin: 50% 100%; animation: breathe 3.4s ease-in-out infinite; }
+  @keyframes breathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.035);} }
+
+  /* neck-twist action (head group) */
+  #joy-head { transform-origin: 59px 66px; }
+  .act-neck #joy-head { animation: neckTwist 1.9s ease-in-out infinite; }
+  @keyframes neckTwist { 0%,100%{transform:rotate(-13deg);} 50%{transform:rotate(13deg);} }
+
+  /* arm-stretch action */
+  #joy-arms { transform-origin: 59px 70px; opacity: 0; }
+  .act-arms #joy-arms { animation: armUp 2.1s ease-in-out infinite; }
+  .act-arms #joy-frontpaws { opacity: 0; }
+  @keyframes armUp {
+    0%,100%{ opacity:1; transform: translateY(4px) scaleY(0.96);}
+    50%    { opacity:1; transform: translateY(-7px) scaleY(1.06);}
+  }
+
+  /* wave (reminder attention) — subtle bounce of whole body */
+  .act-wave #joy-root { animation: waveBounce 0.9s ease-in-out infinite; }
+  @keyframes waveBounce { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-9px) scale(1.03);} }
+
+  /* happy hop */
+  .act-hop #joy-root { animation: hop 0.6s ease-in-out 3; }
+  @keyframes hop { 0%,100%{transform:translateY(0);} 40%{transform:translateY(-18px);} }
+
+  /* tail wag always subtle, faster on interact */
+  #joy-tail { transform-origin: 30px 84px; animation: wag 1.4s ease-in-out infinite; }
+  .act-interact #joy-tail, .act-hop #joy-tail { animation: wag 0.5s ease-in-out infinite; }
+  @keyframes wag { 0%,100%{transform:rotate(-8deg);} 50%{transform:rotate(14deg);} }
+
+  @media (prefers-reduced-motion: reduce) {
+    #joy-root, #joy-head, #joy-arms, #joy-tail { animation: none !important; }
+  }
+
+  /* pet nameplate under joy (streak + mood) */
+  .pet-plate {
+    margin-top: 2px;
+    display:flex; align-items:center; gap:7px;
+    background: rgba(10,14,22,0.55); backdrop-filter: blur(10px);
+    border:1px solid rgba(255,255,255,0.10);
+    padding: 5px 12px; border-radius: 20px;
+    font-family: var(--font-display); font-size: 12px; font-weight:600;
+    white-space:nowrap;
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity .3s, transform .3s;
+  }
+  .pet:hover .pet-plate, .pet-plate.pinned { opacity: 1; transform: none; }
+  .pet-plate .flame { font-size: 13px; }
+  .pet-plate .sk { color: var(--accent); font-weight:800; font-variant-numeric:tabular-nums; }
+  .pet-plate .sk.broken { color: rgba(255,255,255,0.4); }
+
+  /* ── SPEECH BUBBLE ────────────────────────── */
+  .bubble {
+    position: fixed; z-index: 45;
+    max-width: 250px;
+    background: #fff; color: #1a1e2a;
+    border-radius: 16px; padding: 13px 15px 14px;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.34);
+    font-size: 14px; line-height: 1.5;
+    opacity: 0; transform: translateY(8px) scale(0.96); transform-origin: bottom right;
+    transition: opacity .28s ease, transform .28s cubic-bezier(.34,1.56,.64,1);
+    pointer-events: none;
+  }
+  .bubble.show { opacity: 1; transform: translateY(0) scale(1); pointer-events:auto; }
+  .bubble::after {
+    content:""; position:absolute; bottom:-8px; left: var(--tail-x, 34px);
+    border-width: 9px 8px 0; border-style: solid; border-color: #fff transparent transparent;
+  }
+  .bubble .b-text { margin-bottom: 0; }
+  .bubble.has-cta .b-text { margin-bottom: 11px; }
+  .bubble .b-cta {
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background: var(--ct, var(--teal-deep)); color:#fff;
+    border:none; border-radius:11px; padding: 9px 13px;
+    font-family:var(--font-body); font-weight:700; font-size:13.5px;
+    cursor:pointer; width:100%;
+    transition: transform .12s, filter .12s;
+  }
+  .bubble .b-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+  .bubble .b-cta:active { transform: translateY(0); }
+  .bubble .b-cta .arr { font-family:var(--font-display); }
+  .bubble .b-dismiss {
+    display:block; margin: 9px auto 0; background:none; border:none;
+    color:#9BA3B8; font-size:12px; cursor:pointer; font-family:var(--font-body);
+  }
+  .bubble .b-dismiss:hover { color:#565e70; }
+
+  /* ── HUD BUTTONS (top-right) ──────────────── */
+  .hud {
+    position: fixed; top: 40px; right: 24px; z-index: 50;
+    display:flex; flex-direction:column; gap:10px; align-items:flex-end;
+  }
+  .hud-btn {
+    display:flex; align-items:center; gap:8px;
+    background: rgba(10,14,22,0.55); backdrop-filter: blur(12px);
+    border:1px solid rgba(255,255,255,0.10); color:#EDE8DF;
+    padding: 8px 13px; border-radius: 12px;
+    font-family:var(--font-display); font-size:12.5px; font-weight:600;
+    cursor:pointer; transition: border-color .16s, background .16s;
+  }
+  .hud-btn:hover { border-color: rgba(245,188,48,0.5); }
+  .hud-btn svg { width:15px; height:15px; }
+  .hud-btn.on { border-color: var(--teal); color: var(--teal); }
+  .hud-btn.present { border-color: rgba(245,188,48,0.5); color: var(--accent); }
+
+  /* ── SETTINGS PANEL ───────────────────────── */
+  .panel {
+    position: fixed; top: 40px; right: 24px; z-index: 60;
+    width: 300px;
+    background: rgba(16,21,32,0.94); backdrop-filter: blur(20px);
+    border:1px solid rgba(255,255,255,0.12); border-radius: 18px;
+    padding: 20px; box-shadow: 0 30px 70px rgba(0,0,0,0.5);
+    opacity:0; transform: translateY(-10px) scale(0.97); pointer-events:none;
+    transition: opacity .2s, transform .2s;
+  }
+  .panel.show { opacity:1; transform:none; pointer-events:auto; }
+  .panel h3 { font-family:var(--font-display); font-size:15px; font-weight:700; margin-bottom:4px; }
+  .panel .p-sub { font-size:12px; color:#9BA3B8; margin-bottom:18px; }
+  .p-row { padding: 13px 0; border-top:1px solid rgba(255,255,255,0.07); }
+  .p-row:first-of-type{ border-top:none; }
+  .p-label { font-size:13.5px; font-weight:600; margin-bottom:3px; display:flex; align-items:center; gap:7px; }
+  .p-desc { font-size:11.5px; color:#9BA3B8; line-height:1.5; }
+  .seg { display:flex; gap:6px; margin-top:10px; }
+  .seg button {
+    flex:1; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+    color:#9BA3B8; border-radius:9px; padding:7px 0; cursor:pointer;
+    font-family:var(--font-display); font-size:12px; font-weight:600;
+    transition: all .14s;
+  }
+  .seg button.active { background:var(--accent); color:var(--accent-ink); border-color:transparent; }
+
+  .toggle {
+    position:relative; width:44px; height:25px; border-radius:20px;
+    background:rgba(255,255,255,0.16); border:none; cursor:pointer; flex-shrink:0;
+    transition: background .2s;
+  }
+  .toggle::after {
+    content:""; position:absolute; top:3px; left:3px; width:19px; height:19px;
+    border-radius:50%; background:#fff; transition: transform .2s;
+  }
+  .toggle.on { background: var(--coral); }
+  .toggle.on::after { transform: translateX(19px); }
+  .p-row-flex { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .cam-warn {
+    margin-top:10px; font-size:11.5px; line-height:1.55; color:#FFB39C;
+    background:rgba(255,122,82,0.12); border:1px solid rgba(255,122,82,0.3);
+    border-radius:10px; padding:9px 11px;
+  }
+
+  /* ── CAMERA WINDOW (opt-in) ───────────────── */
+  .cam {
+    position: fixed; z-index: 44; right: 200px; bottom: 44px;
+    width: 168px; height: 126px; border-radius:14px; overflow:hidden;
+    border:2px solid var(--coral); box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+    background:#000; display:none;
+  }
+  .cam.show { display:block; }
+  .cam video { width:100%; height:100%; object-fit:cover; transform: scaleX(-1); }
+  .cam .rec {
+    position:absolute; top:7px; left:8px; display:flex; align-items:center; gap:5px;
+    font-family:var(--font-display); font-size:10px; font-weight:700; color:#fff;
+    background:rgba(0,0,0,0.5); padding:3px 8px; border-radius:20px;
+  }
+  .cam .rec .d { width:7px;height:7px;border-radius:50%;background:var(--coral); animation: blink 1.2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+  .cam .cam-off {
+    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:6px; color:#9BA3B8; font-size:11px; text-align:center; padding:10px; background:#0c0f16;
+  }
+
+  /* ── DEMO CONSOLE (bottom-left) ───────────── */
+  .console {
+    position: fixed; left: 20px; bottom: 20px; z-index: 55;
+    background: rgba(16,21,32,0.9); backdrop-filter: blur(16px);
+    border:1px solid rgba(255,255,255,0.12); border-radius:16px;
+    padding: 14px 16px 15px; width: 268px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  .console.collapsed { transform: translateY(calc(100% - 46px)); }
+  .console-head {
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+    margin-bottom: 4px;
+  }
+  .console-head .ttl { font-family:var(--font-display); font-size:12.5px; font-weight:700; flex:1; letter-spacing:0.02em; }
+  .console-head .chev { color:#9BA3B8; transition: transform .28s; font-size:12px; }
+  .console.collapsed .console-head .chev { transform: rotate(180deg); }
+  .console .c-sub { font-size:11px; color:#727a90; margin-bottom:12px; line-height:1.5; }
+  .c-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .c-btn {
+    background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+    color:#EDE8DF; border-radius:10px; padding:9px 8px; cursor:pointer;
+    font-family:var(--font-body); font-size:12px; font-weight:500; text-align:center;
+    transition: all .14s; line-height:1.3;
+  }
+  .c-btn:hover { border-color:rgba(245,188,48,0.5); background:rgba(245,188,48,0.08); }
+  .c-btn .em { display:block; font-size:16px; margin-bottom:3px; }
+  .c-btn.full { grid-column: 1 / -1; }
+  .c-btn.neck:hover { border-color:var(--teal); }
+  .c-btn.arm:hover { border-color:var(--purple); }
+
+  /* toast for camera-off attempts etc */
+  .toast {
+    position: fixed; left:50%; bottom: 34px; transform: translateX(-50%) translateY(20px);
+    z-index: 80; background: rgba(16,21,32,0.96); color:#EDE8DF;
+    border:1px solid rgba(255,255,255,0.14); border-radius:12px;
+    padding: 11px 18px; font-size:13px; opacity:0; pointer-events:none;
+    transition: opacity .25s, transform .25s; backdrop-filter: blur(12px);
+  }
+  .toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
+
+  /* first-hint arrow pointing at console */
+  .hint-pop {
+    position: fixed; left: 300px; bottom: 30px; z-index: 70;
+    background: var(--accent); color: var(--accent-ink);
+    font-family:var(--font-display); font-size:12px; font-weight:700;
+    padding:8px 13px; border-radius:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    animation: hintFloat 2s ease-in-out infinite;
+  }
+  .hint-pop::before {
+    content:""; position:absolute; left:-7px; bottom:12px;
+    border-width:6px 7px 6px 0; border-style:solid; border-color:transparent var(--accent) transparent transparent;
+  }
+  @keyframes hintFloat { 0%,100%{transform:translateX(0);} 50%{transform:translateX(-6px);} }
+  .hint-pop.gone { display:none; }
+</style>
+</head>
+<body>
+
+<!-- ══ REAL DESKTOP (你的真实桌面截图) ══ -->
+<div class="desktop">
+  <div class="wp-fill"></div>
+  <img class="wp-img" id="wp-img" src="img/menubar.png" alt="桌面">
+  <div class="wp-blend" id="wp-blend"></div>
+</div>
+
+<!-- ══ GLASS DOCK (面板手绘 · icon 用你的透明PNG) ══ -->
+<div class="dock">
+  <div class="dock-icon" title="访达"><img src="img/dock-icons/finder.png" alt="访达" onerror="this.style.display='none'"><span class="ph">访达</span><span class="tip">访达</span><span class="run-dot"></span></div>
+  <div class="dock-icon" title="系统设置"><img src="img/dock-icons/settings.png" alt="设置" onerror="this.style.display='none'"><span class="ph">设置</span><span class="tip">系统设置</span></div>
+  <div class="dock-icon" title="启动台"><img src="img/dock-icons/launchpad.png" alt="启动台" onerror="this.style.display='none'"><span class="ph">启动台</span><span class="tip">启动台</span></div>
+  <div class="dock-sep"></div>
+  <div class="dock-icon" title="美册"><img src="img/dock-icons/meice.png" alt="美册" onerror="this.style.display='none'"><span class="ph">美册</span><span class="tip">美册</span><span class="run-dot"></span></div>
+  <div class="dock-icon" title="app"><img src="img/dock-icons/snow.png" alt="app" onerror="this.style.display='none'"><span class="ph">app</span><span class="tip">app</span></div>
+  <div class="dock-icon" title="Chrome"><img src="img/dock-icons/chrome.png" alt="Chrome" onerror="this.style.display='none'"><span class="ph">Chrome</span><span class="tip">Google Chrome</span><span class="run-dot"></span></div>
+  <div class="dock-icon" title="即梦"><img src="img/dock-icons/jimeng.png" alt="即梦" onerror="this.style.display='none'"><span class="ph">即梦</span><span class="tip">即梦</span></div>
+  <div class="dock-icon" title="ChatGPT"><img src="img/dock-icons/chatgpt.png" alt="ChatGPT" onerror="this.style.display='none'"><span class="ph">GPT</span><span class="tip">ChatGPT</span></div>
+  <div class="dock-icon" title="照片"><img src="img/dock-icons/photos.png" alt="照片" onerror="this.style.display='none'"><span class="ph">照片</span><span class="tip">照片</span></div>
+  <div class="dock-sep"></div>
+  <!-- 我们自己的 app:Joy,点它唤起桌宠推荐 -->
+  <div class="dock-icon joy" id="dock-joy" title="今天不低头">
+    <svg viewBox="0 0 52 52" width="52" height="52">
+      <rect x="2" y="2" width="48" height="48" rx="12" fill="url(#joygrad)"/>
+      <ellipse cx="16" cy="18" rx="5" ry="8" fill="#C8800A" transform="rotate(-12 16 18)"/>
+      <ellipse cx="36" cy="18" rx="5" ry="8" fill="#C8800A" transform="rotate(12 36 18)"/>
+      <ellipse cx="26" cy="27" rx="13" ry="12" fill="#fff"/>
+      <circle cx="21" cy="26" r="2.4" fill="#1A1200"/><circle cx="31" cy="26" r="2.4" fill="#1A1200"/>
+      <ellipse cx="26" cy="31" rx="2.2" ry="1.5" fill="#C8800A"/>
+      <path d="M22 34 Q26 38 30 34" stroke="#1A1200" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <defs><linearGradient id="joygrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD873"/><stop offset="1" stop-color="#F5BC30"/></linearGradient></defs>
+    </svg>
+    <span class="tip">今天不低头 · 点我唤起 Joy</span>
+    <span class="run-dot"></span>
+  </div>
+  <div class="dock-sep"></div>
+  <div class="dock-icon" title="废纸篓"><img src="img/dock-icons/trash.png" alt="废纸篓" onerror="this.style.display='none'"><span class="ph">废纸篓</span><span class="tip">废纸篓</span></div>
+</div>
+
+<!-- ══ HUD ══ -->
+<div class="hud">
+  <button class="hud-btn present" id="btn-present">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3m8 0h3a2 2 0 0 0 2-2v-3"/></svg>
+    放映模式
+  </button>
+  <button class="hud-btn" id="btn-settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    设置
+  </button>
+  <button class="hud-btn" id="btn-mute">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg>
+    <span id="mute-label">静音 30 分钟</span>
+  </button>
+</div>
+
+<!-- ══ SETTINGS PANEL ══ -->
+<div class="panel" id="panel">
+  <h3>Joy 设置</h3>
+  <div class="p-sub">调提醒节奏,或开启进阶的坐姿监护。</div>
+
+  <div class="p-row">
+    <div class="p-label">久坐提醒节奏</div>
+    <div class="p-desc">坐够多久,Joy 起身喊你活动一下。</div>
+    <div class="seg" id="seg-cadence">
+      <button data-min="25">25 分钟</button>
+      <button data-min="45" class="active">45 分钟</button>
+      <button data-min="60">60 分钟</button>
+    </div>
+  </div>
+
+  <div class="p-row">
+    <div class="p-row-flex">
+      <div>
+        <div class="p-label">📷 坐姿监护 <span style="color:#727a90;font-weight:400;font-size:11px;">进阶</span></div>
+        <div class="p-desc">开启后 Joy 会看你有没有低头含胸,更聪明地提醒。默认关闭。</div>
+      </div>
+      <button class="toggle" id="cam-toggle" aria-label="坐姿监护开关"></button>
+    </div>
+    <div class="cam-warn" id="cam-warn" style="display:none;">
+      摄像头已启用 · 画面只在本地判断,不上传、不录制。角落会常亮提示,一键即可关闭。
+    </div>
+  </div>
+</div>
+
+<!-- ══ CAMERA WINDOW ══ -->
+<div class="cam" id="cam-window">
+  <video id="cam-video" autoplay playsinline muted></video>
+  <div class="rec"><span class="d"></span>坐姿监护中</div>
+  <div class="cam-off" id="cam-off" style="display:none;">
+    <span style="font-size:20px;">📷</span>
+    <span>摄像头未授权<br>可在设置里重试</span>
+  </div>
+</div>
+
+<!-- ══ SPEECH BUBBLE ══ -->
+<div class="bubble" id="bubble">
+  <div class="b-text" id="bubble-text"></div>
+  <button class="b-cta" id="bubble-cta" style="display:none;">
+    <span id="bubble-cta-label"></span><span class="arr">→</span>
+  </button>
+  <button class="b-dismiss" id="bubble-dismiss" style="display:none;">待会儿再说</button>
+</div>
+
+<!-- ══ PET ══ -->
+<div class="pet" id="pet">
+  <div class="pet-stage">
+    <div class="pet-shadow"></div>
+    <svg viewBox="0 0 118 118" id="joy-svg" aria-label="桌宠 Joy">
+      <g id="joy-root">
+        <!-- tail -->
+        <path id="joy-tail" d="M 34 82 Q 16 78 14 62" stroke="var(--accent)" stroke-width="9" fill="none" stroke-linecap="round"/>
+
+        <!-- stretch arms (hidden until arm action) -->
+        <g id="joy-arms">
+          <path d="M 44 74 Q 34 46 40 28" stroke="var(--accent)" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <path d="M 74 74 Q 84 46 78 28" stroke="var(--accent)" stroke-width="9" fill="none" stroke-linecap="round"/>
+          <circle cx="40" cy="26" r="6" fill="var(--accent)"/>
+          <circle cx="78" cy="26" r="6" fill="var(--accent)"/>
+        </g>
+
+        <!-- body -->
+        <ellipse cx="59" cy="90" rx="30" ry="24" fill="var(--accent)"/>
+        <!-- belly -->
+        <ellipse cx="59" cy="95" rx="18" ry="15" fill="#FFD873"/>
+
+        <!-- front paws (hidden during arm stretch) -->
+        <g id="joy-frontpaws">
+          <ellipse cx="46" cy="110" rx="8" ry="6" fill="var(--accent-deep)"/>
+          <ellipse cx="72" cy="110" rx="8" ry="6" fill="var(--accent-deep)"/>
+        </g>
+
+        <!-- head group (twists during neck action) -->
+        <g id="joy-head">
+          <!-- ears -->
+          <ellipse cx="34" cy="46" rx="11" ry="18" fill="var(--accent-deep)" transform="rotate(-14 34 46)"/>
+          <ellipse cx="84" cy="46" rx="11" ry="18" fill="var(--accent-deep)" transform="rotate(14 84 46)"/>
+          <!-- head -->
+          <ellipse cx="59" cy="56" rx="29" ry="27" fill="var(--accent)"/>
+          <!-- eyes -->
+          <g id="joy-eyes">
+            <circle cx="48" cy="54" r="4.6" fill="var(--ink)"/>
+            <circle cx="70" cy="54" r="4.6" fill="var(--ink)"/>
+            <circle cx="49.6" cy="52.4" r="1.5" fill="#fff"/>
+            <circle cx="71.6" cy="52.4" r="1.5" fill="#fff"/>
+          </g>
+          <!-- blush -->
+          <ellipse cx="40" cy="63" rx="5" ry="3.2" fill="#FF9E7D" opacity="0.5"/>
+          <ellipse cx="78" cy="63" rx="5" ry="3.2" fill="#FF9E7D" opacity="0.5"/>
+          <!-- nose -->
+          <ellipse cx="59" cy="64" rx="4" ry="2.7" fill="var(--accent-deep)"/>
+          <!-- mouth -->
+          <path id="joy-mouth" d="M 50 71 Q 59 78 68 71" stroke="var(--ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div class="pet-plate" id="pet-plate">
+    <span class="flame">🔥</span>
+    <span class="sk" id="plate-streak">7</span>
+    <span style="color:#9BA3B8;">天连续</span>
+  </div>
+</div>
+
+<!-- ══ DEMO CONSOLE ══ -->
+<div class="hint-pop" id="hint-pop">试试这里 →</div>
+<div class="console" id="console">
+  <div class="console-head" id="console-head">
+    <span class="ttl">🎬 演示控制台</span>
+    <span class="chev">▼</span>
+  </div>
+  <div class="c-sub">真实场景里由计时器/摄像头自动触发。这里手动模拟,方便看效果。</div>
+  <div class="c-grid">
+    <button class="c-btn neck" onclick="triggerNeck()"><span class="em">🦒</span>颈椎提醒</button>
+    <button class="c-btn arm" onclick="triggerArm()"><span class="em">🙆</span>手臂提醒</button>
+    <button class="c-btn" onclick="triggerWater()"><span class="em">💧</span>喝水提醒</button>
+    <button class="c-btn" onclick="triggerIdleTalk()"><span class="em">💬</span>随口说句</button>
+    <button class="c-btn" onclick="celebrate()"><span class="em">🎉</span>完成庆祝</button>
+    <button class="c-btn" onclick="goQuiet()"><span class="em">🤫</span>会议安静</button>
+  </div>
+</div>
+
+<script>
+  // ══ STATE ══
+  const state = {
+    streak: 7,
+    cadenceMin: 45,
+    camOn: false,
+    muted: false,
+    quiet: false,
+    busy: false,       // a reminder/interaction bubble is showing
+  };
+
+  const pet = document.getElementById('pet');
+  const joySvg = document.getElementById('joy-svg');
+  const bubble = document.getElementById('bubble');
+  const bubbleText = document.getElementById('bubble-text');
+  const bubbleCta = document.getElementById('bubble-cta');
+  const bubbleCtaLabel = document.getElementById('bubble-cta-label');
+  const bubbleDismiss = document.getElementById('bubble-dismiss');
+  const plate = document.getElementById('pet-plate');
+
+  // ══ LINES (from the script) ══
+  const LINES = {
+    neck: ['坐久啦,陪我打两拳松松脖子?','脖子是不是有点僵?来 30 秒就好~','起来动一动,脖子会谢谢你的'],
+    arm:  ['肩膀僵了吧?跟我举手摘颗星星~','手臂伸个懒腰啦,一起摘星 ⭐','含胸太久咯,拉开肩背 30 秒'],
+    water:['咕嘟咕嘟,该喝水啦 💧','起来接杯水,顺便走两步~'],
+    idle: ['在呢,不打扰你~','今天也别低头呀 🐕','我就趴这儿陪你写完','慢慢来,我等你'],
+    celebrate:['今天也没低头,厉害!','连续打卡,你的脖子进步啦 ✨','完成!明天也一起呀~'],
+    quiet:['（悄悄缩到角落,不出声了）'],
+  };
+  const rand = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  // ══ FACE EXPRESSIONS ══
+  const eyes = document.getElementById('joy-eyes');
+  const mouth = document.getElementById('joy-mouth');
+  function setMood(mood) {
+    if (mood === 'excited') {
+      eyes.innerHTML = `
+        <circle cx="48" cy="54" r="4.6" fill="var(--ink)"/><circle cx="70" cy="54" r="4.6" fill="var(--ink)"/>
+        <circle cx="49.8" cy="52" r="1.9" fill="#fff"/><circle cx="71.8" cy="52" r="1.9" fill="#fff"/>
+        <circle cx="47" cy="55.5" r="1" fill="#fff"/><circle cx="69" cy="55.5" r="1" fill="#fff"/>`;
+      mouth.setAttribute('d','M 48 70 Q 59 80 70 70');
+    } else if (mood === 'sad') {
+      eyes.innerHTML = `
+        <path d="M 43 53 Q 48 50 53 53" stroke="var(--ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M 65 53 Q 70 50 75 53" stroke="var(--ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+      mouth.setAttribute('d','M 50 74 Q 59 69 68 74');
+    } else { // happy default
+      eyes.innerHTML = `
+        <circle cx="48" cy="54" r="4.6" fill="var(--ink)"/><circle cx="70" cy="54" r="4.6" fill="var(--ink)"/>
+        <circle cx="49.6" cy="52.4" r="1.5" fill="#fff"/><circle cx="71.6" cy="52.4" r="1.5" fill="#fff"/>`;
+      mouth.setAttribute('d','M 50 71 Q 59 78 68 71');
+    }
+  }
+
+  // ══ ACTION CLASSES ══
+  const ACTIONS = ['act-neck','act-arms','act-wave','act-hop','act-interact'];
+  function setAction(...cls) {
+    ACTIONS.forEach(c => joySvg.classList.remove(c));
+    cls.forEach(c => joySvg.classList.add(c));
+  }
+
+  // ══ BUBBLE ══
+  let bubbleTimer = null;
+  function positionBubble() {
+    const r = pet.getBoundingClientRect();
+    const petCenter = r.left + r.width/2;
+    let left = petCenter - bubble.offsetWidth/2;
+    left = Math.max(12, Math.min(window.innerWidth - bubble.offsetWidth - 12, left));
+    bubble.style.left = left + 'px';
+    bubble.style.top  = (r.top - bubble.offsetHeight - 8) + 'px';
+    // point the tail at the pet's head
+    const tailX = Math.max(16, Math.min(bubble.offsetWidth - 24, petCenter - left - 8));
+    bubble.style.setProperty('--tail-x', tailX + 'px');
+  }
+  function showBubble(text, opts = {}) {
+    clearTimeout(bubbleTimer);
+    bubbleText.textContent = text;
+    if (opts.cta) {
+      bubble.classList.add('has-cta');
+      bubbleCta.style.display = 'flex';
+      bubbleDismiss.style.display = 'block';
+      bubbleCtaLabel.textContent = opts.cta;
+      bubbleCta.style.setProperty('--ct', opts.ctaColor || 'var(--teal-deep)');
+      bubbleCta.onclick = opts.onCta;
+    } else {
+      bubble.classList.remove('has-cta');
+      bubbleCta.style.display = 'none';
+      bubbleDismiss.style.display = 'none';
+    }
+    bubble.classList.add('show');
+    requestAnimationFrame(positionBubble);
+    if (opts.autoHide !== false) {
+      bubbleTimer = setTimeout(hideBubble, opts.duration || 4200);
+    }
+  }
+  function hideBubble() {
+    bubble.classList.remove('show');
+    state.busy = false;
+    if (!state.quiet) setAction();  // back to idle
+  }
+  bubbleDismiss.onclick = () => { hideBubble(); toast('好的,待会儿 Joy 再喊你~'); };
+
+  // ══ REMINDER TRIGGERS ══
+  function reminderGuard() {
+    if (state.muted) { toast('Joy 静音中,已忍住没打扰你 🤐'); return false; }
+    if (state.quiet) { toast('专注/会议模式中,Joy 正安静待着'); return false; }
+    return true;
+  }
+
+  function triggerNeck() {
+    if (!reminderGuard()) return;
+    dismissHint();
+    state.busy = true;
+    setMood('happy');
+    setAction('act-neck','act-wave');
+    showBubble(rand(LINES.neck), {
+      cta: '陪我打两拳 · 拳击派对 🥊', ctaColor: 'var(--teal-deep)',
+      onCta: () => goLevel('mock-boxing-video.html'),
+      autoHide: false,
+    });
+  }
+
+  function triggerArm() {
+    if (!reminderGuard()) return;
+    dismissHint();
+    state.busy = true;
+    setMood('happy');
+    setAction('act-arms','act-wave');
+    showBubble(rand(LINES.arm), {
+      cta: '一起摘星 · 摘星训练 ⭐', ctaColor: 'var(--purple-deep)',
+      onCta: () => goLevel('mock-shoulder-star.html'),
+      autoHide: false,
+    });
+  }
+
+  function triggerWater() {
+    if (!reminderGuard()) return;
+    dismissHint();
+    setMood('happy'); setAction('act-wave');
+    showBubble(rand(LINES.water), { duration: 3600 });
+  }
+
+  function triggerIdleTalk() {
+    if (state.quiet) { toast('安静模式中'); return; }
+    dismissHint();
+    setMood('happy'); setAction('act-interact');
+    showBubble(rand(LINES.idle), { duration: 3000 });
+  }
+
+  function celebrate() {
+    dismissHint();
+    state.streak++;
+    document.getElementById('plate-streak').textContent = state.streak;
+    setMood('excited'); setAction('act-hop');
+    confettiBurst();
+    showBubble(rand(LINES.celebrate) + `(🔥${state.streak}天)`, { duration: 3800 });
+    setTimeout(()=>{ if(!state.busy) setMood('happy'); }, 3900);
+  }
+
+  function goLevel(url) {
+    toast('正在进入关卡…');
+    hideBubble();
+    setTimeout(()=> { window.location.href = url; }, 500);
+  }
+
+  function goQuiet() {
+    state.quiet = true;
+    pet.classList.add('quiet');
+    hideBubble();
+    setAction();
+    toast('检测到会议/专注 · Joy 缩到角落安静了');
+    plate.style.opacity = '0.4';
+  }
+  function wake() {
+    if (!state.quiet) return;
+    state.quiet = false;
+    pet.classList.remove('quiet');
+    plate.style.opacity = '1';
+    toast('Joy 醒啦,继续陪你~');
+  }
+
+  // ══ CONFETTI ══
+  function confettiBurst() {
+    const r = pet.getBoundingClientRect();
+    const cx = r.left + r.width/2, cy = r.top + 30;
+    const colors = ['#F5BC30','#3EC6B5','#9B8BF0','#52D98A','#FF7A52'];
+    for (let i=0;i<24;i++){
+      const p = document.createElement('div');
+      const c = colors[i%colors.length];
+      p.style.cssText = `position:fixed;z-index:70;width:8px;height:8px;border-radius:2px;background:${c};left:${cx}px;top:${cy}px;pointer-events:none;`;
+      document.body.appendChild(p);
+      const ang = Math.random()*Math.PI*2, dist = 60+Math.random()*90;
+      const dx = Math.cos(ang)*dist, dy = Math.sin(ang)*dist - 40;
+      p.animate([
+        {transform:'translate(0,0) rotate(0)', opacity:1},
+        {transform:`translate(${dx}px,${dy}px) rotate(${Math.random()*540}deg)`, opacity:0}
+      ], {duration:900+Math.random()*500, easing:'cubic-bezier(.2,.6,.3,1)'}).onfinish = ()=>p.remove();
+    }
+  }
+
+  // ══ TOAST ══
+  let toastTimer;
+  function toast(msg) {
+    let t = document.querySelector('.toast');
+    if (!t) { t = document.createElement('div'); t.className='toast'; document.body.appendChild(t); }
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+  }
+
+  // ══ CLICK PET (interact) ══
+  let dragMoved = false;
+  joySvg.addEventListener('click', () => {
+    if (dragMoved) return;
+    wake();
+    if (state.busy) return;
+    // clicking pet offers today's pick
+    setMood('happy'); setAction('act-interact');
+    state.busy = true;
+    showBubble('要一起动动吗?今天推荐颈椎拳击派对~', {
+      cta: '开始 · 拳击派对 🥊', ctaColor:'var(--teal-deep)',
+      onCta: ()=> goLevel('mock-boxing-video.html'),
+      autoHide:false,
+    });
+  });
+
+  // ══ DRAG ══
+  let dragging=false, offX=0, offY=0;
+  pet.addEventListener('pointerdown', e=>{
+    dragging=true; dragMoved=false; pet.classList.add('dragging');
+    const r = pet.getBoundingClientRect();
+    offX = e.clientX - r.left; offY = e.clientY - r.top;
+    pet.setPointerCapture(e.pointerId);
+  });
+  pet.addEventListener('pointermove', e=>{
+    if(!dragging) return;
+    dragMoved=true;
+    let x = e.clientX-offX, y=e.clientY-offY;
+    x = Math.max(0, Math.min(window.innerWidth-pet.offsetWidth, x));
+    y = Math.max(30, Math.min(window.innerHeight-pet.offsetHeight, y));
+    pet.style.left=x+'px'; pet.style.top=y+'px';
+    pet.style.right='auto'; pet.style.bottom='auto';
+    if (bubble.classList.contains('show')) positionBubble();
+  });
+  pet.addEventListener('pointerup', e=>{
+    dragging=false; pet.classList.remove('dragging');
+    setTimeout(()=>dragMoved=false, 50);
+  });
+
+  // ══ SETTINGS ══
+  const panel = document.getElementById('panel');
+  const btnSettings = document.getElementById('btn-settings');
+  btnSettings.onclick = (e)=>{ e.stopPropagation(); panel.classList.toggle('show'); };
+  document.addEventListener('click', e=>{
+    if(!panel.contains(e.target) && e.target!==btnSettings && !btnSettings.contains(e.target))
+      panel.classList.remove('show');
+  });
+
+  // cadence
+  document.getElementById('seg-cadence').addEventListener('click', e=>{
+    const b = e.target.closest('button'); if(!b) return;
+    document.querySelectorAll('#seg-cadence button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    state.cadenceMin = +b.dataset.min;
+    toast(`久坐提醒改为每 ${state.cadenceMin} 分钟`);
+  });
+
+  // camera toggle
+  const camToggle = document.getElementById('cam-toggle');
+  const camWindow = document.getElementById('cam-window');
+  const camWarn = document.getElementById('cam-warn');
+  const camVideo = document.getElementById('cam-video');
+  const camOff = document.getElementById('cam-off');
+  let camStream = null;
+
+  camToggle.onclick = async ()=>{
+    if (!state.camOn) {
+      // turn on — request camera
+      try {
+        camStream = await navigator.mediaDevices.getUserMedia({video:true});
+        camVideo.srcObject = camStream;
+        camOff.style.display='none';
+      } catch(err) {
+        camOff.style.display='flex';  // show placeholder if denied/no cam
+      }
+      state.camOn = true;
+      camToggle.classList.add('on');
+      camWindow.classList.add('show');
+      camWarn.style.display='block';
+      toast('坐姿监护已开启 · 画面仅本地判断');
+    } else {
+      turnCamOff();
+    }
+  };
+  function turnCamOff(){
+    state.camOn=false;
+    camToggle.classList.remove('on');
+    camWindow.classList.remove('show');
+    camWarn.style.display='none';
+    if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+    toast('坐姿监护已关闭,回到计时提醒');
+  }
+
+  // ══ MUTE ══
+  const btnMute = document.getElementById('btn-mute');
+  const muteLabel = document.getElementById('mute-label');
+  let muteTimer=null;
+  btnMute.onclick = ()=>{
+    state.muted = !state.muted;
+    if(state.muted){
+      btnMute.classList.add('on'); muteLabel.textContent='已静音 · 点击恢复';
+      hideBubble(); toast('Joy 静音 30 分钟,不会打扰你');
+      clearTimeout(muteTimer);
+      muteTimer = setTimeout(()=>{ if(state.muted) btnMute.click(); }, 30*60*1000);
+    } else {
+      btnMute.classList.remove('on'); muteLabel.textContent='静音 30 分钟';
+      clearTimeout(muteTimer); toast('Joy 回来啦~');
+    }
+  };
+
+  // ══ CONSOLE COLLAPSE ══
+  const consoleEl = document.getElementById('console');
+  document.getElementById('console-head').onclick = ()=> consoleEl.classList.toggle('collapsed');
+
+  // ══ HINT ══
+  function dismissHint(){ document.getElementById('hint-pop').classList.add('gone'); }
+
+  // ══ IDLE: occasional blink + rare spontaneous talk ══
+  function blink(){
+    const saved = eyes.innerHTML;
+    eyes.innerHTML = `
+      <path d="M 43 54 Q 48 57 53 54" stroke="var(--ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+      <path d="M 65 54 Q 70 57 75 54" stroke="var(--ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+    setTimeout(()=>{ if(!state.busy) eyes.innerHTML = saved; }, 150);
+  }
+  setInterval(()=>{ if(!state.busy && !state.quiet && Math.random()<0.6) blink(); }, 3800);
+
+  // occasional idle line (low frequency, respectful)
+  setInterval(()=>{
+    if(!state.busy && !state.quiet && !state.muted && !bubble.classList.contains('show') && Math.random()<0.28){
+      triggerIdleTalk();
+    }
+  }, 22000);
+
+  // ══ DOCK ICONS — 真图加载成功则隐藏占位;失败则显示占位 ══
+  document.querySelectorAll('.dock-icon img').forEach(img=>{
+    const ph = img.parentElement.querySelector('.ph');
+    const settle = ()=>{ if(img.naturalWidth>0 && ph) ph.style.display='none'; };
+    if (img.complete) settle();
+    img.addEventListener('load', settle);
+    img.addEventListener('error', ()=>{ img.style.display='none'; });
+  });
+  function placeBlend(){
+    const img = document.getElementById('wp-img');
+    const blend = document.getElementById('wp-blend');
+    if(!img || !blend) return;
+    const h = img.offsetHeight || (window.innerWidth * 694/3456);
+    blend.style.top = (h - 60) + 'px';   // overlap slightly into the image
+  }
+  const wpImg = document.getElementById('wp-img');
+  if (wpImg.complete) placeBlend(); else wpImg.onload = placeBlend;
+  window.addEventListener('resize', placeBlend);
+  const WK = ['周日','周一','周二','周三','周四','周五','周六'];
+  function tick(){
+    const el = document.getElementById('clock');
+    if (!el) return;
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    el.textContent = `${d.getMonth()+1}月${d.getDate()}日 ${WK[d.getDay()]} ${hh}:${mm}`;
+  }
+  tick(); setInterval(tick, 10000);
+
+  // ══ PRESENT (fullscreen) ══
+  const btnPresent = document.getElementById('btn-present');
+  btnPresent.onclick = ()=>{
+    if (!document.fullscreenElement) {
+      (document.documentElement.requestFullscreen?.() || Promise.reject()).catch(()=>toast('浏览器不允许全屏,按 F11 试试'));
+    } else {
+      document.exitFullscreen?.();
+    }
+  };
+  document.addEventListener('fullscreenchange', ()=>{
+    if (document.fullscreenElement) {
+      btnPresent.classList.remove('present');
+      btnPresent.querySelector('svg').nextSibling.textContent = ' 退出放映';
+    } else {
+      btnPresent.classList.add('present');
+      btnPresent.querySelector('svg').nextSibling.textContent = ' 放映模式';
+    }
+  });
+
+  // ══ DOCK JOY ICON — bounce + today's pick ══
+  const dockJoy = document.getElementById('dock-joy');
+  dockJoy.onclick = ()=>{
+    wake();
+    if (state.busy) return;
+    dockJoy.animate([{transform:'translateY(0)'},{transform:'translateY(-16px)'},{transform:'translateY(0)'}],{duration:500,iterations:2});
+    setMood('happy'); setAction('act-interact'); state.busy=true;
+    showBubble('要一起动动吗?今天推荐颈椎拳击派对~', {
+      cta:'开始 · 拳击派对 🥊', ctaColor:'var(--teal-deep)',
+      onCta:()=>goLevel('mock-boxing-video.html'), autoHide:false,
+    });
+  };
+
+  // ══ INIT ══
+  setMood('happy');
+  document.getElementById('plate-streak').textContent = state.streak;
+  // greet once on load
+  setTimeout(()=>{
+    setAction('act-wave'); state.busy=true;
+    showBubble('早,今天也别低头呀~我就坐在 Dock 上陪你 🐕', {duration:4000});
+  }, 700);
+</script>
+</body>
+</html>

@@ -1,0 +1,907 @@
+<title>Joy 桌宠行为剧本</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root {
+    /* light — base */
+    --bg: #F0EDE8;
+    --bg-soft: #E8E4DE;
+    --surface: #FFFFFF;
+    --surface-2: #F6F3EF;
+    --surface-3: #EAE6E0;
+    --text: #191D28;
+    --text-2: #565E70;
+    --text-3: #949BAC;
+    --border: rgba(20,24,36,0.10);
+    --border-2: rgba(20,24,36,0.06);
+    --accent: #C4890A;        /* Joy 本体 */
+    --accent-soft: rgba(196,137,10,0.12);
+    --teal: #12897B;          /* 时间型 · 默认安全 */
+    --teal-soft: rgba(18,137,123,0.12);
+    --coral: #D8481F;         /* 摄像头型 · 主动开启 */
+    --coral-soft: rgba(216,72,31,0.12);
+    --green: #268A54;         /* 正向 / streak */
+    --green-soft: rgba(38,138,84,0.12);
+    --purple: #6D5BD0;        /* 手臂 / 肩部 */
+    --purple-soft: rgba(109,91,208,0.12);
+    --shadow: 0 24px 60px rgba(20,24,36,0.10);
+    --font-display: 'Sora', system-ui, sans-serif;
+    --font-body: 'Noto Sans SC', system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0C1018;
+      --bg-soft: #111622;
+      --surface: #161B28;
+      --surface-2: #1E2538;
+      --surface-3: #252D42;
+      --text: #EDE8DF;
+      --text-2: #9BA3B8;
+      --text-3: #626A80;
+      --border: rgba(255,255,255,0.09);
+      --border-2: rgba(255,255,255,0.05);
+      --accent: #F5BC30;
+      --accent-soft: rgba(245,188,48,0.15);
+      --teal: #3EC6B5;
+      --teal-soft: rgba(62,198,181,0.15);
+      --coral: #FF7A52;
+      --coral-soft: rgba(255,122,82,0.15);
+      --green: #52D98A;
+      --green-soft: rgba(82,217,138,0.15);
+      --purple: #9B8BF0;
+      --purple-soft: rgba(155,139,240,0.15);
+      --shadow: 0 28px 70px rgba(0,0,0,0.5);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0C1018;
+    --bg-soft: #111622;
+    --surface: #161B28;
+    --surface-2: #1E2538;
+    --surface-3: #252D42;
+    --text: #EDE8DF;
+    --text-2: #9BA3B8;
+    --text-3: #626A80;
+    --border: rgba(255,255,255,0.09);
+    --border-2: rgba(255,255,255,0.05);
+    --accent: #F5BC30;
+    --accent-soft: rgba(245,188,48,0.15);
+    --teal: #3EC6B5;
+    --teal-soft: rgba(62,198,181,0.15);
+    --coral: #FF7A52;
+    --coral-soft: rgba(255,122,82,0.15);
+    --green: #52D98A;
+    --green-soft: rgba(82,217,138,0.15);
+    --purple: #9B8BF0;
+    --purple-soft: rgba(155,139,240,0.15);
+    --shadow: 0 28px 70px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 24px 96px;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; }
+
+  /* ── HERO ─────────────────────────────── */
+  header.hero {
+    padding: 72px 0 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .eyebrow {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-size: clamp(34px, 6vw, 60px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    margin-bottom: 20px;
+  }
+  h1.title .dog { color: var(--accent); }
+  .lede {
+    font-size: clamp(15px, 2vw, 18px);
+    color: var(--text-2);
+    max-width: 60ch;
+    line-height: 1.7;
+  }
+  .lede b { color: var(--text); font-weight: 700; }
+
+  .hero-joy {
+    position: absolute;
+    top: 60px; right: 4px;
+    width: 118px; height: 118px;
+    opacity: 0.9;
+  }
+  @media (max-width: 620px){ .hero-joy{ display:none; } }
+
+  /* ── SECTION ─────────────────────────── */
+  section { padding: 56px 0 8px; }
+  .sec-head { margin-bottom: 30px; }
+  .sec-num {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--text-3);
+  }
+  .sec-title {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3.4vw, 30px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 6px 0 10px;
+    text-wrap: balance;
+  }
+  .sec-desc { font-size: 15px; color: var(--text-2); max-width: 62ch; }
+
+  /* ── FIGURE / DIAGRAM ────────────────── */
+  figure { margin: 0; }
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 24px 18px;
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  .diagram-card svg { width: 100%; height: auto; min-width: 560px; display: block; }
+  figcaption {
+    font-size: 13px;
+    color: var(--text-3);
+    text-align: center;
+    margin-top: 14px;
+    font-family: var(--font-display);
+    letter-spacing: 0.01em;
+  }
+
+  /* mood overlay strip */
+  .mood-note {
+    display: flex; align-items: center; gap: 10px;
+    margin: 18px 0 14px;
+    font-family: var(--font-display);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.06em;
+    color: var(--text-3); text-transform: uppercase;
+  }
+  .mood-note::after { content:""; flex:1; height:1px; background: var(--border); }
+  .mood-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 680px){ .mood-grid{ grid-template-columns: repeat(2,1fr);} }
+  .mood {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 15px 15px;
+    border-top: 3px solid var(--m, var(--accent));
+  }
+  .mood .face { font-size: 24px; line-height: 1; margin-bottom: 10px; }
+  .mood .m-name { font-family: var(--font-display); font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .mood .m-when { font-size: 12.5px; color: var(--text-2); }
+
+  /* ── TWO TRIGGERS ────────────────────── */
+  .trig-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px){ .trig-grid{ grid-template-columns:1fr; } }
+  .trig {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .trig::before {
+    content:""; position:absolute; inset:0 auto 0 0; width:4px;
+    background: var(--tc);
+  }
+  .trig .badge {
+    display:inline-flex; align-items:center; gap:7px;
+    font-family: var(--font-display); font-size: 11px; font-weight:700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--tc); background: var(--tc-soft);
+    padding: 5px 11px; border-radius: 20px; margin-bottom: 14px;
+  }
+  .trig .badge .dot { width:7px;height:7px;border-radius:50%;background:var(--tc); }
+  .trig h3 {
+    font-family: var(--font-display); font-size: 19px; font-weight:700;
+    margin-bottom: 6px; letter-spacing:-0.01em;
+  }
+  .trig .default-tag { font-size:12px; color:var(--text-3); font-family:var(--font-display); }
+  .trig ul { list-style:none; margin: 16px 0 0; }
+  .trig li {
+    padding: 11px 0; font-size: 14px; color: var(--text-2);
+    border-top: 1px solid var(--border-2); line-height:1.5;
+  }
+  .trig li:first-child{ border-top:none; }
+  .trig li b { color: var(--text); font-weight:600; }
+  .trig .rule {
+    margin-top: 16px; padding: 13px 14px; border-radius: 11px;
+    background: var(--tc-soft); font-size: 13px; color: var(--text);
+    line-height: 1.6;
+  }
+  .trig .rule b { color: var(--tc); }
+
+  /* ── PART ENTRY (提醒即入口) ──────────── */
+  .entry-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px){ .entry-grid{ grid-template-columns:1fr; } }
+  .entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 22px 22px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+  }
+  .entry::before {
+    content:""; position:absolute; inset:0 auto 0 0; width:4px; background: var(--ec);
+  }
+  .entry .ic {
+    width: 52px; height: 52px; flex-shrink:0;
+    border-radius: 14px; background: var(--ec-soft);
+    display:flex; align-items:center; justify-content:center;
+    font-size: 26px;
+  }
+  .entry .e-body { flex: 1; }
+  .entry .e-part {
+    font-family: var(--font-display); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ec);
+    margin-bottom: 3px;
+  }
+  .entry h3 {
+    font-family: var(--font-display); font-size: 17px; font-weight: 700;
+    letter-spacing: -0.01em; margin-bottom: 8px;
+  }
+  .entry .flow {
+    display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+    margin-bottom: 12px;
+  }
+  .entry .chip {
+    font-family: var(--font-display); font-size: 12px; font-weight:600;
+    padding: 4px 10px; border-radius: 8px; white-space:nowrap;
+    background: var(--surface-2); color: var(--text-2); border:1px solid var(--border-2);
+  }
+  .entry .chip.go { background: var(--ec-soft); color: var(--ec); border-color: transparent; }
+  .entry .flow .sep { color: var(--text-3); font-size: 13px; }
+  .entry .e-say {
+    font-size: 13.5px; color: var(--text-2); line-height:1.55;
+    padding: 10px 13px; background: var(--surface-2); border-radius: 11px;
+    border: 1px solid var(--border-2);
+  }
+  .entry .e-say::before { content:"“"; color: var(--text-3); }
+  .entry .e-say::after { content:"”"; color: var(--text-3); }
+
+  .entry-note {
+    margin-top: 16px; display:flex; align-items:flex-start; gap:10px;
+    font-size: 13.5px; color: var(--text-2); line-height:1.6;
+    padding: 14px 16px; background: var(--surface-2);
+    border: 1px solid var(--border-2); border-radius: 13px;
+  }
+  .entry-note b { color: var(--text); font-weight:700; }
+
+  /* ── ACTION DEMO (动作示范) ──────────── */
+  .demo-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+    margin-top: 20px;
+  }
+  @media (max-width: 720px){ .demo-grid{ grid-template-columns:1fr; } }
+  .demo {
+    background: var(--surface); border:1px solid var(--border);
+    border-radius: 18px; padding: 22px 22px 20px;
+    display:flex; gap: 18px; align-items:center;
+    border-top: 3px solid var(--dc);
+  }
+  .demo .stage-box {
+    width: 96px; height: 96px; flex-shrink:0;
+    border-radius: 16px; background: var(--dc-soft);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .demo .stage-box svg { width: 76px; height: 76px; display:block; }
+  .demo .d-body { flex:1; }
+  .demo .d-name {
+    font-family: var(--font-display); font-size: 17px; font-weight:700;
+    margin-bottom: 4px; letter-spacing:-0.01em;
+  }
+  .demo .d-move { font-size: 13.5px; color: var(--text-2); line-height:1.5; margin-bottom: 10px; }
+  .demo .d-preview {
+    display:inline-flex; align-items:center; gap:6px;
+    font-family: var(--font-display); font-size: 11.5px; font-weight:600;
+    color: var(--dc); background: var(--dc-soft);
+    padding: 4px 11px; border-radius: 20px;
+  }
+
+  /* subtle looping motion — respect reduced motion */
+  .joy-neck { transform-origin: 50% 62%; animation: neckTilt 3.2s ease-in-out infinite; }
+  .joy-arms { transform-origin: 50% 60%; animation: armStretch 3s ease-in-out infinite; }
+  @keyframes neckTilt {
+    0%,100% { transform: rotate(-9deg); }
+    50%     { transform: rotate(9deg); }
+  }
+  @keyframes armStretch {
+    0%,100% { transform: translateY(2px) scaleY(0.98); }
+    50%     { transform: translateY(-3px) scaleY(1.03); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .joy-neck, .joy-arms { animation: none; }
+  }
+
+  /* ── TIMELINE ────────────────────────── */
+  .timeline {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px 26px 24px;
+    box-shadow: var(--shadow);
+  }
+  .tl-track { position: relative; padding-left: 4px; }
+  .tl-item {
+    position: relative;
+    padding: 0 0 26px 34px;
+    border-left: 2px solid var(--border);
+    margin-left: 6px;
+  }
+  .tl-item:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .tl-item::before {
+    content:""; position:absolute; left:-8px; top:2px;
+    width:14px; height:14px; border-radius:50%;
+    background: var(--surface); border: 3px solid var(--tl, var(--accent));
+  }
+  .tl-time {
+    font-family: var(--font-display); font-size: 13px; font-weight:700;
+    color: var(--tl, var(--accent)); letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .tl-act { font-weight: 700; font-size: 15px; margin: 3px 0 3px; }
+  .tl-say { font-size: 13.5px; color: var(--text-2); }
+  .tl-say::before { content:"“"; color: var(--text-3); }
+  .tl-say::after { content:"”"; color: var(--text-3); }
+
+  /* ── DIALOGUE ────────────────────────── */
+  .say-grid {
+    display: grid; grid-template-columns: repeat(2,1fr); gap: 16px;
+  }
+  @media (max-width: 720px){ .say-grid{ grid-template-columns:1fr; } }
+  .say-card {
+    background: var(--surface); border:1px solid var(--border);
+    border-radius: 16px; padding: 20px 20px 18px;
+  }
+  .say-card .sc-head {
+    display:flex; align-items:center; gap:9px; margin-bottom: 14px;
+  }
+  .say-card .sc-tag {
+    font-family: var(--font-display); font-size: 12px; font-weight:700;
+    padding: 4px 10px; border-radius: 8px; letter-spacing:0.03em;
+    background: var(--sc-soft, var(--accent-soft)); color: var(--sc, var(--accent));
+  }
+  .say-card .sc-when { font-size: 12px; color: var(--text-3); }
+  .bubble {
+    position: relative;
+    background: var(--surface-2);
+    border: 1px solid var(--border-2);
+    border-radius: 13px;
+    padding: 10px 13px;
+    font-size: 14px;
+    color: var(--text);
+    margin-top: 9px;
+    line-height: 1.55;
+  }
+  .bubble:first-of-type { margin-top: 0; }
+
+  /* ── RESTRAINT / RED LINES ───────────── */
+  .rules { display:grid; grid-template-columns: repeat(2,1fr); gap:14px; }
+  @media (max-width: 720px){ .rules{ grid-template-columns:1fr; } }
+  .rule-card {
+    background: var(--surface); border:1px solid var(--border);
+    border-radius:14px; padding: 18px 18px;
+  }
+  .rule-card h4 {
+    font-family: var(--font-display); font-size:15px; font-weight:700;
+    margin-bottom:6px; display:flex; align-items:center; gap:8px;
+  }
+  .rule-card h4 .k {
+    font-size: 11px; font-weight:700; color: var(--teal);
+    background: var(--teal-soft); padding: 2px 8px; border-radius: 6px;
+    font-family: var(--font-display);
+  }
+  .rule-card p { font-size:13.5px; color: var(--text-2); line-height:1.6; }
+  .redline {
+    margin-top: 18px; background: var(--coral-soft);
+    border: 1px solid var(--coral); border-radius: 14px;
+    padding: 18px 20px;
+  }
+  .redline h4 { font-family: var(--font-display); color: var(--coral); font-size:15px; font-weight:700; margin-bottom:6px; }
+  .redline p { font-size:14px; color: var(--text); line-height:1.65; }
+  .redline p b { color: var(--coral); }
+
+  /* ── BUILD PATH ──────────────────────── */
+  .path {
+    display:grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items:stretch;
+  }
+  @media (max-width: 720px){ .path{ grid-template-columns:1fr; } .path .arrow{ transform:rotate(90deg); justify-self:center;} }
+  .stage {
+    background: var(--surface); border:1px solid var(--border);
+    border-radius: 18px; padding: 22px 22px;
+  }
+  .stage.now { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .stage .st-tag {
+    font-family:var(--font-display); font-size:11px; font-weight:700;
+    letter-spacing:0.1em; text-transform:uppercase; margin-bottom:10px;
+  }
+  .stage.now .st-tag { color: var(--accent); }
+  .stage.next .st-tag { color: var(--text-3); }
+  .stage h3 { font-family:var(--font-display); font-size:18px; font-weight:700; margin-bottom:8px; }
+  .stage p { font-size:13.5px; color:var(--text-2); line-height:1.6; }
+  .stage .tech { margin-top:12px; font-size:12px; color:var(--text-3); font-family:var(--font-display); }
+  .arrow { display:flex; align-items:center; justify-content:center; color: var(--text-3); font-size:26px; }
+
+  .foot {
+    margin-top: 64px; padding-top: 22px; border-top:1px solid var(--border);
+    font-size: 13px; color: var(--text-3); text-align:center; font-family:var(--font-display);
+  }
+</style>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <svg class="hero-joy" viewBox="0 0 120 120" aria-hidden="true">
+      <ellipse cx="28" cy="42" rx="16" ry="26" fill="var(--accent)" transform="rotate(-12 28 42)"/>
+      <ellipse cx="92" cy="42" rx="16" ry="26" fill="var(--accent)" transform="rotate(12 92 42)"/>
+      <ellipse cx="60" cy="62" rx="40" ry="38" fill="var(--accent)"/>
+      <circle cx="46" cy="58" r="6.5" fill="#1A1200"/>
+      <circle cx="74" cy="58" r="6.5" fill="#1A1200"/>
+      <circle cx="48.5" cy="55.5" r="2" fill="#fff"/>
+      <circle cx="76.5" cy="55.5" r="2" fill="#fff"/>
+      <ellipse cx="60" cy="70" rx="5" ry="3.4" fill="#B5760A"/>
+      <path d="M 48 80 Q 60 90 72 80" stroke="#1A1200" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="eyebrow">今天不低头 · 桌面陪伴</div>
+    <h1 class="title">Joy <span class="dog">桌宠</span>行为剧本</h1>
+    <p class="lede">一只常驻工作屏角落的小狗。<b>陪着你上班,到点提醒你抬头、活动颈椎</b>——治愈不惩罚,该安静时安静。这份剧本定义 Joy 在什么状态下、做什么动作、说什么话,是原型开发前要对齐的唯一一张地图。</p>
+  </header>
+
+  <!-- 1 · STATE MACHINE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">01 / 状态机</div>
+      <h2 class="sec-title">Joy 平时在陪伴,被触发才响应</h2>
+      <p class="sec-desc">大部分时间 Joy 停在「陪伴态」轻轻循环,不抢你注意力。三类触发把她拉进三种响应,做完就自动回到陪伴。streak 情感层叠加在最上面,给所有状态上色。</p>
+    </div>
+
+    <figure>
+      <div class="diagram-card">
+        <svg viewBox="0 0 760 470" role="img" aria-label="Joy 状态机:陪伴态被三类触发拉入提醒、交互、安静三种响应,做完回到陪伴">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+            <marker id="ah-back" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="var(--text-3)"/>
+            </marker>
+          </defs>
+
+          <!-- idle hub -->
+          <g>
+            <rect x="34" y="176" width="216" height="118" rx="18" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+            <text x="142" y="210" text-anchor="middle" font-family="Sora, sans-serif" font-size="18" font-weight="700" fill="var(--text)">陪伴态 · idle</text>
+            <text x="142" y="236" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">呼吸 · 眨眼 · 伸懒腰</text>
+            <text x="142" y="256" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">打哈欠 · 转头看你 · 打盹</text>
+            <text x="142" y="279" text-anchor="middle" font-family="Sora, sans-serif" font-size="11" fill="var(--text-3)">默认循环 · 不打扰</text>
+          </g>
+
+          <!-- response boxes -->
+          <!-- 提醒 -->
+          <g>
+            <rect x="512" y="34" width="214" height="104" rx="16" fill="var(--surface-2)" stroke="var(--teal)" stroke-width="2"/>
+            <text x="619" y="66" text-anchor="middle" font-family="Sora, sans-serif" font-size="16" font-weight="700" fill="var(--text)">提醒态</text>
+            <text x="619" y="90" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">插腰扭脖子 · 举手伸懒腰</text>
+            <text x="619" y="110" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">动作即关卡预演 · 轻音提示</text>
+          </g>
+          <!-- 交互 -->
+          <g>
+            <rect x="512" y="184" width="214" height="104" rx="16" fill="var(--surface-2)" stroke="var(--accent)" stroke-width="2"/>
+            <text x="619" y="212" text-anchor="middle" font-family="Sora, sans-serif" font-size="16" font-weight="700" fill="var(--text)">交互态</text>
+            <text x="619" y="236" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">摇尾巴 · 冒对话气泡</text>
+            <text x="619" y="256" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">点击 → 直跳颈椎 / 手臂关卡</text>
+          </g>
+          <!-- 安静 -->
+          <g>
+            <rect x="512" y="334" width="214" height="104" rx="16" fill="var(--surface-2)" stroke="var(--text-3)" stroke-width="2"/>
+            <text x="619" y="366" text-anchor="middle" font-family="Sora, sans-serif" font-size="16" font-weight="700" fill="var(--text)">安静态</text>
+            <text x="619" y="390" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">缩到角落 · 半透明</text>
+            <text x="619" y="410" text-anchor="middle" font-family="Sora, sans-serif" font-size="12.5" fill="var(--text-2)">不动不喊</text>
+          </g>
+
+          <!-- OUT arrows (trigger) -->
+          <g color="var(--teal)">
+            <line x1="250" y1="212" x2="512" y2="86" stroke="currentColor" stroke-width="2" marker-end="url(#ah)"/>
+            <text x="378" y="132" text-anchor="middle" font-family="Sora, sans-serif" font-size="12" font-weight="600" fill="var(--teal)">久坐45min · 低头含胸</text>
+          </g>
+          <g color="var(--accent)">
+            <line x1="250" y1="235" x2="512" y2="236" stroke="currentColor" stroke-width="2" marker-end="url(#ah)"/>
+            <text x="381" y="226" text-anchor="middle" font-family="Sora, sans-serif" font-size="12" font-weight="600" fill="var(--accent)">你点它 · hover</text>
+          </g>
+          <g color="var(--text-3)">
+            <line x1="250" y1="258" x2="512" y2="386" stroke="currentColor" stroke-width="2" marker-end="url(#ah)"/>
+            <text x="381" y="356" text-anchor="middle" font-family="Sora, sans-serif" font-size="12" font-weight="600" fill="var(--text-3)">会议 · 全屏专注</text>
+          </g>
+
+          <!-- RETURN arrow (auto back to idle) -->
+          <path d="M 560 288 Q 300 340 210 294" fill="none" stroke="var(--text-3)" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#ah-back)" opacity="0.75"/>
+          <text x="360" y="332" text-anchor="middle" font-family="Sora, sans-serif" font-size="11.5" fill="var(--text-3)">响应结束 · 自动回到陪伴</text>
+        </svg>
+      </div>
+      <figcaption>实线=触发把 Joy 拉进响应,虚线=做完回到陪伴态。颜色对应触发来源:青=时间型,黄=你主动,灰=系统安静。</figcaption>
+    </figure>
+
+    <div class="mood-note">情感层 · 叠加在以上所有状态之上,由 streak 决定</div>
+    <div class="mood-grid">
+      <div class="mood" style="--m:var(--green)">
+        <div class="face">🤩</div>
+        <div class="m-name">兴奋</div>
+        <div class="m-when">连续 ≥8 天 · 星星眼 / 头顶光环</div>
+      </div>
+      <div class="mood" style="--m:var(--accent)">
+        <div class="face">😊</div>
+        <div class="m-name">开心</div>
+        <div class="m-when">正常打卡中 · 常态表情</div>
+      </div>
+      <div class="mood" style="--m:var(--teal)">
+        <div class="face">🥺</div>
+        <div class="m-name">眼巴巴</div>
+        <div class="m-when">傍晚了今天还没一起动 · 望你</div>
+      </div>
+      <div class="mood" style="--m:var(--text-3)">
+        <div class="face">😔</div>
+        <div class="m-name">蔫了</div>
+        <div class="m-when">断签 · 灰调但不指责</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · TWO TRIGGERS -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">02 / 提醒怎么触发</div>
+      <h2 class="sec-title">两种都做:时间型默认开,摄像头型主动开</h2>
+      <p class="sec-desc">你要两种触发都有——所以把它们拆成两档:时间型零感知、默认常驻;摄像头型更聪明但只在你亲手打开时才唤起镜头。默认档永远不碰摄像头,守住「不常开监控」这条线。</p>
+    </div>
+
+    <div class="trig-grid">
+      <div class="trig" style="--tc:var(--teal); --tc-soft:var(--teal-soft)">
+        <span class="badge"><span class="dot"></span>时间型</span>
+        <h3>数时间,不看你</h3>
+        <div class="default-tag">默认开启 · 无需授权 · 零感知</div>
+        <ul>
+          <li><b>久坐提醒</b>　连续 45 分钟没起身,Joy 起身招手喊你抬头(节奏可调 25 / 45 / 60)</li>
+          <li><b>喝水提醒</b>　每约 60 分钟举个水杯牌子</li>
+          <li><b>整点问候</b>　上班伸懒腰迎接、下班道别小结</li>
+          <li><b>纯计时判断</b>　和项目里久坐/喝水一致,不采集任何画面</li>
+        </ul>
+        <div class="rule">安全档:全靠计时器,<b>永远不开摄像头</b>。装上就能用,是所有人的默认体验。</div>
+      </div>
+
+      <div class="trig" style="--tc:var(--coral); --tc-soft:var(--coral-soft)">
+        <span class="badge"><span class="dot"></span>摄像头型</span>
+        <h3>看坐姿,更聪明</h3>
+        <div class="default-tag">默认关闭 · 用户主动开 · 进阶开关</div>
+        <ul>
+          <li><b>低头检测</b>　持续低头 / 含胸超过设定秒数,Joy 指指脖子提醒</li>
+          <li><b>姿势回正</b>　坐直后 Joy 点头认可,形成即时正反馈</li>
+          <li><b>明确在录标识</b>　镜头启用时角落常亮提示,绝不偷偷开</li>
+          <li><b>随时可关</b>　一键回到时间型,状态清晰可见</li>
+        </ul>
+        <div class="rule"><b>红线:默认关,用户亲手开,随时能关。</b>本地判断不上传画面。这是「更神奇但更重」的可选升级,不是默认。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · PART ENTRY -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">03 / 提醒即入口</div>
+      <h2 class="sec-title">Joy 不只喊你动,还直接把关卡递到手边</h2>
+      <p class="sec-desc">提醒不该只是空喊「该活动了」。Joy 按部位推一个 30 秒能玩的关卡,点一下气泡就进——把「提醒」和「关卡入口」合成一个动作,省掉「打开 App 再找」的中间步骤,也顺着项目「按部位组织」的结构。</p>
+    </div>
+
+    <div class="entry-grid">
+      <div class="entry" style="--ec:var(--teal); --ec-soft:var(--teal-soft)">
+        <div class="ic">🦒</div>
+        <div class="e-body">
+          <div class="e-part">颈椎</div>
+          <h3>活动颈椎</h3>
+          <div class="flow">
+            <span class="chip">久坐 / 低头</span>
+            <span class="sep">→</span>
+            <span class="chip">Joy 插腰扭脖子</span>
+            <span class="sep">→</span>
+            <span class="chip go">点气泡 · 拳击派对 🥊</span>
+          </div>
+          <div class="e-say">坐久啦,陪我打两拳松松脖子?点我就开始~</div>
+        </div>
+      </div>
+
+      <div class="entry" style="--ec:var(--purple); --ec-soft:var(--purple-soft)">
+        <div class="ic">🙆</div>
+        <div class="e-body">
+          <div class="e-part">手臂 · 肩部</div>
+          <h3>伸展手臂</h3>
+          <div class="flow">
+            <span class="chip">久坐 / 含胸</span>
+            <span class="sep">→</span>
+            <span class="chip">Joy 伸伸懒腰</span>
+            <span class="sep">→</span>
+            <span class="chip go">点气泡 · 摘星训练 ⭐</span>
+          </div>
+          <div class="e-say">肩膀僵了吧?跟我举手摘颗星星,30 秒就好~</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry-note">
+      <span>💡</span>
+      <span><b>一次只推一个,按需切换。</b>Joy 根据时段和你久坐的部位判断该推颈椎还是手臂,不会一次弹两个关卡。点击直跳对应关卡页,玩完回来 streak +1,Joy 转「开心/兴奋」态庆祝。</span>
+    </div>
+
+    <div class="mood-note">动作即预演 · Joy 先示范,你看着就想跟</div>
+    <div class="demo-grid">
+      <div class="demo" style="--dc:var(--teal); --dc-soft:var(--teal-soft)">
+        <div class="stage-box">
+          <svg viewBox="0 0 100 100" role="img" aria-label="Joy 插着腰左右扭动脖子">
+            <!-- 插腰:两条前腿叉在身侧 -->
+            <path d="M 30 66 Q 18 64 20 76" stroke="var(--accent)" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <path d="M 70 66 Q 82 64 80 76" stroke="var(--accent)" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <!-- 身体 -->
+            <ellipse cx="50" cy="74" rx="22" ry="16" fill="var(--accent)"/>
+            <!-- 头(整组随扭脖子摆动) -->
+            <g class="joy-neck">
+              <ellipse cx="30" cy="40" rx="9" ry="15" fill="var(--accent)" transform="rotate(-14 30 40)"/>
+              <ellipse cx="70" cy="40" rx="9" ry="15" fill="var(--accent)" transform="rotate(14 70 40)"/>
+              <ellipse cx="50" cy="48" rx="24" ry="22" fill="var(--accent)"/>
+              <circle cx="41" cy="46" r="3.6" fill="#1A1200"/>
+              <circle cx="59" cy="46" r="3.6" fill="#1A1200"/>
+              <circle cx="42.2" cy="44.8" r="1.1" fill="#fff"/>
+              <circle cx="60.2" cy="44.8" r="1.1" fill="#fff"/>
+              <ellipse cx="50" cy="54" rx="3" ry="2" fill="#B5760A"/>
+              <path d="M 43 59 Q 50 64 57 59" stroke="#1A1200" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+        <div class="d-body">
+          <div class="d-name">插腰扭脖子</div>
+          <div class="d-move">双手叉腰,脑袋左右悠悠地转——正是颈椎的活动方向。</div>
+          <span class="d-preview">= 拳击派对的动作预演 🥊</span>
+        </div>
+      </div>
+
+      <div class="demo" style="--dc:var(--purple); --dc-soft:var(--purple-soft)">
+        <div class="stage-box">
+          <svg viewBox="0 0 100 100" role="img" aria-label="Joy 双臂上举伸懒腰">
+            <!-- 上举的两条手臂(随伸展上下) -->
+            <g class="joy-arms">
+              <path d="M 34 58 Q 26 34 32 20" stroke="var(--accent)" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path d="M 66 58 Q 74 34 68 20" stroke="var(--accent)" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <circle cx="32" cy="18" r="5" fill="var(--accent)"/>
+              <circle cx="68" cy="18" r="5" fill="var(--accent)"/>
+            </g>
+            <!-- 身体 -->
+            <ellipse cx="50" cy="70" rx="22" ry="18" fill="var(--accent)"/>
+            <!-- 头 -->
+            <ellipse cx="30" cy="46" rx="8" ry="13" fill="var(--accent)" transform="rotate(-12 30 46)"/>
+            <ellipse cx="70" cy="46" rx="8" ry="13" fill="var(--accent)" transform="rotate(12 70 46)"/>
+            <ellipse cx="50" cy="52" rx="21" ry="19" fill="var(--accent)"/>
+            <circle cx="42" cy="50" r="3.4" fill="#1A1200"/>
+            <circle cx="58" cy="50" r="3.4" fill="#1A1200"/>
+            <circle cx="43.1" cy="48.9" r="1" fill="#fff"/>
+            <circle cx="59.1" cy="48.9" r="1" fill="#fff"/>
+            <ellipse cx="50" cy="57" rx="2.8" ry="1.9" fill="#B5760A"/>
+            <path d="M 44 61 Q 50 66 56 61" stroke="#1A1200" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="d-body">
+          <div class="d-name">举手伸懒腰</div>
+          <div class="d-move">两只前爪高高举过头顶,把肩背整个拉开——手臂/肩部的伸展方向。</div>
+          <span class="d-preview">= 摘星训练的动作预演 ⭐</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · DAILY TIMELINE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">04 / 一天时间轴</div>
+      <h2 class="sec-title">Joy 陪你过完一个工作日</h2>
+      <p class="sec-desc">把状态机铺到真实的一天上——什么时刻 Joy 会主动出现、做什么、说什么。下午更容易含胸,提醒会更勤一点。</p>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-track">
+        <div class="tl-item" style="--tl:var(--accent)">
+          <div class="tl-time">09:00　上班</div>
+          <div class="tl-act">伸懒腰迎接你</div>
+          <div class="tl-say">早,今天也别低头呀~</div>
+        </div>
+        <div class="tl-item" style="--tl:var(--teal)">
+          <div class="tl-time">09:00–12:00　上午</div>
+          <div class="tl-act">陪伴 idle + 久坐/喝水提醒</div>
+          <div class="tl-say">坐 45 分钟啦,陪我抬抬头?</div>
+        </div>
+        <div class="tl-item" style="--tl:var(--accent)">
+          <div class="tl-time">12:00　午休</div>
+          <div class="tl-act">提醒离屏,Joy 也去吃饭(喂饭关卡钩子)</div>
+          <div class="tl-say">午饭时间到,一起离开屏幕透透气~</div>
+        </div>
+        <div class="tl-item" style="--tl:var(--coral)">
+          <div class="tl-time">14:00–18:00　下午</div>
+          <div class="tl-act">idle + 提醒更勤;开了摄像头则盯含胸</div>
+          <div class="tl-say">偷偷说,你又低头了 🙈 下巴收一收</div>
+        </div>
+        <div class="tl-item" style="--tl:var(--purple)">
+          <div class="tl-time">下午 · 久坐含胸</div>
+          <div class="tl-act">举手伸懒腰,递上手臂/肩部关卡</div>
+          <div class="tl-say">肩膀僵了吧?跟我举手摘颗星星~</div>
+        </div>
+        <div class="tl-item" style="--tl:var(--green)">
+          <div class="tl-time">18:00　下班</div>
+          <div class="tl-act">今日小结 + streak +1 庆祝</div>
+          <div class="tl-say">今天也没低头,厉害!明天见~</div>
+        </div>
+        <div class="tl-item" style="--tl:var(--text-3)">
+          <div class="tl-time">傍晚 · 今天还没打卡</div>
+          <div class="tl-act">切「眼巴巴」情感态,轻轻望你一次</div>
+          <div class="tl-say">今天还没一起动过…等你哦</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · DIALOGUE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">05 / 台词库</div>
+      <h2 class="sec-title">Joy 说话:第一人称,短句,治愈</h2>
+      <p class="sec-desc">同场景多写几句随机出,避免复读。永远是邀请不是命令,断签只安慰不责备。</p>
+    </div>
+
+    <div class="say-grid">
+      <div class="say-card" style="--sc:var(--teal); --sc-soft:var(--teal-soft)">
+        <div class="sc-head"><span class="sc-tag">久坐提醒</span><span class="sc-when">坐满 45 分钟 · 时间型</span></div>
+        <div class="bubble">坐 45 分钟啦,陪我抬抬头?</div>
+        <div class="bubble">起来晃一圈,脖子会谢谢你的~</div>
+        <div class="bubble">肩膀是不是有点硬?来 30 秒就好</div>
+      </div>
+
+      <div class="say-card" style="--sc:var(--coral); --sc-soft:var(--coral-soft)">
+        <div class="sc-head"><span class="sc-tag">姿势提醒</span><span class="sc-when">检测低头含胸 · 摄像头型</span></div>
+        <div class="bubble">偷偷说,你又低头了 🙈</div>
+        <div class="bubble">下巴收一收,背靠一下椅背~</div>
+        <div class="bubble">坐直啦!就是这样,保持住 👍</div>
+      </div>
+
+      <div class="say-card" style="--sc:var(--teal); --sc-soft:var(--teal-soft)">
+        <div class="sc-head"><span class="sc-tag">颈椎入口</span><span class="sc-when">点气泡 → 拳击派对</span></div>
+        <div class="bubble">坐久啦,陪我打两拳松松脖子?点我就开始~</div>
+        <div class="bubble">脖子是不是有点僵?来 30 秒拳击派对 🥊</div>
+      </div>
+
+      <div class="say-card" style="--sc:var(--purple); --sc-soft:var(--purple-soft)">
+        <div class="sc-head"><span class="sc-tag">手臂入口</span><span class="sc-when">点气泡 → 摘星训练</span></div>
+        <div class="bubble">肩膀僵了吧?跟我举手摘颗星星,30 秒就好~</div>
+        <div class="bubble">手臂伸个懒腰啦,点我一起摘星 ⭐</div>
+      </div>
+
+      <div class="say-card" style="--sc:var(--green); --sc-soft:var(--green-soft)">
+        <div class="sc-head"><span class="sc-tag">正向时刻</span><span class="sc-when">完成 / streak 里程碑</span></div>
+        <div class="bubble">今天也没低头,厉害!明天见~</div>
+        <div class="bubble">连续 7 天!你的脖子进步啦 ✨</div>
+      </div>
+
+      <div class="say-card" style="--sc:var(--teal); --sc-soft:var(--teal-soft)">
+        <div class="sc-head"><span class="sc-tag">日常氛围</span><span class="sc-when">idle 偶发 / 喝水</span></div>
+        <div class="bubble">在呢,不打扰你~</div>
+        <div class="bubble">咕嘟咕嘟,该喝水啦 💧</div>
+      </div>
+
+      <div class="say-card" style="--sc:var(--text-3); --sc-soft:var(--surface-3)">
+        <div class="sc-head"><span class="sc-tag">断签安慰</span><span class="sc-when">streak 归零 · 不指责</span></div>
+        <div class="bubble">昨天错过了没关系,今天重新开始就好</div>
+        <div class="bubble">我一直在这儿,想动的时候喊我~</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · RESTRAINT + RED LINE -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">06 / 分寸与红线</div>
+      <h2 class="sec-title">陪伴优先,提醒其次</h2>
+      <p class="sec-desc">桌宠整天在你眼前,一旦烦人就会被拖进垃圾桶。这些是让 Joy「待得住」的克制规则。</p>
+    </div>
+
+    <div class="rules">
+      <div class="rule-card">
+        <h4><span class="k">不抢焦点</span></h4>
+        <p>提醒时 Joy 只在角落起身招手 + 一声轻音,不弹窗、不置顶盖住你的工作。</p>
+      </div>
+      <div class="rule-card">
+        <h4><span class="k">自动安静</span></h4>
+        <p>检测到全屏演示 / 会议中 / 专注模式,自动进安静态,缩角落半透明不出声。</p>
+      </div>
+      <div class="rule-card">
+        <h4><span class="k">不纠缠</span></h4>
+        <p>喊 2 次没反应就自己坐下,不循环骚扰;可一键静音 30 分钟。</p>
+      </div>
+      <div class="rule-card">
+        <h4><span class="k">可安放</span></h4>
+        <p>能拖到任意屏幕角落,记住位置;不喜欢时可收进托盘,随时唤回。</p>
+      </div>
+    </div>
+
+    <div class="redline">
+      <h4>摄像头红线</h4>
+      <p><b>默认永远不开摄像头。</b>只有用户在设置里亲手打开「坐姿监护」才唤起镜头,启用时角落常亮提示,一键即可关闭。画面只在本地判断、不上传、不录制——延续项目一贯的「不常开监控」原则。</p>
+    </div>
+  </section>
+
+  <!-- 7 · BUILD PATH -->
+  <section>
+    <div class="sec-head">
+      <div class="sec-num">07 / 落地路线</div>
+      <h2 class="sec-title">先原型试水,孵化再上真桌宠</h2>
+      <p class="sec-desc">观感不难——Joy 动起来复用首页「循环打拳」那套序列帧就行。难的是「真正悬浮桌面」的容器,那层留到孵化阶段,内核不用重写。</p>
+    </div>
+
+    <div class="path">
+      <div class="stage now">
+        <div class="st-tag">复赛 · 现在做</div>
+        <h3>HTML 桌宠原型</h3>
+        <p>浏览器窗口里的一只 Joy:idle 会动、到点喊你活动颈椎、点它直跳拳击关、头顶挂 streak。观感行为跟真桌宠一致,评委看 demo 完全够,省掉打包。</p>
+        <div class="tech">序列帧循环 + 计时器 + 可选摄像头 · 复用现有 Joy 立绘</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="stage next">
+        <div class="st-tag">孵化 · 以后做</div>
+        <h3>Electron 真应用</h3>
+        <p>把同一套行为塞进能常驻、始终置顶、可拖到桌面任意角落的壳。状态机 / 台词 / 触发逻辑全部沿用,只换容器。</p>
+        <div class="tech">Electron / Tauri 打包 · 系统托盘 · 开机自启</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">今天不低头 · Chin Up　—　Joy 桌宠行为剧本 v1　·　对齐用,非最终视觉稿</div>
+
+</div>
