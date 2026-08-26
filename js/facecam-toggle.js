@@ -103,12 +103,16 @@
     btn.innerHTML = '<span class="fc-ico"></span><span class="fc-txt"></span>';
     camBox.appendChild(btn);
 
-    let mode = 'camera'; // 'camera'(实写) | 'mesh'(点阵)
+    let mode = 'camera'; // 'camera'(实写/卡通脸) | 'mesh'(点阵)
+    // 卡通面具关卡:标记 .you-cam[data-mask] 时,camera 态下 mesh 画布保持可见,
+    // 由关卡脚本据 camBox.dataset.faceMode 决定画“面具”(camera)还是“点阵”(mesh)。
+    const hasMask = camBox.hasAttribute('data-mask');
     function syncLabel() {
       const cam = mode === 'camera';
       btn.querySelector('.fc-txt').textContent = cam ? '关闭人脸影像' : '开启人脸影像';
       btn.querySelector('.fc-ico').innerHTML = cam ? EYE_OFF : EYE_ON;
       btn.setAttribute('aria-label', cam ? '关闭人脸影像,改用点阵形象' : '开启人脸影像');
+      camBox.dataset.faceMode = mode;   // 暴露给关卡脚本
     }
     syncLabel();
 
@@ -127,7 +131,9 @@
       if (showCam !== shown) {
         shown = showCam;
         video.style.opacity = showCam ? '1' : '0';
-        mesh.style.opacity = showCam ? '0' : '1';
+        // 面具关卡:camera 态 mesh 层要盖在真脸上显示卡通脸,故保持可见;
+        //          普通关卡 camera 态才把 mesh(点阵)藏起来。
+        mesh.style.opacity = (showCam && !hasMask) ? '0' : '1';
       }
       requestAnimationFrame(loop);
     })();

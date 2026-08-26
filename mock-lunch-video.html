@@ -423,7 +423,7 @@
     </div>
 
     <!-- 右下角 · 真人点阵脸小窗 -->
-    <div class="you-cam">
+    <div class="you-cam" data-mask>
       <video autoplay playsinline muted></video>
       <canvas class="you-mesh" width="336" height="252"></canvas>
       <div class="you-label"><span class="you-dot"></span>YOU</div>
@@ -517,6 +517,7 @@
   </div>
 </div>
 
+<script src="js/joy-mask.js"></script>
 <script type="module">
 import { createPoseKernel } from "./js/pose-kernel.js";
 
@@ -609,18 +610,25 @@ const FACE_MESH_TRIS=[
   [168,6,197,195,5,4],
   [61,146,91,181,84,17,314,405,321,375,291,409,270,269,267,0,37,39,40,185,61],
 ];
+const MASK_MODE = (location.search.indexOf('mesh=1')<0);   // 默认 Joy 面具;?mesh=1 强制点阵调试
 function drawFaceMesh(){
   if(!faceMeshCtx||!faceMeshCanvas) return;
   const w=faceMeshCanvas.width, h=faceMeshCanvas.height;
+  const camBox=faceMeshCanvas.closest('.you-cam');
+  const maskMode=(!camBox || camBox.dataset.faceMode!=='mesh') && MASK_MODE;
   faceMeshCtx.clearRect(0,0,w,h);
-  faceMeshCtx.fillStyle='rgba(255,204,0,0.03)'; faceMeshCtx.fillRect(0,0,w,h);
   if(!facePresent||!latestLandmarks||latestLandmarks.length===0){
-    faceMeshCtx.fillStyle='rgba(255,204,0,0.35)';
-    faceMeshCtx.font='11px -apple-system, sans-serif'; faceMeshCtx.textAlign='center';
-    faceMeshCtx.fillText(camOK?'SEARCHING…':'键盘模式 ←→↑↓',w/2,h/2);
+    if(!maskMode){
+      faceMeshCtx.fillStyle='rgba(255,204,0,0.03)'; faceMeshCtx.fillRect(0,0,w,h);
+      faceMeshCtx.fillStyle='rgba(255,204,0,0.35)';
+      faceMeshCtx.font='11px -apple-system, sans-serif'; faceMeshCtx.textAlign='center';
+      faceMeshCtx.fillText(camOK?'SEARCHING…':'键盘模式 ←→↑↓',w/2,h/2);
+    }
     return;
   }
+  if(maskMode){ if(window.JoyMask) JoyMask.draw(faceMeshCtx, latestLandmarks, w, h); return; }
   const project=p=>({ x:(1-p.x)*w, y:p.y*h });   // 镜像 x,与用户视觉一致
+  faceMeshCtx.fillStyle='rgba(255,204,0,0.03)'; faceMeshCtx.fillRect(0,0,w,h);
   faceMeshCtx.fillStyle='rgba(255,204,0,0.55)';
   for(let i=0;i<latestLandmarks.length;i++){ const p=project(latestLandmarks[i]); faceMeshCtx.fillRect(p.x-0.5,p.y-0.5,1.4,1.4); }
   faceMeshCtx.strokeStyle='rgba(255,230,120,0.9)'; faceMeshCtx.lineWidth=1;
