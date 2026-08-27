@@ -136,32 +136,32 @@ td code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);padd
   <header>
     <div class="eyebrow"><span class="dot"></span>今天不低头 · 复赛 · 试点准备清单</div>
     <div class="hero">
-      <div class="eyebrow" style="color:var(--accent-ink)">目标 · 9/3 前拿到一个真实数据</div>
-      <h1>拉 10–30 人试玩 5 天,补上评委点了 4 次的「缺真实验证」</h1>
-      <p class="lede">一个真实留存数字,胜过所有市场推算。但试点跑之前,得先确认「要采什么数、系统采不采得到」—— 否则玩了几天才发现数据没落地,白跑。本清单按优先级分组,P0 是硬卡点,24 号开跑前必须就绪。</p>
+      <div class="eyebrow" style="color:var(--accent-ink)">目标 · 9/3 前拿到「游戏真的有效」的客观证据</div>
+      <h1>找 5–8 人,测 ROM 前后对比 —— 不是测留存</h1>
+      <p class="lede">留存数据在「你每天提醒」的前提下会被污染,评委问「不提醒还会来吗」你无法回答。颈肩活动度是客观生理指标,提醒不提醒都不影响它变没变好 —— 这才是站得住的证据。</p>
       <div class="stat3">
-        <div class="st"><span class="v a">10–30</span><span class="l">参与人数</span></div>
-        <div class="st"><span class="v a">5 天</span><span class="l">8/24–8/28</span></div>
-        <div class="st"><span class="v w">≈ 半天</span><span class="l">P0 开发量</span></div>
+        <div class="st"><span class="v a">5–8 人</span><span class="l">人数够了</span></div>
+        <div class="st"><span class="v a">3 天</span><span class="l">8/24–8/26</span></div>
+        <div class="st"><span class="v s">ROM 对比</span><span class="l">核心指标</span></div>
       </div>
     </div>
   </header>
 
   <!-- STATUS -->
   <section>
-    <div class="sec-title"><h2>先看家底</h2><span>决定了要补什么 —— 好消息:数据结构已有大半</span></div>
+    <div class="sec-title"><h2>为什么不测留存</h2><span>换目标,不是换方法</span></div>
     <div class="status" style="margin-top:12px">
-      <div class="scard have">
-        <h3><span class="b">已具备</span></h3>
-        <div class="li"><span class="mk">✓</span><span><code>health-store.js</code> 已存结构化数据:<b>总次数、逐次表现、颈部评分、ROM 角度、时间戳</b> —— 留存/改善字段底子基本都在。</span></div>
-        <div class="li"><span class="mk">✓</span><span>数据只存本地 <code>localStorage</code>,<b>隐私干净</b>(注释明写「绝无画面」)—— 答辩加分项。</span></div>
-        <div class="li"><span class="mk">✓</span><span>评估 <code>recordAssessment</code> 已支持,首尾各测一次即可出「改善」对比。</span></div>
-      </div>
       <div class="scard gap">
-        <h3><span class="b">缺口 · 试点前补</span></h3>
-        <div class="li"><span class="mk">!</span><span><b>没有真埋点上报</b> —— 数据只在各自浏览器,你收不上来。15 人 = 15 台电脑,拿不到汇总。<b>最大卡点</b>。</span></div>
-        <div class="li"><span class="mk">!</span><span><b>没有按日活跃记录</b> —— 有时间戳但没「哪天来过」,算不出次日 / 7 日留存。</span></div>
-        <div class="li"><span class="mk">!</span><span><b>没有用户区分</b> —— 分不清哪条数据是谁的。</span></div>
+        <h3><span class="b">留存数据的致命缺陷</span></h3>
+        <div class="li"><span class="mk">!</span><span><b>你每天提醒 → 数据被污染。</b>评委一问「不提醒他们还会来吗」,你无法回答。留存数字没有说服力。</span></div>
+        <div class="li"><span class="mk">!</span><span><b>玩法还在迭代 → 留存本来就低。</b>拿这个数据答辩会自伤。</span></div>
+        <div class="li"><span class="mk">!</span><span><b>30 人小样本留存率 → 不显著。</b>统计上说明不了什么问题。</span></div>
+      </div>
+      <div class="scard have">
+        <h3><span class="b">ROM 对比为什么站得住</span></h3>
+        <div class="li"><span class="mk">✓</span><span><b>客观生理指标</b>,提醒不提醒不影响颈椎活动度变没变好。</span></div>
+        <div class="li"><span class="mk">✓</span><span><code>recordAssessment</code> 已支持首尾 ROM 对比,<b>数据结构现成</b>。</span></div>
+        <div class="li"><span class="mk">✓</span><span>5 人有 4 人改善,就能说「<b>80% 用户颈部活动度提升,平均 +X°</b>」—— 这才是可行性硬证据。</span></div>
       </div>
     </div>
   </section>
@@ -169,39 +169,34 @@ td code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);padd
   <!-- P0 -->
   <section>
     <div class="pgroup">
-      <div class="ptitle"><span class="ptag p0">P0</span><h2>数据能收上来</h2><span class="why">不做这个,试点白跑</span></div>
+      <div class="ptitle"><span class="ptag p0">P0</span><h2>首尾各测一次 ROM 基线</h2><span class="why">核心指标,不做就没数据</span></div>
       <div class="task block">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>最小埋点上报</h4><span class="tchip dev">开发</span></div>
-        <div class="tdesc">加一个 <code>/api/track</code> 端点 + 前端每次关卡结束 <code>fetch</code> 上报,后端 <code>appendFile</code> 落成一个 log 文件。后端已有脚手架,工作量小。</div></div>
+        <div class="tbody"><div class="thead"><h4>第 1 天:测基线 ROM</h4><span class="tchip design">产品</span></div>
+        <div class="tdesc">每人进入拳击/摘星前走一次完整评估(AI 问诊→红旗→ROM 采集),系统自动记录颈部/肩部活动度基线。<code>recordAssessment</code> 已支持,无需额外开发。</div></div>
       </div>
       <div class="task block">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>匿名用户 ID</h4><span class="tchip dev">开发</span><span class="tchip small">极小</span></div>
-        <div class="tdesc">首次进入生成随机 ID 存 <code>localStorage</code>,每次上报带上 —— 才能区分用户、算个人留存。</div></div>
+        <div class="tbody"><div class="thead"><h4>第 3 天:再测一次 ROM</h4><span class="tchip design">产品</span></div>
+        <div class="tdesc">玩完 3 天后再走一次评估,系统自动对比前后差值。目标:「<b>X/5 人颈部或肩部活动度改善,平均 +Y°</b>」—— 这是答辩最硬的数据。</div></div>
       </div>
-      <div class="task block">
-        <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>按日活跃记录</h4><span class="tchip dev">开发</span><span class="tchip small">埋点顺带</span></div>
-        <div class="tdesc">上报里带日期,后端即可算「这个 ID 哪几天来过」→ 留存曲线。</div></div>
-      </div>
-      <div class="call tip" style="margin-top:2px"><span class="ic">↯</span><span><b>兜底(不想动后端):</b>让参与者每天玩完截图发群,手工记。15 人两周扛得住 —— 但有 <code>/api/track</code> 更体面,也是答辩里「我们有数据能力」的证据。</span></div>
+      <div class="call tip" style="margin-top:2px"><span class="ic">→</span><span>ROM 数据收在各人自己浏览器的 <code>localStorage</code>。<b>收集方式:让参与者玩完后截一张「身体档案」页的图发给你</b>，手工汇总即可，无需后端。5–8 人完全可以手工处理。</span></div>
     </div>
   </section>
 
   <!-- P1 -->
   <section>
     <div class="pgroup">
-      <div class="ptitle"><span class="ptag p1">P1</span><h2>玩法够稳,经得起两周</h2><span class="why">别让 bug 毁了留存数据</span></div>
+      <div class="ptitle"><span class="ptag p1">P1</span><h2>识别可靠性验证</h2><span class="why">回答评委初赛 Q1「光线鲁棒性」</span></div>
       <div class="task">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>试点只放 1–2 个最稳的关卡</h4><span class="tchip design">产品</span></div>
-        <div class="tdesc">不是调玩法花样,是<b>先保稳定</b>。识别飘 / 卡住 / 报错 → 用户第 2 天就不来,测到的「留存低」是 bug 假数据。少而稳 &gt; 多而飘,选拳击或划船。</div></div>
+        <div class="tbody"><div class="thead"><h4>让参与者在自己真实办公室光线下玩</h4><span class="tchip design">产品</span></div>
+        <div class="tdesc">不要统一场地。各自的工位、各种光线 —— 这才是「真实办公室场景」。记录谁遇到了识别飘/卡住,汇总一下。</div></div>
       </div>
       <div class="task">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>顺带记录识别失败率</h4><span class="tchip dev">开发</span><span class="tchip design">产品</span></div>
-        <div class="tdesc">参与者在各自办公室真实光线下玩,记录识别失败次数 —— <b>正好回答评委初赛戳的 Q1「光线鲁棒性」</b>,一举两得。</div></div>
+        <div class="tbody"><div class="thead"><h4>记录识别失败情况</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">玩完简单问一句:「摄像头识别准不准?有没有明显识别不到的时候?」汇总成「X 人中 Y 人反馈识别正常」,答辩直接用。</div></div>
       </div>
     </div>
   </section>
@@ -209,16 +204,11 @@ td code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);padd
   <!-- P2 -->
   <section>
     <div class="pgroup">
-      <div class="ptitle"><span class="ptag p2">P2</span><h2>采集「改善」和「主观反馈」</h2><span class="why">量化的另一半</span></div>
+      <div class="ptitle"><span class="ptag p2">P2</span><h2>主观感受收集</h2><span class="why">辅助数据,锦上添花</span></div>
       <div class="task">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>首尾各测一次 ROM 基线</h4><span class="tchip design">产品</span></div>
-        <div class="tdesc">第 1 天测基线、第 5 天再测 → 「颈部活动度平均 +X°」。<code>recordAssessment</code> 已支持,只需安排首尾各一次。</div></div>
-      </div>
-      <div class="task">
-        <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>每次玩完弹一句主观自评</h4><span class="tchip dev">开发</span><span class="tchip small">一行</span></div>
-        <div class="tdesc">「现在颈部感觉?轻松 / 一般 / 还紧」—— 一行代码,却是答辩最好用的话术:「Y% 用户自评更轻松」。</div></div>
+        <div class="tbody"><div class="thead"><h4>玩完问一句感受</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">「玩完颈/肩有没有感觉更舒服?」—— 手工问即可,不用系统。「Y% 的人主观感觉更轻松」作为 ROM 数据的佐证。</div></div>
       </div>
     </div>
   </section>
@@ -226,48 +216,42 @@ td code{font-family:var(--num);font-size:11.5px;background:var(--surface-2);padd
   <!-- P3 -->
   <section>
     <div class="pgroup">
-      <div class="ptitle"><span class="ptag p3">P3</span><h2>试点执行准备</h2><span class="why">非技术,队友可并行</span></div>
+      <div class="ptitle"><span class="ptag p3">P3</span><h2>执行准备</h2><span class="why">非技术,两人可分工</span></div>
       <div class="task">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>招募 10–30 人</h4><span class="tchip design">运营</span></div>
-        <div class="tdesc">优先<b>真久坐</b>的同事 / 朋友,样本才真实。</div></div>
+        <div class="tbody"><div class="thead"><h4>招募 5–8 人</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">优先<b>真久坐、有颈肩不适</b>的同事 —— 他们改善效果最明显,数据最有力。不需要多,够说清改善率就行。</div></div>
       </div>
       <div class="task">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>一页参与说明</h4><span class="tchip design">运营</span></div>
-        <div class="tdesc">怎么打开、每天玩几次、玩哪关 —— 降低流失。</div></div>
+        <div class="tbody"><div class="thead"><h4>发参与说明 + 提醒</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">发 <code>_试玩邀请说明.html</code> 截图/链接,每天提醒一下玩 —— <b>提醒没问题,反正我们不测留存了。</b></div></div>
       </div>
       <div class="task">
         <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>拉群 + 每日提醒</h4><span class="tchip design">运营</span></div>
-        <div class="tdesc">每天戳一下 —— <b>提醒本身就是产品「留存机制」的人肉验证</b>。</div></div>
-      </div>
-      <div class="task">
-        <div class="ck"></div>
-        <div class="tbody"><div class="thead"><h4>提前写死指标定义</h4><span class="tchip design">运营</span></div>
-        <div class="tdesc">「什么算一次有效游玩」「留存怎么算」事先定好,别事后扯皮。</div></div>
+        <div class="tbody"><div class="thead"><h4>第 1 天 + 第 3 天提醒截图</h4><span class="tchip design">运营</span></div>
+        <div class="tdesc">提醒参与者在第 1 天和第 3 天玩完后各截一张「身体档案」页的图发回来 —— 这是 ROM 对比的数据来源。</div></div>
       </div>
     </div>
   </section>
 
   <!-- METRICS -->
   <section>
-    <div class="sec-title"><h2>要采的 4 个数</h2><span>答辩就讲这几个</span></div>
+    <div class="sec-title"><h2>要采的 3 个数</h2><span>答辩就讲这几个,简单直接</span></div>
     <div class="mdef mdef-scroll" style="margin-top:12px">
       <table>
-        <thead><tr><th>指标</th><th>怎么算</th><th>答辩话术</th></tr></thead>
+        <thead><tr><th>指标</th><th>怎么采</th><th>答辩话术</th></tr></thead>
         <tbody>
-          <tr><td><span class="rowh">次日 / 5 日留存</span></td><td>ID 首玩后第 1 / 5 天是否再来</td><td>「5 日留存 X%」</td></tr>
-          <tr><td><span class="rowh">人均游玩次数</span></td><td>总次数 ÷ 人数</td><td>「5 天人均玩 N 次」</td></tr>
-          <tr><td><span class="rowh">颈部活动度改善</span></td><td>首尾 ROM 评分差</td><td>「活动度平均 +X°」</td></tr>
-          <tr><td><span class="rowh">主观改善率</span></td><td>自评「更轻松」占比</td><td>「Y% 自评更轻松」</td></tr>
+          <tr><td><span class="rowh">颈/肩活动度改善</span></td><td>首尾 ROM 截图手工对比</td><td>「X/5 人改善,平均 +Y°」</td></tr>
+          <tr><td><span class="rowh">识别可靠性</span></td><td>口头收集识别异常反馈</td><td>「真实办公室环境识别正常率 Z%」</td></tr>
+          <tr><td><span class="rowh">主观改善感受</span></td><td>玩完口头问一句</td><td>「W% 主观感觉颈肩更轻松」</td></tr>
         </tbody>
       </table>
     </div>
   </section>
 
-  <div class="call crit"><span class="ic">⏱</span><span><b>时间线(已定,今天 8/20):</b>8/20–8/23 补 P0 埋点 + 招募 + 对齐 → <b>8/24–8/28 试用跑数据(5 天)</b> → 8/29–9/2 整理数据、塞进答辩材料 → 9/3 答辩。5 天能算次日 + 5 日留存,够用。<b>P0 埋点是硬前置,24 号开跑前必须就绪,否则收不到数据</b> —— 现在就写。</span></div>
+  <div class="call crit"><span class="ic">⏱</span><span><b>时间线:</b>8/24–8/26 试用 3 天(8/24 测基线,每天玩,8/26 再测一次)→ 8/27–9/2 汇总数据、塞进答辩材料 → 9/3 答辩。<b>不需要埋点,不需要等留存数字,3 天足够出 ROM 对比结论。</b></span></div>
 
-  <p class="foot">基于当前仓库实况(health-store.js 已存结构化数据、server/ 有 8 端点脚手架、localStorage 本地存储)。清单为执行参考,开发量为粗估。</p>
+  <p class="foot">目标已从「留存率」调整为「ROM 改善 + 识别可靠性」—— 留存数据在人工提醒前提下无效,ROM 是客观生理指标不受影响。5–8 人小样本足够出有说服力的效果证据。</p>
 
 </div>

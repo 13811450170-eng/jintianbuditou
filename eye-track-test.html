@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>眼部追踪技术验证</title>
+<style>
+  :root {
+    --font: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    --bg: #0a0e1a;
+    --panel: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.12);
+    --gold: #ffd66b;
+    --ok: #6bff9d;
+    --warn: #ff7a29;
+    --text: #e8ecf5;
+    --dim: rgba(232,236,245,0.5);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body {
+    height:100%; overflow:hidden;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* ===== 布局 ===== */
+  #layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 1fr;
+    height: 100vh;
+    gap: 0;
+  }
+
+  /* ===== 左侧：注视点画布 ===== */
+  #gaze-area {
+    position: relative;
+    background: radial-gradient(ellipse at center, #111827, #0a0e1a);
+    overflow: hidden;
+  }
+
+  /* 背景网格 */
+  #gaze-area::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* 8个方向靶心 */
+  .target {
+    position: absolute;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    transform: translate(-50%, -50%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .target.hit {
+    border-color: var(--gold);
+    background: rgba(255,214,107,0.15);
+    color: var(--gold);
+  }
+  .target.active {
+    border-color: white;
+    background: rgba(255,255,255,0.1);
+    color: white;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.3); }
+    50%       { box-shadow: 0 0 0 12px rgba(255,255,255,0); }
+  }
+
+  /* 注视点 */
+  #gaze-dot {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 16px var(--gold), 0 0 32px rgba(255,214,107,0.4);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    transition: left 0.08s, top 0.08s;
+    z-index: 10;
+  }
+
+  /* 校准阶段遮罩 */
+  #cal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(10,14,26,0.85);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 20;
+  }
+  #cal-overlay h2 { font-size: 22px; font-weight: 600; }
+  #cal-overlay p  { color: var(--dim); font-size: 14px; text-align: center; line-height: 1.6; }
+  #cal-dot {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 0 0 rgba(255,255,255,0.4);
+    animation: cal-pulse 1s infinite;
+  }
+  @keyframes cal-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+    50%       { box-shadow: 0 0 0 20px rgba(255,255,255,0); }
+  }
+  #cal-label { font-size: 15px; opacity: 0.7; }
+  #cal-progress {
+    width: 200px; height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  #cal-bar {
+    height: 100%;
+    background: white;
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s linear;
+  }
+
+  /* ===== 右侧：面板 ===== */
+  #panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px;
+    background: rgba(255,255,255,0.03);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+  }
+
+  #panel h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+  }
+  #panel .sub {
+    font-size: 12px;
+    color: var(--dim);
+    margin-top: 2px;
+    line-height: 1.5;
+  }
+
+  /* 摄像头小窗 */
+  #cam-wrap {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 4/3;
+  }
+  #cam-wrap video {
+    width: 100%;
+    display: block;
+    transform: scaleX(-1);
+  }
+  /* 点阵脸覆盖 */
+  #mesh-canvas {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+
+  /* 状态徽章 */
+  #status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--border);
+    width: fit-content;
+  }
+  #status-badge .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #888;
+  }
+  #status-badge.ok .dot    { background: var(--ok); }
+  #status-badge.warn .dot  { background: var(--warn); }
+  #status-badge.active .dot { background: var(--gold); animation: blink 0.8s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* 数据卡 */
+  .data-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .data-card h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    margin-bottom: 8px;
+  }
+  .data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .data-row .val {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold);
+  }
+  .data-row .label { color: var(--dim); font-size: 12px; }
+
+  /* 象限判定 */
+  #quad-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 4px;
+    aspect-ratio: 1;
+  }
+  .quad-cell {
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--dim);
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .quad-cell.active {
+    background: rgba(255,214,107,0.2);
+    border-color: var(--gold);
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .quad-cell.center { background: rgba(255,255,255,0.05); }
+
+  /* 按钮 */
+  .btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn:active { opacity: 0.7; }
+  .btn-primary {
+    background: white;
+    color: #0a0e1a;
+  }
+  .btn-secondary {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  /* 验收结果 */
+  #verdict {
+    display: none;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  #verdict h3 { font-size: 13px; margin-bottom: 8px; color: var(--gold); }
+  #verdict .v-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  #verdict .v-row:last-child { border: none; }
+  #verdict .v-score { font-weight: 700; }
+  .pass { color: var(--ok); }
+  .fail { color: var(--warn); }
+
+  /* 说明 */
+  #instructions {
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.7;
+  }
+  #instructions b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div id="layout">
+
+  <!-- ===== 左：注视区 ===== -->
+  <div id="gaze-area">
+
+    <!-- 8方向靶心 + 中心 -->
+    <!-- 上 -->    <div class="target" id="t-n"  style="left:50%;top:12%">上</div>
+    <!-- 右上 -->  <div class="target" id="t-ne" style="left:82%;top:15%">右上</div>
+    <!-- 右 -->    <div class="target" id="t-e"  style="left:88%;top:50%">右</div>
+    <!-- 右下 -->  <div class="target" id="t-se" style="left:82%;top:82%">右下</div>
+    <!-- 下 -->    <div class="target" id="t-s"  style="left:50%;top:88%">下</div>
+    <!-- 左下 -->  <div class="target" id="t-sw" style="left:18%;top:82%">左下</div>
+    <!-- 左 -->    <div class="target" id="t-w"  style="left:12%;top:50%">左</div>
+    <!-- 左上 -->  <div class="target" id="t-nw" style="left:18%;top:15%">左上</div>
+
+    <!-- 注视点 -->
+    <div id="gaze-dot"></div>
+
+    <!-- 校准遮罩 -->
+    <div id="cal-overlay">
+      <h2>开始前：校准眼部基线</h2>
+      <p>放松地直视屏幕中央<br>保持 3 秒，系统记录你的正视基准</p>
+      <div id="cal-dot"></div>
+      <div id="cal-label">直视中央……</div>
+      <div id="cal-progress"><div id="cal-bar"></div></div>
+    </div>
+
+  </div>
+
+  <!-- ===== 右：控制面板 ===== -->
+  <div id="panel">
+
+    <div>
+      <h1>眼部追踪 · 技术验证</h1>
+      <p class="sub">验证虹膜注视点能否区分8个方向<br>通过 → 推进「追萤」关卡设计</p>
+    </div>
+
+    <!-- 状态 -->
+    <div id="status-badge"><div class="dot"></div><span id="status-text">初始化中…</span></div>
+
+    <!-- 摄像头 -->
+    <div id="cam-wrap">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="mesh-canvas"></canvas>
+    </div>
+
+    <!-- Gaze 数值 -->
+    <div class="data-card">
+      <h3>虹膜注视 (Gaze)</h3>
+      <div class="data-row">
+        <span class="label">水平 X</span>
+        <span class="val" id="gaze-x">—</span>
+      </div>
+      <div class="data-row">
+        <span class="label">垂直 Y</span>
+        <span class="val" id="gaze-y">—</span>
+      </div>
+      <div class="data-row">
+        <span class="label">方向判定</span>
+        <span class="val" id="gaze-dir">—</span>
+      </div>
+    </div>
+
+    <!-- 象限示意 -->
+    <div class="data-card">
+      <h3>象限示意 (实时)</h3>
+      <div id="quad-grid">
+        <div class="quad-cell" id="q-nw">↖</div>
+        <div class="quad-cell" id="q-n">↑</div>
+        <div class="quad-cell" id="q-ne">↗</div>
+        <div class="quad-cell" id="q-w">←</div>
+        <div class="quad-cell center" id="q-c">●</div>
+        <div class="quad-cell" id="q-e">→</div>
+        <div class="quad-cell" id="q-sw">↙</div>
+        <div class="quad-cell" id="q-s">↓</div>
+        <div class="quad-cell" id="q-se">↘</div>
+      </div>
+    </div>
+
+    <!-- 灵敏度滑杆 -->
+    <div class="data-card">
+      <h3>灵敏度调节</h3>
+      <div class="data-row">
+        <span class="label">当前倍率</span>
+        <span class="val" id="sens-val">3.0×</span>
+      </div>
+      <input type="range" id="sens-slider" min="1" max="8" step="0.5" value="3"
+        style="width:100%;margin-top:6px;accent-color:var(--gold)">
+      <p style="font-size:11px;color:var(--dim);margin-top:4px">黄点不动 → 往右拉大；黄点乱飘 → 往左调小</p>
+    </div>
+
+    <!-- 8向巡逻测试 -->
+    <button class="btn btn-primary" id="btn-test" disabled>开始 8 方向测试</button>
+
+    <!-- 验收结果 -->
+    <div id="verdict">
+      <h3>验收结果</h3>
+      <!-- 动态填入 -->
+    </div>
+
+    <!-- 重新校准 -->
+    <button class="btn btn-secondary" id="btn-recal" style="display:none">重新校准</button>
+
+    <p id="instructions">
+      <b>操作说明</b><br>
+      1. 摄像头就绪后自动开始校准<br>
+      2. 校准完成后，用眼神追随黄色圆点<br>
+      3. 点击「8 方向测试」逐一点亮靶心<br>
+      4. 查看验收结果判断能否推进追萤关卡
+    </p>
+
+  </div>
+</div>
+
+<script type="module">
+import { createPoseKernel } from "./js/pose-kernel.js";
+
+// ===== 常量 =====
+const GAZE_THRESH_H = 0.15;   // 水平区分左/右的阈值
+const GAZE_THRESH_V = 0.12;   // 垂直区分上/下的阈值
+const CAL_DURATION = 3000;    // 校准时长 ms
+let SENSITIVITY = 3.0;        // 放大系数，滑杆可调
+
+// ===== DOM =====
+const video        = document.getElementById('video');
+const meshCanvas   = document.getElementById('mesh-canvas');
+const meshCtx      = meshCanvas.getContext('2d');
+const gazeDot      = document.getElementById('gaze-dot');
+const gazeArea     = document.getElementById('gaze-area');
+const calOverlay   = document.getElementById('cal-overlay');
+const calBar       = document.getElementById('cal-bar');
+const calLabel     = document.getElementById('cal-label');
+const statusBadge  = document.getElementById('status-badge');
+const statusText   = document.getElementById('status-text');
+const gazeXEl      = document.getElementById('gaze-x');
+const gazeYEl      = document.getElementById('gaze-y');
+const gazeDirEl    = document.getElementById('gaze-dir');
+const btnTest      = document.getElementById('btn-test');
+const btnRecal     = document.getElementById('btn-recal');
+const verdictEl    = document.getElementById('verdict');
+
+// ===== 象限格子 =====
+const quadCells = {
+  nw: document.getElementById('q-nw'),
+  n:  document.getElementById('q-n'),
+  ne: document.getElementById('q-ne'),
+  w:  document.getElementById('q-w'),
+  c:  document.getElementById('q-c'),
+  e:  document.getElementById('q-e'),
+  sw: document.getElementById('q-sw'),
+  s:  document.getElementById('q-s'),
+  se: document.getElementById('q-se'),
+};
+
+// ===== 靶心 =====
+const targets = {
+  n:  document.getElementById('t-n'),
+  ne: document.getElementById('t-ne'),
+  e:  document.getElementById('t-e'),
+  se: document.getElementById('t-se'),
+  s:  document.getElementById('t-s'),
+  sw: document.getElementById('t-sw'),
+  w:  document.getElementById('t-w'),
+  nw: document.getElementById('t-nw'),
+};
+
+// ===== 状态 =====
+let kernel = null;
+let calibrated = false;
+let gazeBase = { x: 0, y: 0 };
+let calibratingNow = false;
+let calStart = 0;
+let calSamples = [];
+
+// 校准后的平滑 gaze（相对基线）
+let adjGaze = { x: 0, y: 0 };
+
+// 8方向测试
+let testMode = false;
+let testOrder = ['n','ne','e','se','s','sw','w','nw'];
+let testIdx = 0;
+let testHitTime = null;
+const HIT_HOLD = 800; // 需要对准靶心持续 800ms 才算命中
+let testResults = {};
+
+// ===== 辅助 =====
+function setStatus(text, cls) {
+  statusText.textContent = text;
+  statusBadge.className = 'status-badge ' + (cls || '');
+  document.getElementById('status-badge').className = cls || '';
+  document.getElementById('status-badge').querySelector('.dot').style.display = 'block';
+}
+
+function gazeToDir(x, y) {
+  const hDir = x > GAZE_THRESH_H ? 'e' : x < -GAZE_THRESH_H ? 'w' : 'c';
+  const vDir = y < -GAZE_THRESH_V ? 'n' : y > GAZE_THRESH_V ? 's' : 'c';
+  if (vDir === 'c' && hDir === 'c') return 'c';
+  if (vDir === 'c') return hDir;
+  if (hDir === 'c') return vDir;
+  return vDir + hDir; // 例如 'ne'
+}
+
+function dirLabel(dir) {
+  const map = {
+    n:'上', ne:'右上', e:'右', se:'右下',
+    s:'下', sw:'左下', w:'左', nw:'左上', c:'中央'
+  };
+  return map[dir] || dir;
+}
+
+// 高亮象限格
+let prevQuad = null;
+function highlightQuad(dir) {
+  if (dir === prevQuad) return;
+  Object.values(quadCells).forEach(c => c.classList.remove('active'));
+  if (quadCells[dir]) quadCells[dir].classList.add('active');
+  prevQuad = dir;
+}
+
+// ===== 校准流程 =====
+function startCalibration() {
+  calibratingNow = true;
+  calStart = performance.now();
+  calSamples = [];
+  calOverlay.style.display = 'flex';
+  calBar.style.width = '0%';
+  calLabel.textContent = '直视屏幕中央……';
+  setStatus('校准中…', 'active');
+  btnRecal.style.display = 'none';
+}
+
+function tickCalibration(rawGaze) {
+  if (!calibratingNow) return;
+  const elapsed = performance.now() - calStart;
+  const pct = Math.min(elapsed / CAL_DURATION * 100, 100);
+  calBar.style.width = pct + '%';
+
+  if (rawGaze) calSamples.push({ ...rawGaze });
+
+  if (elapsed >= CAL_DURATION) {
+    calibratingNow = false;
+    if (calSamples.length > 5) {
+      gazeBase.x = calSamples.reduce((s,g) => s + g.x, 0) / calSamples.length;
+      gazeBase.y = calSamples.reduce((s,g) => s + g.y, 0) / calSamples.length;
+    }
+    calOverlay.style.display = 'none';
+    calibrated = true;
+    setStatus('校准完成 · 追踪中', 'ok');
+    btnTest.disabled = false;
+    btnRecal.style.display = 'block';
+  }
+}
+
+// ===== 8方向测试 =====
+function startTest() {
+  testMode = true;
+  testIdx = 0;
+  testResults = {};
+  verdictEl.style.display = 'none';
+  btnTest.disabled = true;
+  Object.values(targets).forEach(t => { t.classList.remove('active','hit'); });
+  activateTarget(testOrder[0]);
+}
+
+function activateTarget(dir) {
+  Object.values(targets).forEach(t => t.classList.remove('active'));
+  if (targets[dir]) targets[dir].classList.add('active');
+  testHitTime = null;
+}
+
+function tickTest(dir) {
+  if (!testMode || testIdx >= testOrder.length) return;
+  const expected = testOrder[testIdx];
+  if (dir === expected) {
+    if (!testHitTime) testHitTime = performance.now();
+    const held = performance.now() - testHitTime;
+    // 更新靶心进度感（可以加 border-width 动画，简版先跳过）
+    if (held >= HIT_HOLD) {
+      // 命中
+      testResults[expected] = true;
+      targets[expected].classList.remove('active');
+      targets[expected].classList.add('hit');
+      testIdx++;
+      testHitTime = null;
+      if (testIdx < testOrder.length) {
+        activateTarget(testOrder[testIdx]);
+      } else {
+        finishTest();
+      }
+    }
+  } else {
+    testHitTime = null; // 脱靶重置
+  }
+}
+
+function finishTest() {
+  testMode = false;
+  btnTest.disabled = false;
+  btnTest.textContent = '再测一次';
+  const hits = Object.keys(testResults).length;
+  const total = testOrder.length;
+  const pct = Math.round(hits / total * 100);
+
+  verdictEl.style.display = 'block';
+  const pass = pct >= 75;
+  verdictEl.innerHTML = `
+    <h3>${pass ? '✅ 验收通过' : '⚠️ 精度不足'}</h3>
+    <div class="v-row">
+      <span>命中方向</span>
+      <span class="v-score ${pass?'pass':'fail'}">${hits} / ${total}</span>
+    </div>
+    <div class="v-row">
+      <span>精度</span>
+      <span class="v-score ${pass?'pass':'fail'}">${pct}%</span>
+    </div>
+    <div class="v-row">
+      <span>阈值 H / V</span>
+      <span style="color:var(--dim)">${GAZE_THRESH_H} / ${GAZE_THRESH_V}</span>
+    </div>
+    <div class="v-row">
+      <span>结论</span>
+      <span class="v-score ${pass?'pass':'fail'}">${pass ? '可推进「追萤」' : '建议降级「眨眼雨」'}</span>
+    </div>
+  `;
+}
+
+// ===== 注视点映射到屏幕（放大后仍 clamp 在可见区域）=====
+function updateGazeDot(x, y) {
+  // adjGaze 已经过 SENSITIVITY 放大，直接映射：±1 → 边缘附近
+  const px = (x * 0.45 + 0.5) * 100;
+  const py = (y * 0.45 + 0.5) * 100;
+  gazeDot.style.left = `${Math.max(2, Math.min(98, px))}%`;
+  gazeDot.style.top  = `${Math.max(2, Math.min(98, py))}%`;
+}
+
+// ===== 点阵脸绘制（复用拳击关方案）=====
+let latestLandmarks = null;
+function drawMesh() {
+  meshCanvas.width  = meshCanvas.offsetWidth;
+  meshCanvas.height = meshCanvas.offsetHeight;
+  const ctx = meshCtx;
+  ctx.clearRect(0, 0, meshCanvas.width, meshCanvas.height);
+  if (!latestLandmarks) return;
+  const w = meshCanvas.width, h = meshCanvas.height;
+  ctx.fillStyle = 'rgba(107,255,157,0.6)';
+  for (const lm of latestLandmarks) {
+    // 镜像
+    ctx.beginPath();
+    ctx.arc((1 - lm.x) * w, lm.y * h, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // 特别标注虹膜（黄色大点）
+  const irisIdx = [468, 473]; // 右虹膜 468，左虹膜 473
+  ctx.fillStyle = 'rgba(255,214,107,0.9)';
+  for (const idx of irisIdx) {
+    const lm = latestLandmarks[idx];
+    if (!lm) continue;
+    ctx.beginPath();
+    ctx.arc((1 - lm.x) * w, lm.y * h, 4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ===== 初始化 =====
+async function init() {
+  setStatus('正在启动摄像头…', 'warn');
+
+  // 创建内核（复用 pose-kernel，它已包含 gaze 计算）
+  kernel = createPoseKernel({
+    video,
+    smooth: 0.25,
+  });
+
+  try {
+    await kernel.loadModel((msg) => setStatus(msg, 'warn'));
+    await kernel.startCamera();
+    startCalibration();
+    tick();
+  } catch (e) {
+    setStatus('摄像头启动失败', 'warn');
+    console.error(e);
+  }
+}
+
+// ===== 主循环 =====
+function tick() {
+  const p = kernel.tick(performance.now());
+  latestLandmarks = p?.landmarks ?? null;
+
+  drawMesh();
+
+  if (p.facePresent && p.gaze) {
+    const rawGaze = p.gaze;
+
+    // 校准阶段
+    if (calibratingNow) {
+      tickCalibration(rawGaze);
+      gazeDot.style.opacity = '0.3';
+      requestAnimationFrame(tick);
+      return;
+    }
+
+    // 相对基线
+    const ax = rawGaze.x - gazeBase.x;
+    const ay = rawGaze.y - gazeBase.y;
+    // 放大 + 轻度平滑（响应优先）
+    const bx = ax * SENSITIVITY;
+    const by = ay * SENSITIVITY;
+    adjGaze.x = adjGaze.x * 0.4 + bx * 0.6;
+    adjGaze.y = adjGaze.y * 0.4 + by * 0.6;
+
+    const dir = gazeToDir(adjGaze.x, adjGaze.y);
+
+    // 更新数值显示
+    gazeXEl.textContent  = adjGaze.x.toFixed(3);
+    gazeYEl.textContent  = adjGaze.y.toFixed(3);
+    gazeDirEl.textContent = dirLabel(dir);
+
+    // 注视点
+    gazeDot.style.opacity = '1';
+    updateGazeDot(adjGaze.x, adjGaze.y);
+
+    // 象限高亮
+    highlightQuad(dir);
+
+    // 测试模式判定
+    if (testMode) tickTest(dir);
+
+  } else {
+    // 没有检测到脸
+    if (!calibratingNow) tickCalibration(null);
+  }
+
+  requestAnimationFrame(tick);
+}
+
+// ===== 按钮事件 =====
+btnTest.addEventListener('click', startTest);
+
+document.getElementById('sens-slider').addEventListener('input', (e) => {
+  SENSITIVITY = parseFloat(e.target.value);
+  document.getElementById('sens-val').textContent = SENSITIVITY.toFixed(1) + '×';
+});
+btnRecal.addEventListener('click', () => {
+  calibrated = false;
+  adjGaze = { x: 0, y: 0 };
+  gazeBase = { x: 0, y: 0 };
+  verdictEl.style.display = 'none';
+  btnTest.disabled = true;
+  btnTest.textContent = '开始 8 方向测试';
+  Object.values(targets).forEach(t => t.classList.remove('active','hit'));
+  startCalibration();
+});
+
+// ===== 启动 =====
+init();
+</script>
+
+</body>
+</html>

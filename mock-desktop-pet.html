@@ -69,7 +69,7 @@
   /* ── GLASS DOCK (面板我画 · icon 你提供透明PNG) ── */
   .dock {
     position: fixed; left:50%; transform: translateX(-50%);
-    bottom: 10px; z-index: 30;
+    bottom: 10px; z-index: 46;
     display:flex; align-items:flex-end; gap:12px;
     padding: 9px 14px;
     /* iOS/Tahoe 液态玻璃:半透明 + 毛玻璃 + 内发光 + 柔投影,透出壁纸底色 */
@@ -89,6 +89,8 @@
   }
   .dock-icon img { width:100%; height:100%; object-fit:contain; display:block;
     filter: drop-shadow(0 3px 6px rgba(120,30,60,0.22)); }
+  /* 我们自己的 app 图标(照片式满幅,缩到80%模拟其他icon的留白,视觉一致)*/
+  .dock-icon .joy-app-ic { width:80%; height:80%; object-fit: cover; border-radius: 12px; }
   /* Mac 原生:hover 不上浮,只弹名字气泡(tooltip) */
   .dock-icon .tip {
     position:absolute; bottom: calc(100% + 14px); left:50%; transform: translateX(-50%) scale(0.94);
@@ -119,8 +121,8 @@
 
   /* ── PET CONTAINER (draggable) ────────────── */
   .pet {
-    position: fixed; left:50%; bottom: 74px; transform: translateX(-50%); z-index: 40;
-    width: 150px;
+    position: fixed; left:50%; bottom: 74px; transform: translateX(-50%); z-index: 48;
+    width: 131px;
     display:flex; flex-direction:column; align-items:center;
     cursor: grab;
     touch-action: none;
@@ -129,10 +131,13 @@
   .pet.quiet { opacity: 0.4; filter: grayscale(0.3); transition: opacity .5s, filter .5s; }
 
   .pet-stage {
-    width: 130px; height: 130px; position: relative;
+    width: 131px; height: 100px; position: relative;
     display:flex; align-items:flex-end; justify-content:center;
   }
   .pet-stage svg { width: 118px; height: 118px; overflow: visible; display:block; }
+  /* 真 Joy 立绘(托腮态,横向 859×610)*/
+  .joy-img-wrap { width: 131px; display:flex; align-items:flex-end; justify-content:center; }
+  #joy-img { width: 131px; height: auto; display:block; -webkit-user-drag:none; }
 
   /* shadow under joy */
   .pet-shadow {
@@ -142,7 +147,7 @@
   }
 
   /* idle breathing on the whole joy */
-  #joy-root { transform-origin: 50% 100%; animation: breathe 3.4s ease-in-out infinite; }
+  #joy-root { transform-origin: 50% 100%; }
   @keyframes breathe { 0%,100%{transform:scale(1);} 50%{transform:scale(1.035);} }
 
   /* neck-twist action (head group) */
@@ -178,56 +183,68 @@
 
   /* pet nameplate under joy (streak + mood) */
   .pet-plate {
-    margin-top: 2px;
+    position: absolute; bottom: 100%; left:50%; transform: translateX(-50%) translateY(-4px);
+    margin-bottom: 6px;
     display:flex; align-items:center; gap:7px;
     background: rgba(10,14,22,0.55); backdrop-filter: blur(10px);
     border:1px solid rgba(255,255,255,0.10);
     padding: 5px 12px; border-radius: 20px;
     font-family: var(--font-display); font-size: 12px; font-weight:600;
     white-space:nowrap;
-    opacity: 0; transform: translateY(-4px);
+    opacity: 0; pointer-events:none;
     transition: opacity .3s, transform .3s;
+    z-index: 6;
   }
-  .pet:hover .pet-plate, .pet-plate.pinned { opacity: 1; transform: none; }
+  .pet:hover .pet-plate, .pet-plate.pinned { opacity: 1; transform: translateX(-50%) translateY(0); }
+  /* 说话时藏起铭牌,避免头顶挤两个 */
+  .pet.talking .pet-plate { opacity: 0 !important; }
   .pet-plate .flame { font-size: 13px; }
   .pet-plate .sk { color: var(--accent); font-weight:800; font-variant-numeric:tabular-nums; }
   .pet-plate .sk.broken { color: rgba(255,255,255,0.4); }
 
-  /* ── SPEECH BUBBLE ────────────────────────── */
+  /* ── SPEECH BUBBLE(黑色玻璃,与 streak 铭牌统一)──── */
   .bubble {
-    position: fixed; z-index: 45;
-    max-width: 250px;
-    background: #fff; color: #1a1e2a;
-    border-radius: 16px; padding: 13px 15px 14px;
-    box-shadow: 0 18px 44px rgba(0,0,0,0.34);
-    font-size: 14px; line-height: 1.5;
-    opacity: 0; transform: translateY(8px) scale(0.96); transform-origin: bottom right;
+    position: fixed; z-index: 50;
+    max-width: 220px;
+    background: rgba(10,14,22,0.62);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    color: #EDE8DF;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px; padding: 11px 14px 12px;
+    box-shadow: 0 12px 34px rgba(0,0,0,0.32), inset 0 1px 0 rgba(255,255,255,0.1);
+    font-size: 13px; line-height: 1.5;
+    opacity: 0; transform: translateY(8px) scale(0.96); transform-origin: bottom center;
     transition: opacity .28s ease, transform .28s cubic-bezier(.34,1.56,.64,1);
     pointer-events: none;
   }
   .bubble.show { opacity: 1; transform: translateY(0) scale(1); pointer-events:auto; }
+  /* 尾巴:与深色背板同色的三角,朝下指向 Joy 头顶 */
   .bubble::after {
     content:""; position:absolute; bottom:-8px; left: var(--tail-x, 34px);
-    border-width: 9px 8px 0; border-style: solid; border-color: #fff transparent transparent;
+    border-width: 10px 8px 0; border-style: solid;
+    border-color: rgba(10,14,22,0.62) transparent transparent;
+    transform: translateX(-50%);
   }
   .bubble .b-text { margin-bottom: 0; }
-  .bubble.has-cta .b-text { margin-bottom: 11px; }
+  .bubble.has-cta .b-text { margin-bottom: 9px; }
   .bubble .b-cta {
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
-    background: var(--ct, var(--teal-deep)); color:#fff;
-    border:none; border-radius:11px; padding: 9px 13px;
-    font-family:var(--font-body); font-weight:700; font-size:13.5px;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    background: var(--ct, var(--teal)); color:#0C1018;
+    border:none; border-radius:10px; padding: 8px 11px;
+    font-family:var(--font-body); font-weight:700; font-size:12.5px;
     cursor:pointer; width:100%;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
     transition: transform .12s, filter .12s;
   }
   .bubble .b-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
   .bubble .b-cta:active { transform: translateY(0); }
   .bubble .b-cta .arr { font-family:var(--font-display); }
   .bubble .b-dismiss {
-    display:block; margin: 9px auto 0; background:none; border:none;
-    color:#9BA3B8; font-size:12px; cursor:pointer; font-family:var(--font-body);
+    display:block; margin: 7px auto 0; background:none; border:none;
+    color:#9BA3B8; font-size:11.5px; cursor:pointer; font-family:var(--font-body);
   }
-  .bubble .b-dismiss:hover { color:#565e70; }
+  .bubble .b-dismiss:hover { color:#EDE8DF; }
 
   /* ── HUD BUTTONS (top-right) ──────────────── */
   .hud {
@@ -393,16 +410,7 @@
   <div class="dock-sep"></div>
   <!-- 我们自己的 app:Joy,点它唤起桌宠推荐 -->
   <div class="dock-icon joy" id="dock-joy" title="今天不低头">
-    <svg viewBox="0 0 52 52" width="52" height="52">
-      <rect x="2" y="2" width="48" height="48" rx="12" fill="url(#joygrad)"/>
-      <ellipse cx="16" cy="18" rx="5" ry="8" fill="#C8800A" transform="rotate(-12 16 18)"/>
-      <ellipse cx="36" cy="18" rx="5" ry="8" fill="#C8800A" transform="rotate(12 36 18)"/>
-      <ellipse cx="26" cy="27" rx="13" ry="12" fill="#fff"/>
-      <circle cx="21" cy="26" r="2.4" fill="#1A1200"/><circle cx="31" cy="26" r="2.4" fill="#1A1200"/>
-      <ellipse cx="26" cy="31" rx="2.2" ry="1.5" fill="#C8800A"/>
-      <path d="M22 34 Q26 38 30 34" stroke="#1A1200" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-      <defs><linearGradient id="joygrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD873"/><stop offset="1" stop-color="#F5BC30"/></linearGradient></defs>
-    </svg>
+    <img src="img/joy-app-icon.png" alt="今天不低头" class="joy-app-ic">
     <span class="tip">今天不低头 · 点我唤起 Joy</span>
     <span class="run-dot"></span>
   </div>
@@ -477,55 +485,19 @@
 <!-- ══ PET ══ -->
 <div class="pet" id="pet">
   <div class="pet-stage">
-    <div class="pet-shadow"></div>
-    <svg viewBox="0 0 118 118" id="joy-svg" aria-label="桌宠 Joy">
-      <g id="joy-root">
-        <!-- tail -->
-        <path id="joy-tail" d="M 34 82 Q 16 78 14 62" stroke="var(--accent)" stroke-width="9" fill="none" stroke-linecap="round"/>
-
-        <!-- stretch arms (hidden until arm action) -->
-        <g id="joy-arms">
-          <path d="M 44 74 Q 34 46 40 28" stroke="var(--accent)" stroke-width="9" fill="none" stroke-linecap="round"/>
-          <path d="M 74 74 Q 84 46 78 28" stroke="var(--accent)" stroke-width="9" fill="none" stroke-linecap="round"/>
-          <circle cx="40" cy="26" r="6" fill="var(--accent)"/>
-          <circle cx="78" cy="26" r="6" fill="var(--accent)"/>
-        </g>
-
-        <!-- body -->
-        <ellipse cx="59" cy="90" rx="30" ry="24" fill="var(--accent)"/>
-        <!-- belly -->
-        <ellipse cx="59" cy="95" rx="18" ry="15" fill="#FFD873"/>
-
-        <!-- front paws (hidden during arm stretch) -->
-        <g id="joy-frontpaws">
-          <ellipse cx="46" cy="110" rx="8" ry="6" fill="var(--accent-deep)"/>
-          <ellipse cx="72" cy="110" rx="8" ry="6" fill="var(--accent-deep)"/>
-        </g>
-
-        <!-- head group (twists during neck action) -->
-        <g id="joy-head">
-          <!-- ears -->
-          <ellipse cx="34" cy="46" rx="11" ry="18" fill="var(--accent-deep)" transform="rotate(-14 34 46)"/>
-          <ellipse cx="84" cy="46" rx="11" ry="18" fill="var(--accent-deep)" transform="rotate(14 84 46)"/>
-          <!-- head -->
-          <ellipse cx="59" cy="56" rx="29" ry="27" fill="var(--accent)"/>
-          <!-- eyes -->
-          <g id="joy-eyes">
-            <circle cx="48" cy="54" r="4.6" fill="var(--ink)"/>
-            <circle cx="70" cy="54" r="4.6" fill="var(--ink)"/>
-            <circle cx="49.6" cy="52.4" r="1.5" fill="#fff"/>
-            <circle cx="71.6" cy="52.4" r="1.5" fill="#fff"/>
-          </g>
-          <!-- blush -->
-          <ellipse cx="40" cy="63" rx="5" ry="3.2" fill="#FF9E7D" opacity="0.5"/>
-          <ellipse cx="78" cy="63" rx="5" ry="3.2" fill="#FF9E7D" opacity="0.5"/>
-          <!-- nose -->
-          <ellipse cx="59" cy="64" rx="4" ry="2.7" fill="var(--accent-deep)"/>
-          <!-- mouth -->
-          <path id="joy-mouth" d="M 50 71 Q 59 78 68 71" stroke="var(--ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-        </g>
-      </g>
-    </svg>
+    <!-- 真 Joy 立绘(替换手绘 SVG);动画钩子保留在外层 #joy-root -->
+    <div id="joy-svg" class="joy-img-wrap" aria-label="桌宠 Joy">
+      <div id="joy-root">
+        <video id="joy-img" src="img/joy-pet-chin-companion.webm" autoplay loop muted playsinline></video>
+      </div>
+      <!-- 隐藏占位:保留 JS 引用的 id(blink/setMood/setAction 不报错),真表情由立绘/后续mp4承载 -->
+      <div id="joy-head" hidden></div>
+      <div id="joy-arms" hidden></div>
+      <div id="joy-frontpaws" hidden></div>
+      <div id="joy-tail" hidden></div>
+      <span id="joy-eyes" hidden></span>
+      <span id="joy-mouth" hidden></span>
+    </div>
   </div>
   <div class="pet-plate" id="pet-plate">
     <span class="flame">🔥</span>
@@ -535,7 +507,6 @@
 </div>
 
 <!-- ══ DEMO CONSOLE ══ -->
-<div class="hint-pop" id="hint-pop">试试这里 →</div>
 <div class="console" id="console">
   <div class="console-head" id="console-head">
     <span class="ttl">🎬 演示控制台</span>
@@ -621,9 +592,9 @@
     let left = petCenter - bubble.offsetWidth/2;
     left = Math.max(12, Math.min(window.innerWidth - bubble.offsetWidth - 12, left));
     bubble.style.left = left + 'px';
-    bubble.style.top  = (r.top - bubble.offsetHeight - 8) + 'px';
-    // point the tail at the pet's head
-    const tailX = Math.max(16, Math.min(bubble.offsetWidth - 24, petCenter - left - 8));
+    bubble.style.top  = (r.top - bubble.offsetHeight - 4) + 'px';
+    // tail(translateX(-50%))指向 Joy 头顶中心
+    const tailX = Math.max(16, Math.min(bubble.offsetWidth - 16, petCenter - left));
     bubble.style.setProperty('--tail-x', tailX + 'px');
   }
   function showBubble(text, opts = {}) {
@@ -642,6 +613,7 @@
       bubbleDismiss.style.display = 'none';
     }
     bubble.classList.add('show');
+    pet.classList.add('talking');
     requestAnimationFrame(positionBubble);
     if (opts.autoHide !== false) {
       bubbleTimer = setTimeout(hideBubble, opts.duration || 4200);
@@ -649,6 +621,7 @@
   }
   function hideBubble() {
     bubble.classList.remove('show');
+    pet.classList.remove('talking');
     state.busy = false;
     if (!state.quiet) setAction();  // back to idle
   }
@@ -762,20 +735,26 @@
     toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
   }
 
-  // ══ CLICK PET (interact) ══
+  // ══ CLICK PET (interact) — 两级 ══
   let dragMoved = false;
+  let clickStage = 0;   // 0→首次点:陪你  1→再点:活动颈椎
   joySvg.addEventListener('click', () => {
     if (dragMoved) return;
     wake();
-    if (state.busy) return;
-    // clicking pet offers today's pick
+    if (state.quiet) return;
     setMood('happy'); setAction('act-interact');
     state.busy = true;
-    showBubble('要一起动动吗?今天推荐颈椎拳击派对~', {
-      cta: '开始 · 拳击派对 🥊', ctaColor:'var(--teal-deep)',
-      onCta: ()=> goLevel('mock-boxing-video.html'),
-      autoHide:false,
-    });
+    if (clickStage === 0) {
+      showBubble('我就趴这儿陪你~', { duration: 3200 });
+      clickStage = 1;
+    } else {
+      showBubble('该活动一下颈椎啦~', {
+        cta: '陪我打两拳 · 拳击派对 🥊', ctaColor:'var(--teal)',
+        onCta: ()=> goLevel('mock-boxing-video.html'),
+        autoHide:false,
+      });
+      clickStage = 0;   // 循环回到第一级
+    }
   });
 
   // ══ DRAG ══
@@ -877,7 +856,7 @@
   document.getElementById('console-head').onclick = ()=> consoleEl.classList.toggle('collapsed');
 
   // ══ HINT ══
-  function dismissHint(){ document.getElementById('hint-pop').classList.add('gone'); }
+  function dismissHint(){ const h=document.getElementById('hint-pop'); if(h) h.classList.add('gone'); }
 
   // ══ IDLE: occasional blink + rare spontaneous talk ══
   function blink(){
@@ -960,9 +939,9 @@
   // ══ INIT ══
   setMood('happy');
   document.getElementById('plate-streak').textContent = state.streak;
-  // greet once on load
+  // greet once on load(视频自带微动,不加缩放弹跳)
   setTimeout(()=>{
-    setAction('act-wave'); state.busy=true;
+    state.busy=true;
     showBubble('早,今天也别低头呀~我就坐在 Dock 上陪你 🐕', {duration:4000});
   }, 700);
 </script>

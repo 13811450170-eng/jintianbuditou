@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>今天不低头 · 商业化闭环</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #FAFAFA;
+    --bg-card: #FFFFFF;
+    --bg-subtle: #F3F6FA;
+    --border: #E5E9EF;
+    --text: #111827;
+    --text-sub: #4B5563;
+    --text-dim: #9CA3AF;
+    --accent: #00C9A7;
+    --accent-bg: rgba(0,201,167,0.08);
+    --accent-border: rgba(0,201,167,0.3);
+    --amber: #F59E0B;
+    --amber-bg: rgba(245,158,11,0.08);
+    --blue: #3B82F6;
+    --blue-bg: rgba(59,130,246,0.08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111827;
+      --bg-card: #1F2937;
+      --bg-subtle: #1A2436;
+      --border: rgba(255,255,255,0.08);
+      --text: #F9FAFB;
+      --text-sub: #9CA3AF;
+      --text-dim: #4B5563;
+      --accent: #00E5C3;
+      --accent-bg: rgba(0,229,195,0.1);
+      --accent-border: rgba(0,229,195,0.3);
+      --amber: #FBB237;
+      --amber-bg: rgba(251,178,55,0.1);
+      --blue: #60A5FA;
+      --blue-bg: rgba(96,165,250,0.1);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #111827;
+    --bg-card: #1F2937;
+    --bg-subtle: #1A2436;
+    --border: rgba(255,255,255,0.08);
+    --text: #F9FAFB;
+    --text-sub: #9CA3AF;
+    --text-dim: #4B5563;
+    --accent: #00E5C3;
+    --accent-bg: rgba(0,229,195,0.1);
+    --accent-border: rgba(0,229,195,0.3);
+    --amber: #FBB237;
+    --amber-bg: rgba(251,178,55,0.1);
+    --blue: #60A5FA;
+    --blue-bg: rgba(96,165,250,0.1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', 'Noto Sans SC', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 24px;
+    gap: 20px;
+  }
+
+  /* PAGE CHROME */
+  .page-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim);
+    align-self: flex-start;
+  }
+
+  /* SLIDE */
+  .slide {
+    width: 100%; max-width: 960px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  /* SLIDE HEADER */
+  .slide-header {
+    display: grid; grid-template-columns: 280px 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .slide-eyebrow {
+    padding: 28px 32px;
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 6px;
+    background: var(--bg-subtle);
+  }
+  .eyebrow-tag {
+    display: inline-block;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-bg); border: 1px solid var(--accent-border);
+    padding: 3px 8px; border-radius: 4px;
+    width: fit-content;
+  }
+  .slide-eyebrow h1 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.02em;
+    color: var(--text); line-height: 1.2;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .slide-eyebrow p {
+    font-size: 12px; color: var(--text-sub); line-height: 1.5;
+  }
+
+  .slide-thesis {
+    padding: 28px 32px;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 4px;
+  }
+  .thesis-question {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 6px;
+  }
+  .thesis-main {
+    font-size: 20px; font-weight: 600; line-height: 1.35;
+    color: var(--text); letter-spacing: -0.02em;
+  }
+  .thesis-main .hl { color: var(--accent); }
+
+  /* SLIDE BODY */
+  .slide-body {
+    display: grid; grid-template-columns: 280px 1fr;
+    min-height: 420px;
+  }
+
+  .left-col {
+    padding: 28px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--bg-subtle);
+    display: flex; flex-direction: column; gap: 20px;
+  }
+
+  .col-section-label {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* Funnel */
+  .funnel { display: flex; flex-direction: column; gap: 3px; }
+  .funnel-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    position: relative;
+  }
+  .funnel-step.active {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+  .funnel-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    background: var(--bg-subtle);
+    flex-shrink: 0;
+  }
+  .funnel-step.active .funnel-icon { background: rgba(0,201,167,0.15); }
+  .funnel-text { flex: 1; }
+  .funnel-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .funnel-sub { font-size: 10px; color: var(--text-dim); line-height: 1.3; }
+  .funnel-arrow {
+    text-align: center; font-size: 10px; color: var(--text-dim);
+    padding: 1px 0;
+  }
+  .funnel-badge {
+    font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+
+  /* Right col */
+  .right-col {
+    padding: 28px 32px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+
+  /* Buyer map */
+  .buyer-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .buyer-card {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .buyer-role {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 6px;
+  }
+  .buyer-want { font-size: 12px; font-weight: 600; color: var(--text); line-height: 1.4; margin-bottom: 6px; }
+  .buyer-hook { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
+  .buyer-tag {
+    display: inline-block; margin-top: 8px;
+    font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+  }
+
+  /* Pricing ladder */
+  .pricing-ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .tier {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 12px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .tier.highlighted { border-color: var(--accent-border); background: var(--accent-bg); }
+  .tier-name { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); }
+  .tier-price {
+    font-size: 24px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums; line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .tier-price sup { font-size: 13px; font-weight: 400; color: var(--text-sub); }
+  .tier-unit { font-size: 10px; color: var(--text-dim); }
+  .tier-target { font-size: 11px; color: var(--text-sub); margin-top: 4px; }
+
+  /* ROI calc */
+  .roi-strip {
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .roi-step {
+    flex: 1; text-align: center;
+    padding: 0 8px;
+  }
+  .roi-step-val {
+    font-size: 20px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+  }
+  .roi-step-val.accent { color: var(--accent); }
+  .roi-step-label { font-size: 10px; color: var(--text-dim); line-height: 1.3; margin-top: 3px; }
+  .roi-op {
+    font-size: 16px; color: var(--text-dim); font-weight: 300;
+    padding: 0 4px;
+  }
+
+  /* Channel */
+  .channel-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .channel-card {
+    background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px;
+  }
+  .channel-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .channel-desc { font-size: 11px; color: var(--text-sub); line-height: 1.4; }
+  .channel-tag {
+    display: inline-block; margin-top: 8px;
+    font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+    background: var(--accent-bg); color: var(--accent); border: 1px solid var(--accent-border);
+  }
+  .channel-tag.amber { background: var(--amber-bg); color: var(--amber); border: 1px solid transparent; }
+
+  /* DIVIDER */
+  .slide-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 0 32px;
+  }
+
+  /* FOOTER BAR */
+  .slide-footer {
+    padding: 14px 32px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border);
+    background: var(--bg-subtle);
+  }
+  .footer-note { font-size: 11px; color: var(--text-dim); }
+  .footer-brand { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.02em; }
+
+  @media (max-width: 700px) {
+    .slide-header, .slide-body { grid-template-columns: 1fr; }
+    .slide-eyebrow, .slide-body .left-col { border-right: none; border-bottom: 1px solid var(--border); }
+    .buyer-row, .pricing-ladder { grid-template-columns: 1fr; }
+    .channel-grid { grid-template-columns: 1fr; }
+    .roi-strip { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-label">商业化闭环 · 复赛材料</div>
+
+<div class="slide">
+
+  <!-- HEADER -->
+  <div class="slide-header">
+    <div class="slide-eyebrow">
+      <span class="eyebrow-tag">B 端商业化</span>
+      <h1>企业员工<br>健康采购</h1>
+      <p>HR 采购 → 员工使用 → 数据汇报，闭环完整</p>
+    </div>
+    <div class="slide-thesis">
+      <div class="thesis-question">核心命题</div>
+      <div class="thesis-main">
+        职业病预防 SaaS，<br>让健康投入<span class="hl">第一次可量化</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="slide-body">
+
+    <!-- LEFT: Funnel -->
+    <div class="left-col">
+      <div class="col-section-label">价值流转路径</div>
+      <div class="funnel">
+
+        <div class="funnel-step">
+          <div class="funnel-icon">🏢</div>
+          <div class="funnel-text">
+            <div class="funnel-name">企业 HR 采购</div>
+            <div class="funnel-sub">年卡批量购入，报销员工福利</div>
+          </div>
+          <span class="funnel-badge badge-amber">决策链短</span>
+        </div>
+
+        <div class="funnel-arrow">↓</div>
+
+        <div class="funnel-step active">
+          <div class="funnel-icon">🎮</div>
+          <div class="funnel-text">
+            <div class="funnel-name">员工在工位使用</div>
+            <div class="funnel-sub">午休 5 分钟，AI 摄像头判定</div>
+          </div>
+          <span class="funnel-badge badge-green">无需离座</span>
+        </div>
+
+        <div class="funnel-arrow">↓</div>
+
+        <div class="funnel-step">
+          <div class="funnel-icon">📊</div>
+          <div class="funnel-text">
+            <div class="funnel-name">ROM 改善数据积累</div>
+            <div class="funnel-sub">颈部 / 肩部活动度周报</div>
+          </div>
+          <span class="funnel-badge badge-blue">可量化</span>
+        </div>
+
+        <div class="funnel-arrow">↓</div>
+
+        <div class="funnel-step">
+          <div class="funnel-icon">📋</div>
+          <div class="funnel-text">
+            <div class="funnel-name">HR 导出汇报</div>
+            <div class="funnel-sub">参与率 + 部门改善趋势</div>
+          </div>
+          <span class="funnel-badge badge-green">复购动力</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right-col">
+
+      <!-- Buyer map -->
+      <div>
+        <div class="col-section-label" style="margin-bottom:10px;">买家动机地图</div>
+        <div class="buyer-row">
+          <div class="buyer-card">
+            <div class="buyer-role">HR 总监</div>
+            <div class="buyer-want">要向 CEO 证明健康福利有价值</div>
+            <div class="buyer-hook">ROM 数据报告 = 唯一可展示的健康 KPI</div>
+            <span class="buyer-tag badge-green">主决策人</span>
+          </div>
+          <div class="buyer-card">
+            <div class="buyer-role">行政负责人</div>
+            <div class="buyer-want">替代零利用率的健身报销</div>
+            <div class="buyer-hook">在工位完成，参与率天然高</div>
+            <span class="buyer-tag badge-amber">预算持有人</span>
+          </div>
+          <div class="buyer-card">
+            <div class="buyer-role">企业员工</div>
+            <div class="buyer-want">颈肩不适，但没时间去健身房</div>
+            <div class="buyer-hook">游戏化 + 治愈感 + 即时反馈</div>
+            <span class="buyer-tag badge-blue">口碑传播</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pricing -->
+      <div>
+        <div class="col-section-label" style="margin-bottom:10px;">阶梯定价</div>
+        <div class="pricing-ladder">
+          <div class="tier">
+            <div class="tier-name">基础版</div>
+            <div class="tier-price"><sup>¥</sup>99</div>
+            <div class="tier-unit">/ 人 / 年</div>
+            <div class="tier-target">&lt; 50 人 · 创业团队</div>
+          </div>
+          <div class="tier highlighted">
+            <div class="tier-name">标准版 ★</div>
+            <div class="tier-price"><sup>¥</sup>199</div>
+            <div class="tier-unit">/ 人 / 年</div>
+            <div class="tier-target">50–500 人 · 含看板</div>
+          </div>
+          <div class="tier">
+            <div class="tier-name">定制版</div>
+            <div class="tier-price"><sup>¥</sup>399</div>
+            <div class="tier-unit">/ 人 / 年</div>
+            <div class="tier-target">&gt; 500 人 · API 对接</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI calc -->
+      <div>
+        <div class="col-section-label" style="margin-bottom:10px;">ROI 测算 · 以标准版 200 人企业为例</div>
+        <div class="roi-strip">
+          <div class="roi-step">
+            <div class="roi-step-val">¥3k</div>
+            <div class="roi-step-label">员工年均<br>颈椎就诊成本</div>
+          </div>
+          <div class="roi-op">×</div>
+          <div class="roi-step">
+            <div class="roi-step-val">60%</div>
+            <div class="roi-step-label">参与率<br>（行业均值）</div>
+          </div>
+          <div class="roi-op">×</div>
+          <div class="roi-step">
+            <div class="roi-step-val">⅓</div>
+            <div class="roi-step-label">ROM 改善<br>就诊减少</div>
+          </div>
+          <div class="roi-op">=</div>
+          <div class="roi-step">
+            <div class="roi-step-val accent">5x</div>
+            <div class="roi-step-label">vs 订阅成本<br>¥199/人/年</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Soft value -->
+      <div>
+        <div class="col-section-label" style="margin-bottom:10px;">软性价值 · 超出 ROI 的企业收益</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div class="buyer-card">
+            <div class="buyer-role">工作效率</div>
+            <div class="buyer-want">疼痛是头号专注力杀手</div>
+            <div class="buyer-hook">颈肩 ROM 改善后，工位注意力分散、提前离岗明显减少</div>
+          </div>
+          <div class="buyer-card">
+            <div class="buyer-role">雇主品牌</div>
+            <div class="buyer-want">招聘差异化话术</div>
+            <div class="buyer-hook">员工自发晒健康数据 → 社媒零成本曝光；对标大厂健康福利计划</div>
+          </div>
+          <div class="buyer-card">
+            <div class="buyer-role">ESG / 公关</div>
+            <div class="buyer-want">职业健康可量化数据</div>
+            <div class="buyer-hook">参与人数 + ROM 均值直接写进年报，比"鼓励员工运动"更有说服力</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channel -->
+      <div>
+        <div class="col-section-label" style="margin-bottom:10px;">分发渠道 · 京东生态优势</div>
+        <div class="channel-grid">
+          <div class="channel-card">
+            <div class="channel-name">京东企业采购</div>
+            <div class="channel-desc">现成 B 端采购渠道，无需自建销售团队，零成本触达企业客户</div>
+            <span class="channel-tag">内部渠道</span>
+          </div>
+          <div class="channel-card">
+            <div class="channel-name">京东健康企业服务</div>
+            <div class="channel-desc">ROM 数据与体检档案打通，增强企业续费粘性与数据价值</div>
+            <span class="channel-tag">数据协同</span>
+          </div>
+          <div class="channel-card">
+            <div class="channel-name">标杆客户 · 内部先跑</div>
+            <div class="channel-desc">京东内部团队作为 Pilot，最快获取真实使用数据与案例背书</div>
+            <span class="channel-tag amber">最快路径</span>
+          </div>
+          <div class="channel-card">
+            <div class="channel-name">C 端口碑 → B 端转化</div>
+            <div class="channel-desc">员工自发下载 → 向 HR 推荐，口碑倒推企业决策，CAC 极低</div>
+            <span class="channel-tag amber">增长飞轮</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="slide-footer">
+    <span class="footer-note">数据来源：职业病防治年度报告 2025 · 测算基于保守参数</span>
+    <span class="footer-brand">今天不低头 · Chin Up</span>
+  </div>
+
+</div>
+
+</body>
+</html>

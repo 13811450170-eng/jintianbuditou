@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 唤醒萤火虫</title>
+<style>
+:root {
+  --ff: #d4ff60;
+  --ff-glow: rgba(212,255,96,0.45);
+  --gold: #ffd66b;
+  --gold-bright: #ffe89b;
+  --ok: #6bff9d;
+  --font: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --glass-bg: rgba(6,16,8,0.52);
+  --glass-border: 1px solid rgba(255,255,255,0.11);
+  --glass-hi: inset 0 1px 0 rgba(255,255,255,0.14);
+  --r-pill: 999px; --r-md: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-user-select:none; user-select:none; }
+html, body { height:100%; overflow:hidden; font-family:var(--font); color:#e8ecf5; background:#030c05; }
+
+/* ===== 场景背景 ===== */
+#stage { position:fixed; inset:0; overflow:hidden; }
+
+#bg {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 140% 50% at 50% 0%, rgba(18,50,22,0.55) 0%, transparent 55%),
+    linear-gradient(180deg, #020905 0%, #041208 35%, #061a0a 65%, #081e0c 100%);
+}
+
+/* 月亮 */
+#moon {
+  position:absolute; top:7%; left:50%; transform:translateX(-50%);
+  width:50px; height:50px; border-radius:50%;
+  background: radial-gradient(circle at 36% 36%, #fffee8, #ffd66b 55%, #ffb84d 100%);
+  box-shadow: 0 0 28px rgba(255,214,107,0.32), 0 0 56px rgba(255,214,107,0.10);
+}
+
+/* 草地 + 轮廓 */
+#grass {
+  position:absolute; bottom:0; left:0; right:0; height:24%;
+  background: linear-gradient(180deg, transparent 0%, rgba(6,22,8,0.9) 35%, #030c05 100%);
+}
+
+/* 左右树轮廓 */
+.tree { position:absolute; bottom:0; }
+.tree svg { display:block; }
+.tree-l { left:0; }
+.tree-r { right:0; transform:scaleX(-1); }
+
+/* ===== 雾气层 ===== */
+#fog {
+  position:absolute; inset:0; z-index:5;
+  background: rgba(2,8,3,0.62);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  pointer-events:none;
+}
+
+/* ===== 萤火虫画布 ===== */
+#ff-canvas { position:absolute; inset:0; z-index:8; pointer-events:none; }
+
+/* ===== Joy ===== */
+#joy-char {
+  position:absolute; bottom:22%; left:50%; transform:translateX(-50%);
+  width:68px; height:68px; z-index:10;
+}
+#joy-char.catch-anim { animation:joyBounce .38s ease-out; }
+@keyframes joyBounce {
+  0%   { transform:translateX(-50%) scale(1); }
+  40%  { transform:translateX(-50%) translateY(-16px) scale(1.16); }
+  100% { transform:translateX(-50%) scale(1); }
+}
+
+/* ===== 判定区域（隐形，用来放 zone ring）===== */
+#zone-ring {
+  position:absolute; border-radius:50%;
+  border:1.5px solid rgba(212,255,96,0);
+  pointer-events:none; z-index:9;
+  transform:translate(-50%,-50%);
+}
+#zone-ring.pulse {
+  animation:ringPulse .55s ease-out forwards;
+}
+@keyframes ringPulse {
+  0%   { border-color:rgba(212,255,96,0.5); transform:translate(-50%,-50%) scale(0.75); }
+  100% { border-color:rgba(212,255,96,0); transform:translate(-50%,-50%) scale(1.5); }
+}
+
+/* ===== 眨眼提示 ===== */
+#blink-cue {
+  position:absolute; z-index:20; left:50%; bottom:28%;
+  transform:translateX(-50%);
+  font-size:20px; font-weight:800; letter-spacing:3px;
+  color:rgba(212,255,96,0.95);
+  text-shadow:0 0 14px rgba(212,255,96,0.75);
+  pointer-events:none; opacity:0;
+}
+#blink-cue.show { animation:cuePop .65s ease-out forwards; }
+@keyframes cuePop {
+  0%   { opacity:0; transform:translateX(-50%) translateY(8px) scale(.8); }
+  22%  { opacity:1; transform:translateX(-50%) translateY(-3px) scale(1.06); }
+  60%  { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+  100% { opacity:0; transform:translateX(-50%) translateY(-10px) scale(.94); }
+}
+
+/* ===== 眼睛指示 ===== */
+#eye-indicator {
+  position:absolute; bottom:19%; left:50%; transform:translateX(-50%);
+  z-index:30; display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.eye-circles { display:flex; gap:8px; }
+.eye-circle {
+  width:28px; height:18px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.28);
+  background:rgba(255,255,255,0.06);
+  display:flex; align-items:center; justify-content:center; transition:all .05s;
+}
+.eye-circle .pupil { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,0.55); }
+.eye-circle.closed { height:3px; }
+.eye-circle.closed .pupil { display:none; }
+.eye-hint { font-size:10px; color:rgba(255,255,255,0.32); letter-spacing:.04em; }
+
+/* ===== HUD ===== */
+.hud-top {
+  position:absolute; top:18px; left:0; right:0;
+  display:flex; align-items:center; justify-content:center; gap:10px; z-index:30;
+}
+.chip {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:7px 13px; border-radius:var(--r-pill);
+  background:var(--glass-bg);
+  backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+  border:var(--glass-border); box-shadow:var(--glass-hi);
+  font-size:12px; font-weight:700;
+}
+.chip .ico { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.chip .val { font-size:17px; font-weight:900; color:var(--ff); font-variant-numeric:tabular-nums; }
+.chip .unit { font-size:10px; opacity:0.55; }
+
+.prog-wrap {
+  position:absolute; top:64px; left:50%; transform:translateX(-50%);
+  width:min(340px,62%); z-index:30; display:flex; align-items:center; gap:7px;
+}
+.prog-track { flex:1; height:5px; border-radius:3px; background:rgba(255,255,255,0.09); overflow:hidden; }
+.prog-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,#a8ff78,#d4ff60); width:0%; transition:width .3s; box-shadow:0 0 6px rgba(168,255,120,0.4); }
+.prog-pct { font-size:11px; color:rgba(255,255,255,0.38); font-variant-numeric:tabular-nums; }
+
+/* ===== 判定弹字 ===== */
+.judge-pop {
+  position:absolute; left:50%; bottom:32%;
+  transform:translateX(-50%); z-index:40;
+  font-size:26px; font-weight:900; letter-spacing:2px;
+  pointer-events:none; opacity:0;
+}
+.judge-pop.perfect { color:#ffe89b; text-shadow:0 0 14px rgba(255,214,107,0.8); }
+.judge-pop.good    { color:#a8ff78; text-shadow:0 0 12px rgba(168,255,120,0.7); }
+.judge-pop.show { animation:popUp .6s ease-out forwards; }
+@keyframes popUp {
+  0%   { opacity:1; transform:translateX(-50%) translateY(0) scale(.7); }
+  28%  { opacity:1; transform:translateX(-50%) translateY(-16px) scale(1.1); }
+  70%  { opacity:.7; transform:translateX(-50%) translateY(-30px) scale(1); }
+  100% { opacity:0; transform:translateX(-50%) translateY(-42px) scale(.9); }
+}
+
+/* ===== 摄像头小窗 ===== */
+.you-cam {
+  position:absolute; bottom:18px; right:18px;
+  width:96px; border-radius:var(--r-md); overflow:hidden;
+  z-index:30; border:var(--glass-border); box-shadow:0 8px 24px rgba(0,0,0,.3);
+}
+.you-cam video { width:100%; display:block; transform:scaleX(-1); aspect-ratio:4/3; object-fit:cover; }
+.you-cam canvas { position:absolute;inset:0;width:100%;height:100%;pointer-events:none; }
+.you-label { position:absolute;bottom:0;left:0;right:0;padding:3px 7px;font-size:9px;font-weight:700;
+  background:rgba(0,0,0,.5);letter-spacing:.08em;display:flex;align-items:center;gap:4px; }
+.you-dot { width:5px;height:5px;border-radius:50%;background:var(--ok);animation:blink-dot 1.2s infinite; }
+@keyframes blink-dot { 0%,100%{opacity:1}50%{opacity:.2} }
+
+/* 摄像头关闭按钮 — 常驻在小窗左侧 */
+.face-toggle {
+  position:absolute; bottom:18px; right:122px; z-index:35;
+  display:flex; align-items:center; gap:5px;
+  padding:5px 10px; border-radius:20px;
+  background:rgba(0,0,0,.60); border:1px solid rgba(255,255,255,.18);
+  color:rgba(255,255,255,.80); font-size:11px; font-weight:600;
+  cursor:pointer; backdrop-filter:blur(6px);
+  transition:background .2s; user-select:none; white-space:nowrap;
+}
+.face-toggle:hover { background:rgba(0,0,0,.80); }
+.face-toggle svg { width:13px; height:13px; flex-shrink:0; }
+/* 首次提示气泡 */
+.face-tip {
+  position:absolute; bottom:60px; right:18px; z-index:36;
+  background:rgba(0,0,0,.82); border:1px solid rgba(168,255,120,.3);
+  color:#fff; font-size:12px; line-height:1.55;
+  padding:10px 14px; border-radius:10px; max-width:200px;
+  pointer-events:auto; cursor:pointer;
+  animation:faceTipIn .25s ease;
+}
+.face-tip::after {
+  content:''; position:absolute; bottom:-7px; right:30px;
+  border:7px solid transparent; border-top-color:rgba(0,0,0,.82);
+  border-bottom:none;
+}
+.face-tip b { color:#a8ff78; }
+.face-tip.hide { display:none; }
+@keyframes faceTipIn { from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);} }
+
+/* ===== 全屏闪 ===== */
+@keyframes flashFade { 0%{opacity:1} 100%{opacity:0} }
+
+/* ===== 开场 overlay ===== */
+.overlay {
+  position:absolute; inset:0; z-index:60;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+  background:radial-gradient(circle at 50% 44%, rgba(4,16,6,.86), rgba(2,8,3,.97));
+  backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+.overlay.hide { display:none; }
+.brand-tag { font-size:11px; font-weight:700; letter-spacing:.15em; color:#a8ff78; opacity:.75; }
+.big-title { font-size:50px; font-weight:900; line-height:1;
+  background:linear-gradient(135deg,#fff,#a8ff78);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 18px rgba(168,255,120,0.38)); }
+.subtitle { font-size:14px; color:rgba(255,255,255,.68); line-height:1.8; text-align:center; }
+.subtitle b { color:#fff; }
+.how-grid { display:flex; gap:10px; margin-top:2px; }
+.how-item { background:rgba(6,18,8,.52); border:1px solid rgba(255,255,255,.09); border-radius:var(--r-md);
+  padding:10px 14px; text-align:center; min-width:86px; }
+.how-item .arrow { font-size:22px; margin-bottom:5px; }
+.how-item .lb { font-size:12px; font-weight:700; }
+.how-item .sub2 { font-size:10px; color:rgba(255,255,255,.4); margin-top:2px; }
+.btn-start { margin-top:6px; padding:13px 44px; border-radius:var(--r-pill); background:#fff; color:#030c05;
+  font-family:var(--font); font-size:15px; font-weight:900; border:none; cursor:pointer;
+  letter-spacing:1px; box-shadow:0 0 20px rgba(255,255,255,.22); transition:opacity .15s; }
+.btn-start:active { opacity:.8; }
+.btn-start:disabled { opacity:.4; cursor:default; }
+.loading-hint { font-size:11px; color:rgba(255,255,255,.32); }
+
+/* ===== 倒计时 ===== */
+.countdown { position:absolute;inset:0;z-index:55;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle,rgba(0,0,0,.28),rgba(0,0,0,.6));
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px); }
+.countdown.hide { display:none; }
+.cd-num { font-size:140px;font-weight:900;line-height:1;color:var(--gold-bright);
+  text-shadow:0 0 50px rgba(168,255,120,.55),0 0 100px rgba(168,255,120,.25),0 8px 20px rgba(0,0,0,.7); }
+.cd-num.go { font-size:86px;letter-spacing:6px;
+  background:linear-gradient(135deg,#fff,#a8ff78);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 34px rgba(168,255,120,.6)); }
+.cd-pop { animation:cdPop .9s ease-out; }
+@keyframes cdPop { 0%{transform:scale(.3);opacity:0;letter-spacing:22px;}28%{transform:scale(1.22);opacity:1;}70%{transform:scale(1);opacity:1;}100%{transform:scale(.8);opacity:0;} }
+
+/* ===== 结算 ===== */
+#result { position:absolute;inset:0;z-index:65;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:radial-gradient(circle at 50% 44%,rgba(4,16,6,.92),rgba(2,8,3,.97));
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px); }
+#result.hide { display:none; }
+.result-icon { font-size:58px; animation:iconPop .8s ease-out; }
+@keyframes iconPop { 0%{transform:scale(.2) translateY(16px);opacity:0;}45%{transform:scale(1.22);opacity:1;}70%{transform:scale(.94);}100%{transform:scale(1);opacity:1;} }
+.result-title { font-size:26px; font-weight:900; color:#fff; }
+.result-verdict { font-size:15px; font-weight:700;
+  background:linear-gradient(135deg,#a8ff78,#ffd66b);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent; }
+.result-stats { display:flex; gap:12px; margin:4px 0; }
+.stat-card { background:rgba(6,18,8,.55); border:1px solid rgba(255,255,255,.09);
+  border-radius:var(--r-md); padding:10px 17px; text-align:center; min-width:80px; }
+.stat-card .num { font-size:30px; font-weight:900; color:var(--ff); font-variant-numeric:tabular-nums; }
+.stat-card .lbl { font-size:10px; color:rgba(255,255,255,.45); margin-top:2px; }
+.feel-block { display:flex; gap:7px; }
+.feel-btn { padding:9px 13px; border-radius:var(--r-pill); background:rgba(6,18,8,.5);
+  border:1px solid rgba(255,255,255,.09); color:rgba(255,255,255,.7);
+  font-family:var(--font); font-size:12px; cursor:pointer; transition:all .15s;
+  display:flex;flex-direction:column;align-items:center;gap:2px; }
+.feel-btn .em { font-size:18px; }
+.feel-btn .fl { font-size:10px; color:rgba(255,255,255,.55); font-weight:700; }
+.feel-btn.on { background:rgba(168,255,120,.13); border-color:#a8ff78; }
+.feel-btn.on .fl { color:#a8ff78; }
+.btn-again { width:270px;padding:14px;border-radius:var(--r-pill);background:#fff;color:#030c05;
+  font-family:var(--font);font-size:16px;font-weight:900;border:none;cursor:pointer;
+  letter-spacing:1.5px;margin-top:6px; }
+.btn-report { width:270px;padding:12px;border-radius:var(--r-pill);
+  background:rgba(168,255,120,.07);border:1px solid rgba(168,255,120,.35);
+  color:#a8ff78;font-family:var(--font);font-size:14px;font-weight:900;
+  cursor:pointer;letter-spacing:1px;margin-top:3px; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 背景场景 -->
+  <div id="bg"></div>
+
+  <!-- 树轮廓 左 -->
+  <div class="tree tree-l">
+    <svg width="120" height="320" viewBox="0 0 120 320" fill="none">
+      <polygon points="60,0 0,140 40,130 10,220 50,210 20,320 120,320 90,210 110,220 80,130 120,140" fill="#020905"/>
+    </svg>
+  </div>
+  <!-- 树轮廓 右 -->
+  <div class="tree tree-r">
+    <svg width="100" height="280" viewBox="0 0 100 280" fill="none">
+      <polygon points="50,0 0,120 34,112 8,190 44,182 16,280 100,280 74,182 92,190 66,112 100,120" fill="#020905"/>
+    </svg>
+  </div>
+
+  <div id="grass"></div>
+  <div id="moon"></div>
+
+  <!-- SVG 图标库 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </symbol>
+    <symbol id="i-fire" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round">
+      <path d="M12 3c1 3-1 4-1 6a3 3 0 0 0 3 3c1-1 1-2 1-3 2 2 3 4 3 6a6 6 0 1 1-12 0c0-3 2-5 3-7 .8 1 1 2 3 2z"/>
+    </symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round">
+      <path d="M12 3l1.8 5.4 5.4 1.8-5.4 1.8L12 17.4l-1.8-5.4L4.8 10.2l5.4-1.8z"/>
+    </symbol>
+  </svg>
+
+  <!-- 雾气层 -->
+  <div id="fog"></div>
+
+  <!-- 萤火虫画布 -->
+  <canvas id="ff-canvas"></canvas>
+
+  <!-- 判定圆圈 -->
+  <div id="zone-ring"></div>
+
+  <!-- Joy -->
+  <div id="joy-char">
+    <svg viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="34" cy="47" rx="16" ry="12" fill="#ea3323"/>
+      <circle cx="34" cy="27" r="15" fill="#fff" stroke="#ea3323" stroke-width="1.6"/>
+      <ellipse cx="21" cy="22" rx="4" ry="5.5" fill="#fff" stroke="#ea3323" stroke-width="1.3"/>
+      <ellipse cx="47" cy="22" rx="4" ry="5.5" fill="#fff" stroke="#ea3323" stroke-width="1.3"/>
+      <ellipse id="joy-eye-l" cx="28" cy="27" rx="3.2" ry="3.8" fill="#1a1a1a"/>
+      <ellipse id="joy-eye-r" cx="40" cy="27" rx="3.2" ry="3.8" fill="#1a1a1a"/>
+      <circle cx="29.2" cy="25.8" r="1.2" fill="white"/>
+      <circle cx="41.2" cy="25.8" r="1.2" fill="white"/>
+      <ellipse cx="34" cy="32" rx="2.3" ry="1.7" fill="#cc2a1a"/>
+      <path id="joy-mouth" d="M29 36 Q34 41 39 36" stroke="#cc2a1a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+      <rect x="26" y="56" width="6" height="8" rx="3" fill="#ea3323"/>
+      <rect x="36" y="56" width="6" height="8" rx="3" fill="#ea3323"/>
+    </svg>
+  </div>
+
+  <!-- 眼睛状态 -->
+  <div id="eye-indicator">
+    <div class="eye-circles">
+      <div class="eye-circle" id="eye-l"><div class="pupil"></div></div>
+      <div class="eye-circle" id="eye-r"><div class="pupil"></div></div>
+    </div>
+    <div class="eye-hint" id="eye-hint">检测中…</div>
+  </div>
+
+  <!-- 眨眼提示 -->
+  <div id="blink-cue">眨眼</div>
+
+  <!-- HUD -->
+  <div class="hud-top">
+    <div class="chip">
+      <svg class="ico"><use href="#i-spark"/></svg>
+      <span class="lb">点亮</span>
+      <span class="val" id="catchVal">0</span>
+    </div>
+    <div class="chip">
+      <svg class="ico"><use href="#i-fire"/></svg>
+      <span class="lb">连续</span>
+      <span class="val" id="comboVal">0</span>
+    </div>
+    <div class="chip">
+      <svg class="ico"><use href="#i-eye"/></svg>
+      <span class="lb">眨眼</span>
+      <span class="val" id="bpmVal">—</span>
+      <span class="unit">/分钟</span>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <span class="prog-pct" id="progPct">0%</span>
+  </div>
+
+  <!-- 判定弹字 -->
+  <div class="judge-pop" id="judgePop"></div>
+
+  <!-- 摄像头关闭常驻按钮 -->
+  <button class="face-toggle" id="faceToggleBtn" onclick="toggleFaceView()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    关闭人脸影像
+  </button>
+  <!-- 首次提示气泡 -->
+  <div class="face-tip hide" id="faceTip" onclick="dismissFaceTip()">
+    在意隐私？点左边按钮<b>关闭人脸画面</b><br>不影响游戏，随时可重新开启
+  </div>
+
+  <!-- 摄像头小窗 -->
+  <div class="you-cam" id="youCam" data-mask>
+    <video id="cam-video" autoplay muted playsinline></video>
+    <canvas id="mesh-canvas"></canvas>
+    <div class="you-label"><span class="you-dot"></span>YOU</div>
+  </div>
+
+  <!-- 开场 -->
+  <div class="overlay" id="intro">
+    <div class="brand-tag">今天不低头 · 眼部护理</div>
+    <div class="big-title">唤醒萤火虫</div>
+    <div class="subtitle">
+      夜晚草地上，萤火虫们都睡着了<br>
+      当萤火虫<b>闪烁发光</b>时，<b>眨一下眼睛</b>就能唤醒它
+    </div>
+    <div class="how-grid">
+      <div class="how-item">
+        <div class="arrow">🌿</div>
+        <div class="lb">等它发光</div>
+        <div class="sub2">飞到中央会变亮</div>
+      </div>
+      <div class="how-item">
+        <div class="arrow">👁</div>
+        <div class="lb">用力眨眼</div>
+        <div class="sub2">闭眼再睁开</div>
+      </div>
+      <div class="how-item">
+        <div class="arrow">✨</div>
+        <div class="lb">画面变亮</div>
+        <div class="sub2">越眨眼雾越散</div>
+      </div>
+    </div>
+    <button class="btn-start" id="btnStart" disabled>准备好了</button>
+    <div class="loading-hint" id="loadingHint">正在加载摄像头…</div>
+  </div>
+
+  <!-- 倒计时 -->
+  <div class="countdown hide" id="countdown">
+    <div class="cd-num" id="cdNum">3</div>
+  </div>
+
+  <!-- 结算 -->
+  <div id="result" class="hide">
+    <div class="result-icon" id="resultIcon">✨</div>
+    <div class="result-title" id="resultTitle">完成！</div>
+    <div class="result-verdict" id="resultVerdict">眼睛更滋润了</div>
+    <div class="result-stats">
+      <div class="stat-card"><div class="num" id="statCatch">0</div><div class="lbl">点亮萤火虫</div></div>
+      <div class="stat-card"><div class="num" id="statBpm">—</div><div class="lbl">眨眼/分钟</div></div>
+      <div class="stat-card"><div class="num" id="statCombo">0</div><div class="lbl">最高连击</div></div>
+    </div>
+    <div class="feel-block">
+      <button class="feel-btn" data-feel="better"><span class="em">😌</span><span class="fl">眼睛舒服了</span></button>
+      <button class="feel-btn" data-feel="same"><span class="em">😐</span><span class="fl">还行</span></button>
+      <button class="feel-btn" data-feel="tired"><span class="em">😣</span><span class="fl">眼睛累</span></button>
+    </div>
+    <button class="btn-again" id="btnAgain">再来一次</button>
+    <button class="btn-report" onclick="location.href='mock-report.html'">看完整报告 →</button>
+  </div>
+
+</div>
+
+<script src="js/joy-mask.js"></script>
+<script type="module">
+import { createPoseKernel } from "./js/pose-kernel.js";
+
+// ===== 摄像头画面开关 =====
+let faceViewOn = true;
+function toggleFaceView(){
+  faceViewOn = !faceViewOn;
+  const cam = document.getElementById('youCam');
+  const btn = document.getElementById('faceToggleBtn');
+  if(faceViewOn){
+    cam.style.opacity = '1';
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>关闭人脸影像';
+  } else {
+    cam.style.opacity = '0';
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>显示人脸影像';
+  }
+}
+function dismissFaceTip(){
+  const tip = document.getElementById('faceTip');
+  if(tip) tip.classList.add('hide');
+  try{ localStorage.setItem('chinup_face_tip_seen','1'); }catch(e){}
+}
+function maybeShowFaceTip(){
+  try{ if(localStorage.getItem('chinup_face_tip_seen')) return; }catch(e){}
+  const tip = document.getElementById('faceTip');
+  if(!tip) return;
+  tip.classList.remove('hide');
+  setTimeout(()=>{ tip.classList.add('hide'); try{localStorage.setItem('chinup_face_tip_seen','1');}catch(e){} }, 4000);
+}
+
+// ===== 常量 =====
+const GAME_DURATION = 30000;
+const EAR_THRESH = 0.21;
+const EAR_OPEN  = 0.26;
+const ZONE_R_RATIO = 0.15;   // 判定圆半径 = 屏幕短边 * 0.15
+const WAVES = [
+  { interval: 4000, speedMul: 1.0 },
+  { interval: 3200, speedMul: 1.18 },
+  { interval: 2600, speedMul: 1.38 },
+];
+const MAX_CATCH_FOR_CLEAR = 14;  // 接住这么多只雾气完全消散
+
+// ===== DOM =====
+const camVideo   = document.getElementById('cam-video');
+const meshCanvas = document.getElementById('mesh-canvas');
+const ffCanvas   = document.getElementById('ff-canvas');
+const fogEl      = document.getElementById('fog');
+const zoneRing   = document.getElementById('zone-ring');
+const blinkCue   = document.getElementById('blink-cue');
+const catchEl    = document.getElementById('catchVal');
+const comboEl    = document.getElementById('comboVal');
+const bpmEl      = document.getElementById('bpmVal');
+const progFill   = document.getElementById('progFill');
+const progPct    = document.getElementById('progPct');
+const judgePop   = document.getElementById('judgePop');
+const btnStart   = document.getElementById('btnStart');
+const btnAgain   = document.getElementById('btnAgain');
+const loadHint   = document.getElementById('loadingHint');
+const introEl    = document.getElementById('intro');
+const cdEl       = document.getElementById('countdown');
+const cdNum      = document.getElementById('cdNum');
+const resultEl   = document.getElementById('result');
+const stageEl    = document.getElementById('stage');
+const joyChar    = document.getElementById('joy-char');
+const joyEyeL    = document.getElementById('joy-eye-l');
+const joyEyeR    = document.getElementById('joy-eye-r');
+const joyMouth   = document.getElementById('joy-mouth');
+const eyeL       = document.getElementById('eye-l');
+const eyeR       = document.getElementById('eye-r');
+const eyeHint    = document.getElementById('eye-hint');
+const meshCtx    = meshCanvas.getContext('2d');
+const ffCtx      = ffCanvas.getContext('2d');
+
+// ===== 状态 =====
+let kernel = null;
+let playing = false, gameStart = 0;
+let caught = 0, combo = 0, maxCombo = 0, blinkCount = 0;
+let eyeOpen = true;
+let waveIdx = 0, dropTimer = null;
+let fireflies = [];
+let prevTime = 0, lastCueTime = 0;
+let zoneCX = 0, zoneCY = 0, zoneR = 0;
+let fogLevel = 1.0;
+
+// ===== EAR =====
+function calcEAR(lm) {
+  if (!lm) return 0.3;
+  const d = (a,b) => Math.hypot(lm[a].x-lm[b].x, lm[a].y-lm[b].y);
+  return ((d(159,145)/( d(33,133)||1e-4)) + (d(386,374)/(d(263,362)||1e-4))) / 2;
+}
+
+// ===== 萤火虫系统 =====
+// 贝塞尔取点
+function bez(t, p0, p1, p2, p3) {
+  const m = 1-t;
+  return m*m*m*p0 + 3*m*m*t*p1 + 3*m*t*t*p2 + t*t*t*p3;
+}
+
+function spawnFirefly() {
+  const w = ffCanvas.width, h = ffCanvas.height;
+  // 从随机边缘出发，路径途经判定区附近
+  const edges = [
+    { sx: Math.random()*w, sy: -30, ex: Math.random()*w, ey: h+30 },
+    { sx: w+30, sy: Math.random()*h*0.65, ex: -30, ey: Math.random()*h*0.65 },
+    { sx: -30, sy: Math.random()*h*0.65, ex: w+30, ey: Math.random()*h*0.65 },
+    { sx: Math.random()*w*0.4, sy: h+30, ex: w*0.5+Math.random()*w*0.4, ey: -30 },
+  ];
+  const e = edges[Math.floor(Math.random()*edges.length)];
+  // 控制点拉向判定区，带少许偏移
+  const jitter = Math.min(w,h) * 0.1;
+  const cx1 = zoneCX + (Math.random()-.5)*jitter*2.5;
+  const cy1 = zoneCY + (Math.random()-.5)*jitter*2.5;
+  const cx2 = zoneCX + (Math.random()-.5)*jitter*2;
+  const cy2 = zoneCY + (Math.random()-.5)*jitter*2;
+
+  const baseSpeed = 0.00016 + Math.random()*0.00005;
+  fireflies.push({
+    sx:e.sx, sy:e.sy, cx1, cy1, cx2, cy2, ex:e.ex, ey:e.ey,
+    t:0, speed: baseSpeed * WAVES[waveIdx].speedMul,
+    x:e.sx, y:e.sy,
+    state:'sleeping',   // sleeping | inZone | awakened | missed
+    brightness: 0.08 + Math.random()*0.06,
+    size: 3.5 + Math.random()*2,
+    flkOff: Math.random()*Math.PI*2,
+    trail: [],
+    alpha: 1,
+  });
+}
+
+function updateFireflies(now, dt) {
+  for (const f of fireflies) {
+    if (f.state === 'done') continue;
+
+    // 速度：唤醒后加速飞走
+    const tSpeed = f.speed * (f.state === 'awakened' ? 1.7 : 1);
+    f.t += tSpeed * dt;
+    f.x = bez(f.t, f.sx, f.cx1, f.cx2, f.ex);
+    f.y = bez(f.t, f.sy, f.cy1, f.cy2, f.ey);
+
+    const dist = Math.hypot(f.x - zoneCX, f.y - zoneCY);
+    const flicker = Math.sin(now * 0.005 + f.flkOff);
+
+    if (f.state === 'sleeping') {
+      f.brightness = 0.09 + flicker * 0.04;
+      if (dist < zoneR) f.state = 'inZone';
+
+    } else if (f.state === 'inZone') {
+      // 在判定区内：脉冲发亮
+      f.brightness = 0.6 + flicker * 0.28;
+      // 飞出判定区且未眨眼 → miss
+      if (dist > zoneR * 1.35) {
+        f.state = 'missed';
+        onMiss();
+      }
+
+    } else if (f.state === 'awakened') {
+      f.brightness = Math.max(0, f.brightness - 0.014);
+      f.trail.push({ x:f.x, y:f.y, a:0.75 });
+      if (f.trail.length > 28) f.trail.shift();
+
+    } else if (f.state === 'missed') {
+      f.brightness = Math.max(0, f.brightness - 0.022);
+    }
+
+    // 尾迹衰减
+    for (const tp of f.trail) tp.a -= 0.022;
+    f.trail = f.trail.filter(tp => tp.a > 0);
+
+    // 飞出边界 or 亮度耗尽
+    if (f.t >= 1 || (f.brightness <= 0 && f.trail.length === 0)) f.state = 'done';
+  }
+  fireflies = fireflies.filter(f => f.state !== 'done' || f.trail.length > 0);
+}
+
+function drawFireflies(now) {
+  const w = ffCanvas.width, h = ffCanvas.height;
+  ffCtx.clearRect(0, 0, w, h);
+
+  for (const f of fireflies) {
+    ffCtx.save();
+
+    // 尾迹（唤醒后的光痕）
+    for (let i = 0; i < f.trail.length; i++) {
+      const tp = f.trail[i];
+      const r = f.size * 0.65 * (i / f.trail.length);
+      ffCtx.globalAlpha = tp.a * f.alpha;
+      ffCtx.beginPath();
+      ffCtx.arc(tp.x, tp.y, r, 0, Math.PI*2);
+      ffCtx.fillStyle = '#c8ff50';
+      ffCtx.shadowColor = '#a8ff78';
+      ffCtx.shadowBlur = 5;
+      ffCtx.fill();
+    }
+
+    if (f.state !== 'done') {
+      // 光晕
+      const glowAlpha = f.brightness * 0.55 * f.alpha;
+      ffCtx.globalAlpha = glowAlpha;
+      const grad = ffCtx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.size * 6);
+      const isIn = f.state === 'inZone';
+      grad.addColorStop(0, isIn ? 'rgba(255,255,200,0.95)' : 'rgba(212,255,96,0.85)');
+      grad.addColorStop(1, 'transparent');
+      ffCtx.fillStyle = grad;
+      ffCtx.beginPath();
+      ffCtx.arc(f.x, f.y, f.size * 6, 0, Math.PI*2);
+      ffCtx.fill();
+
+      // 核心亮点
+      ffCtx.globalAlpha = Math.min(1, f.brightness * 1.3) * f.alpha;
+      ffCtx.beginPath();
+      ffCtx.arc(f.x, f.y, f.size, 0, Math.PI*2);
+      ffCtx.fillStyle = isIn ? '#fffde0' : '#d4ff60';
+      ffCtx.shadowColor = '#a8ff78';
+      ffCtx.shadowBlur = isIn ? 20 : 10;
+      ffCtx.fill();
+
+      // 判定区内：脉冲外圈
+      if (isIn) {
+        const pulse = (Math.sin(now * 0.009 + f.flkOff) + 1) * 0.5;
+        ffCtx.globalAlpha = 0.45 * pulse * f.alpha;
+        ffCtx.beginPath();
+        ffCtx.arc(f.x, f.y, f.size * (3 + pulse * 2.5), 0, Math.PI*2);
+        ffCtx.strokeStyle = '#d4ff60';
+        ffCtx.lineWidth = 1.5;
+        ffCtx.stroke();
+      }
+    }
+
+    ffCtx.restore();
+  }
+}
+
+// ===== 雾气控制 =====
+function updateFog() {
+  fogLevel = Math.max(0, 1 - (caught / MAX_CATCH_FOR_CLEAR));
+  fogEl.style.backdropFilter        = `blur(${(fogLevel * 7).toFixed(1)}px)`;
+  fogEl.style.webkitBackdropFilter  = `blur(${(fogLevel * 7).toFixed(1)}px)`;
+  fogEl.style.background            = `rgba(2,8,3,${(fogLevel * 0.6).toFixed(2)})`;
+}
+
+// ===== 眨眼判定 =====
+function onBlink() {
+  if (!playing) return;
+  blinkCount++;
+  const elapsed = performance.now() - gameStart;
+  const min = elapsed / 60000;
+  if (min > 0) bpmEl.textContent = Math.round(blinkCount / min);
+
+  // 找判定区内的萤火虫
+  const inZone = fireflies.filter(f => f.state === 'inZone');
+  if (inZone.length > 0) {
+    // 最靠近中心的那只
+    const f = inZone.reduce((b, c) =>
+      Math.hypot(c.x-zoneCX,c.y-zoneCY) < Math.hypot(b.x-zoneCX,b.y-zoneCY) ? c : b
+    );
+    const dist = Math.hypot(f.x-zoneCX, f.y-zoneCY);
+    const perfect = dist < zoneR * 0.48;
+
+    f.state = 'awakened';
+    f.brightness = 1.0;
+    caught++;
+    combo++;
+    if (combo > maxCombo) maxCombo = combo;
+    catchEl.textContent = caught;
+    comboEl.textContent = combo;
+    updateFog();
+    showJudge(perfect ? 'PERFECT ✨' : 'GOOD 💫', perfect ? 'perfect' : 'good');
+    flashScreen(perfect ? 'rgba(210,255,100,0.13)' : 'rgba(168,255,120,0.09)');
+
+    // Joy 跳起来
+    joyChar.classList.remove('catch-anim');
+    void joyChar.offsetWidth;
+    joyChar.classList.add('catch-anim');
+    joyMouth.setAttribute('d','M28 35 Q34 42 40 35');
+    setTimeout(() => joyMouth.setAttribute('d','M29 36 Q34 41 39 36'), 420);
+
+  } else {
+    // 空眨眼 —— 不惩罚，Joy 轻微反应
+    joyChar.classList.remove('catch-anim');
+    void joyChar.offsetWidth;
+    joyChar.classList.add('catch-anim');
+  }
+}
+
+function onMiss() {
+  combo = 0;
+  comboEl.textContent = 0;
+  // Joy 轻微难过
+  joyMouth.setAttribute('d','M29 39 Q34 35 39 39');
+  setTimeout(() => joyMouth.setAttribute('d','M29 36 Q34 41 39 36'), 650);
+}
+
+function showJudge(text, cls) {
+  judgePop.textContent = text;
+  judgePop.className = 'judge-pop ' + cls;
+  void judgePop.offsetWidth;
+  judgePop.classList.add('show');
+}
+
+function flashScreen(color) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;inset:0;pointer-events:none;z-index:50;background:${color};animation:flashFade .38s ease-out forwards;`;
+  stageEl.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+// ===== 出题调度 =====
+function scheduleNext() {
+  if (!playing) return;
+  spawnFirefly();
+  const elapsed = performance.now() - gameStart;
+  if      (elapsed > GAME_DURATION * 0.66) waveIdx = 2;
+  else if (elapsed > GAME_DURATION * 0.33) waveIdx = 1;
+  dropTimer = setTimeout(scheduleNext, WAVES[waveIdx].interval);
+}
+
+// ===== 点阵脸 =====
+const MASK_MODE = (location.search.indexOf('mesh=1')<0);   // 默认 Joy 面具;?mesh=1 强制点阵调试
+function drawMesh(lm) {
+  meshCanvas.width = meshCanvas.offsetWidth;
+  meshCanvas.height = meshCanvas.offsetHeight;
+  meshCtx.clearRect(0, 0, meshCanvas.width, meshCanvas.height);
+  if (!lm) return;
+  const w = meshCanvas.width, h = meshCanvas.height;
+  const camBox = meshCanvas.closest('.you-cam');
+  const maskMode = (!camBox || camBox.dataset.faceMode !== 'mesh') && MASK_MODE;
+  if (maskMode) { if (window.JoyMask) JoyMask.draw(meshCtx, lm, w, h); return; }
+  meshCtx.fillStyle = 'rgba(107,255,157,0.42)';
+  for (const p of lm) {
+    meshCtx.beginPath();
+    meshCtx.arc((1-p.x)*w, p.y*h, 1.1, 0, Math.PI*2);
+    meshCtx.fill();
+  }
+}
+
+// ===== 主循环 =====
+function tick(now) {
+  const dt = Math.min(now - prevTime, 50);
+  prevTime = now;
+
+  const p = kernel.tick(now);
+  if (p && p.landmarks) {
+    const ear = calcEAR(p.landmarks);
+    if (ear < EAR_THRESH) {
+      if (eyeOpen) {
+        eyeOpen = false;
+        eyeL.classList.add('closed');
+        eyeR.classList.add('closed');
+        joyEyeL.setAttribute('ry','1.3');
+        joyEyeR.setAttribute('ry','1.3');
+      }
+    } else if (ear > EAR_OPEN) {
+      if (!eyeOpen) {
+        eyeOpen = true;
+        eyeL.classList.remove('closed');
+        eyeR.classList.remove('closed');
+        joyEyeL.setAttribute('ry','3.8');
+        joyEyeR.setAttribute('ry','3.8');
+        onBlink();
+      }
+    }
+    eyeHint.textContent = ear < EAR_THRESH ? '闭眼中' : `EAR ${ear.toFixed(2)}`;
+    drawMesh(p.landmarks);
+  }
+
+  if (playing) {
+    updateFireflies(now, dt);
+
+    // 判定区内有萤火虫 → 触发 BLINK 提示
+    const anyInZone = fireflies.some(f => f.state === 'inZone');
+    if (anyInZone && now - lastCueTime > 650) {
+      lastCueTime = now;
+      blinkCue.classList.remove('show');
+      void blinkCue.offsetWidth;
+      blinkCue.classList.add('show');
+      zoneRing.classList.remove('pulse');
+      void zoneRing.offsetWidth;
+      zoneRing.classList.add('pulse');
+    }
+
+    const elapsed = now - gameStart;
+    const pct = Math.min(elapsed / GAME_DURATION * 100, 100);
+    progFill.style.width = pct + '%';
+    progPct.textContent = Math.round(pct) + '%';
+
+    if (elapsed >= GAME_DURATION) { endGame(); return; }
+  }
+
+  drawFireflies(now);
+  requestAnimationFrame(tick);
+}
+
+// ===== 流程 =====
+function startCountdown() {
+  introEl.classList.add('hide');
+  maybeShowFaceTip();
+  cdEl.classList.remove('hide');
+  let n = 3;
+  cdNum.textContent = n; cdNum.className = 'cd-num cd-pop';
+  const iv = setInterval(() => {
+    n--;
+    if (n <= 0) {
+      clearInterval(iv);
+      cdNum.textContent = 'GO'; cdNum.className = 'cd-num go cd-pop';
+      setTimeout(() => { cdEl.classList.add('hide'); startGame(); }, 900);
+    } else {
+      cdNum.textContent = n; cdNum.className = 'cd-num cd-pop';
+    }
+  }, 1000);
+}
+
+function startGame() {
+  playing = true; gameStart = performance.now();
+  caught = 0; combo = 0; maxCombo = 0; blinkCount = 0; waveIdx = 0;
+  fireflies = []; fogLevel = 1.0; updateFog();
+  catchEl.textContent = '0'; comboEl.textContent = '0'; bpmEl.textContent = '—';
+  scheduleNext();
+}
+
+function endGame() {
+  playing = false;
+  clearTimeout(dropTimer);
+  const bpm = Math.round(blinkCount / (GAME_DURATION / 60000));
+  let icon='✨', title='完成！', verdict='每次眨眼都是对眼睛的爱护';
+  if (caught >= MAX_CATCH_FOR_CLEAR) { icon='🌟'; title='草地大放光明！'; verdict='你唤醒了所有的萤火虫'; }
+  else if (caught >= 9)              { icon='✨'; title='太棒了！'; verdict='草地上光点闪闪，好美'; }
+  document.getElementById('resultIcon').textContent    = icon;
+  document.getElementById('resultTitle').textContent   = title;
+  document.getElementById('resultVerdict').textContent = verdict;
+  document.getElementById('statCatch').textContent = caught;
+  document.getElementById('statBpm').textContent   = bpm || '—';
+  document.getElementById('statCombo').textContent = maxCombo;
+  resultEl.classList.remove('hide');
+}
+
+// ===== 初始化 =====
+function setupLayout() {
+  ffCanvas.width  = window.innerWidth;
+  ffCanvas.height = window.innerHeight;
+  zoneCX = window.innerWidth * 0.5;
+  zoneCY = window.innerHeight * 0.42;
+  zoneR  = Math.min(window.innerWidth, window.innerHeight) * ZONE_R_RATIO;
+  zoneRing.style.width  = zoneR * 2 + 'px';
+  zoneRing.style.height = zoneR * 2 + 'px';
+  zoneRing.style.left   = zoneCX + 'px';
+  zoneRing.style.top    = zoneCY + 'px';
+}
+
+async function init() {
+  setupLayout();
+  window.addEventListener('resize', setupLayout);
+
+  kernel = createPoseKernel({ video: camVideo, smooth: 0.2 });
+  try {
+    await kernel.loadModel(msg => { loadHint.textContent = msg || '加载完成'; });
+    await kernel.startCamera();
+    loadHint.textContent = '摄像头就绪，可以开始了';
+    btnStart.disabled = false;
+    prevTime = performance.now();
+    requestAnimationFrame(tick);
+  } catch(e) {
+    loadHint.textContent = '摄像头启动失败，请检查权限';
+    console.error(e);
+  }
+}
+
+btnStart.addEventListener('click', startCountdown);
+btnAgain.addEventListener('click', () => { resultEl.classList.add('hide'); startCountdown(); });
+document.querySelectorAll('.feel-btn').forEach(btn => btn.addEventListener('click', () => {
+  document.querySelectorAll('.feel-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}));
+
+init();
+</script>
+</body>
+</html>

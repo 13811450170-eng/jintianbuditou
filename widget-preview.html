@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<title>今天不低头 Widgets</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  :root {
+    --bg: #0C1018;
+    --bg-soft: #111622;
+    --surface: #161B28;
+    --surface-2: #1E2538;
+    --surface-3: #252D42;
+    --accent: #F5BC30;
+    --accent-dim: rgba(245, 188, 48, 0.15);
+    --accent-glow: rgba(245, 188, 48, 0.25);
+    --teal: #3EC6B5;
+    --teal-dim: rgba(62, 198, 181, 0.15);
+    --fire: #FF7043;
+    --green: #52D98A;
+    --text: #EDE8DF;
+    --text-2: #9BA3B8;
+    --text-3: #5A6278;
+    --border: rgba(255,255,255,0.07);
+    --border-accent: rgba(245, 188, 48, 0.3);
+    --radius-widget: 22px;
+    --radius-sm: 12px;
+    --font-display: 'Sora', system-ui, sans-serif;
+    --font-body: 'Noto Sans SC', system-ui, sans-serif;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F0EDE8;
+      --bg-soft: #E8E4DE;
+      --surface: #FFFFFF;
+      --surface-2: #F5F2EE;
+      --surface-3: #EAE7E2;
+      --text: #1A1E2A;
+      --text-2: #5A6278;
+      --text-3: #9BA3B8;
+      --border: rgba(0,0,0,0.08);
+      --border-accent: rgba(200, 150, 10, 0.4);
+      --accent: #D4960A;
+      --accent-dim: rgba(212, 150, 10, 0.1);
+      --accent-glow: rgba(212, 150, 10, 0.2);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0C1018;
+    --bg-soft: #111622;
+    --surface: #161B28;
+    --surface-2: #1E2538;
+    --surface-3: #252D42;
+    --accent: #F5BC30;
+    --accent-dim: rgba(245, 188, 48, 0.15);
+    --accent-glow: rgba(245, 188, 48, 0.25);
+    --text: #EDE8DF;
+    --text-2: #9BA3B8;
+    --text-3: #5A6278;
+    --border: rgba(255,255,255,0.07);
+    --border-accent: rgba(245, 188, 48, 0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── PAGE HEADER ─────────────────────────────── */
+  .page-header {
+    max-width: 900px;
+    margin: 0 auto 56px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .brand-eyebrow {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .page-title .chin { color: var(--accent); }
+
+  .page-sub {
+    font-size: 14px;
+    color: var(--text-2);
+    line-height: 1.6;
+    max-width: 260px;
+  }
+
+  /* ── STREAK CONTROLS ─────────────────────────── */
+  .controls {
+    max-width: 900px;
+    margin: 0 auto 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .control-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-family: var(--font-display);
+  }
+
+  .streak-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .streak-pill {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    user-select: none;
+  }
+
+  .streak-pill:hover { border-color: var(--border-accent); color: var(--accent); }
+
+  .streak-pill.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── WIDGETS GRID ────────────────────────────── */
+  .widgets-section {
+    max-width: 900px;
+    margin: 0 auto 64px;
+  }
+
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 20px;
+  }
+
+  .widgets-row {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .widget-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .widget-size-label {
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: var(--text-3);
+    font-weight: 400;
+  }
+
+  /* ── WIDGET BASE ─────────────────────────────── */
+  .widget {
+    background: var(--surface);
+    border-radius: var(--radius-widget);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* Small: 155×155 */
+  .widget-sm { width: 155px; height: 155px; }
+
+  /* Medium: 329×155 */
+  .widget-md { width: 329px; height: 155px; }
+
+  /* Large: 329×345 */
+  .widget-lg { width: 329px; height: 345px; }
+
+  /* ── SMALL WIDGET ────────────────────────────── */
+  .w-small {
+    padding: 18px 16px 16px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .w-small .joy-bg {
+    position: absolute;
+    bottom: -8px;
+    right: -10px;
+    opacity: 0.12;
+    width: 100px;
+    height: 100px;
+    pointer-events: none;
+  }
+
+  .w-small .streak-num {
+    font-family: var(--font-display);
+    font-size: 72px;
+    font-weight: 800;
+    line-height: 0.88;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .w-small .streak-num.broken { color: var(--text-3); }
+
+  .w-small .bottom-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .w-small .label-stack { display: flex; flex-direction: column; gap: 1px; }
+
+  .w-small .label-main {
+    font-size: 11px;
+    font-weight: 700;
+    font-family: var(--font-display);
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+
+  .w-small .label-sub {
+    font-size: 10px;
+    color: var(--text-3);
+    font-family: var(--font-display);
+  }
+
+  .joy-face {
+    flex-shrink: 0;
+  }
+
+  /* ── MEDIUM WIDGET ───────────────────────────── */
+  .w-medium {
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 0;
+    height: 100%;
+  }
+
+  .w-medium .left-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-right: 16px;
+    border-right: 1px solid var(--border);
+  }
+
+  .w-medium .right-col {
+    padding-left: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .w-medium .streak-block {}
+
+  .w-medium .streak-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-bottom: 2px;
+  }
+
+  .w-medium .streak-num {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .w-medium .streak-num.broken { color: var(--text-3); }
+
+  .w-medium .streak-unit {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-2);
+    margin-top: 2px;
+  }
+
+  .w-medium .level-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--teal-dim);
+    border: 1px solid rgba(62, 198, 181, 0.2);
+    color: var(--teal);
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    width: fit-content;
+  }
+
+  .w-medium .level-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+
+  .w-medium .level-meta {
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .dot-sep { color: var(--text-3); font-size: 8px; }
+
+  .w-medium .progress-dots {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 10px;
+  }
+
+  .prog-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--surface-3);
+    transition: all 0.3s ease;
+  }
+
+  .prog-dot.done { background: var(--teal); }
+  .prog-dot.today { background: var(--accent); width: 18px; border-radius: 3px; }
+
+  .w-medium .prog-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--text-3);
+    margin-left: 4px;
+  }
+
+  /* ── LARGE WIDGET ────────────────────────────── */
+  .w-large {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: 100%;
+  }
+
+  .w-large .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .w-large .app-name {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.03em;
+  }
+
+  .w-large .streak-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent-dim);
+    border: 1px solid var(--border-accent);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  .w-large .streak-chip .num {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .w-large .streak-chip .unit {
+    font-size: 11px;
+    color: var(--text-2);
+    font-family: var(--font-display);
+  }
+
+  .w-large .today-card {
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .level-icon {
+    width: 44px;
+    height: 44px;
+    background: var(--accent-dim);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 22px;
+  }
+
+  .today-info .tag {
+    font-family: var(--font-display);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+
+  .today-info .name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+
+  .today-info .meta {
+    font-family: var(--font-display);
+    font-size: 11px;
+    color: var(--text-3);
+    display: flex;
+    gap: 6px;
+  }
+
+  .cta-pill {
+    margin-left: auto;
+    background: var(--accent);
+    color: #1A1200;
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .w-large .rom-section {}
+
+  .w-large .rom-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .rom-title {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-3);
+  }
+
+  .rom-change {
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  .rom-bars {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    height: 48px;
+  }
+
+  .rom-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .rom-bar-bg {
+    width: 100%;
+    background: var(--surface-3);
+    border-radius: 4px;
+    overflow: hidden;
+    height: 36px;
+    position: relative;
+  }
+
+  .rom-bar-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 4px;
+    transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .rom-bar-label {
+    font-family: var(--font-display);
+    font-size: 9px;
+    color: var(--text-3);
+    white-space: nowrap;
+  }
+
+  .w-large .week-dots {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .week-dot {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--surface-3);
+    transition: background 0.3s;
+  }
+
+  .week-dot.done { background: var(--teal); }
+  .week-dot.today { background: var(--accent); }
+  .week-dot.rest { background: var(--surface-3); opacity: 0.4; }
+
+  .week-label-row {
+    display: flex;
+    gap: 5px;
+    margin-top: 4px;
+  }
+
+  .week-day-label {
+    flex: 1;
+    font-family: var(--font-display);
+    font-size: 9px;
+    color: var(--text-3);
+    text-align: center;
+  }
+
+  .week-day-label.today { color: var(--accent); font-weight: 700; }
+
+  /* ── PHONE FRAME SECTION ─────────────────────── */
+  .phone-section {
+    max-width: 900px;
+    margin: 0 auto 64px;
+  }
+
+  .phone-frame {
+    width: 375px;
+    min-height: 500px;
+    background: var(--bg-soft);
+    border-radius: 52px;
+    border: 1px solid var(--border);
+    padding: 48px 20px 36px;
+    position: relative;
+    margin: 0 auto;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  .phone-notch {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: #060810;
+    border-radius: 20px;
+  }
+
+  .phone-wallpaper {
+    position: absolute;
+    inset: 0;
+    border-radius: 52px;
+    background: radial-gradient(ellipse at 30% 60%, rgba(245, 188, 48, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(62, 198, 181, 0.06) 0%, transparent 50%),
+                var(--bg-soft);
+    overflow: hidden;
+  }
+
+  .phone-content {
+    position: relative;
+    z-index: 1;
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .phone-time {
+    font-family: var(--font-display);
+    font-size: 52px;
+    font-weight: 300;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .phone-date {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--text-2);
+    text-align: center;
+    margin-top: -2px;
+    margin-bottom: 16px;
+  }
+
+  .phone-widgets-grid {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .phone-row-2 {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+  }
+
+  .phone-widget {
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  /* Scale phone widgets to fit 335px grid */
+  .phone-widget-sm { width: 155px; height: 155px; }
+  .phone-widget-md { width: 100%; height: 155px; }
+
+  /* ── NOTES SECTION ───────────────────────────── */
+  .notes-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .note-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+  }
+
+  .note-card h4 {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .note-card h4 .badge {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .note-card p {
+    font-size: 12.5px;
+    color: var(--text-2);
+    line-height: 1.65;
+  }
+
+  /* ── DIVIDER ─────────────────────────────────── */
+  .divider {
+    max-width: 900px;
+    margin: 0 auto 32px;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── JOY SVG FACES ─────────────────────────────── */
+  .joy-expression { transition: all 0.4s ease; }
+</style>
+</head>
+<body>
+
+<!-- PAGE HEADER -->
+<header class="page-header">
+  <div>
+    <div class="brand-eyebrow">今天不低头 · Chin Up</div>
+    <h1 class="page-title">iPhone<br><span class="chin">小组件</span>设计</h1>
+  </div>
+  <p class="page-sub">三个尺寸覆盖主要场景，以 Streak 为核心钩子，Joy 表情随状态变化。</p>
+</header>
+
+<!-- STREAK STATE PICKER -->
+<div class="controls">
+  <span class="control-label">Streak 状态</span>
+  <div class="streak-pills">
+    <button class="streak-pill" onclick="setStreak(0)">0天 断了</button>
+    <button class="streak-pill" onclick="setStreak(3)">3天</button>
+    <button class="streak-pill active" onclick="setStreak(7)">7天</button>
+    <button class="streak-pill" onclick="setStreak(21)">21天</button>
+    <button class="streak-pill" onclick="setStreak(66)">66天</button>
+  </div>
+</div>
+
+<!-- WIDGETS STANDALONE SIZES -->
+<div class="widgets-section">
+  <div class="section-label">组件尺寸 / 独立预览</div>
+  <div class="widgets-row">
+
+    <!-- SMALL WIDGET -->
+    <div class="widget-wrapper">
+      <div class="widget-size-label">小 · 155×155</div>
+      <div class="widget widget-sm">
+        <div class="w-small">
+          <!-- Joy ghost bg -->
+          <svg class="joy-bg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="50" cy="52" rx="32" ry="34" fill="var(--accent)"/>
+            <ellipse cx="26" cy="42" rx="12" ry="18" rx="11" ry="20" fill="var(--accent)" transform="rotate(-12 26 42)"/>
+            <ellipse cx="74" cy="42" rx="11" ry="20" fill="var(--accent)" transform="rotate(12 74 42)"/>
+            <circle cx="39" cy="48" r="5" fill="var(--bg)"/>
+            <circle cx="61" cy="48" r="5" fill="var(--bg)"/>
+          </svg>
+
+          <div class="streak-num joy-streak-sm" id="streak-sm">7</div>
+
+          <div class="bottom-row">
+            <div class="label-stack">
+              <span class="label-main" id="streak-sm-label">连续天数</span>
+              <span class="label-sub" id="streak-sm-sub">今日已完成</span>
+            </div>
+            <!-- Inline Joy face SVG -->
+            <svg class="joy-face joy-expression" id="joy-face-sm" width="36" height="36" viewBox="0 0 36 36">
+              <!-- Ears -->
+              <ellipse cx="8" cy="14" rx="6" ry="9" fill="#D4960A" transform="rotate(-10 8 14)"/>
+              <ellipse cx="28" cy="14" rx="6" ry="9" fill="#D4960A" transform="rotate(10 28 14)"/>
+              <!-- Head -->
+              <ellipse cx="18" cy="20" rx="14" ry="13" fill="#F5BC30"/>
+              <!-- Eyes -->
+              <g id="joy-eyes-sm">
+                <circle cx="13" cy="19" r="2.5" fill="#1A1200"/>
+                <circle cx="23" cy="19" r="2.5" fill="#1A1200"/>
+                <circle cx="14" cy="18.2" r="0.8" fill="white"/>
+                <circle cx="24" cy="18.2" r="0.8" fill="white"/>
+              </g>
+              <!-- Nose -->
+              <ellipse cx="18" cy="23" rx="2" ry="1.2" fill="#C8800A"/>
+              <!-- Mouth -->
+              <g id="joy-mouth-sm">
+                <path d="M 13 26 Q 18 30 23 26" stroke="#1A1200" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDIUM WIDGET -->
+    <div class="widget-wrapper">
+      <div class="widget-size-label">中 · 329×155</div>
+      <div class="widget widget-md">
+        <div class="w-medium">
+          <div class="left-col">
+            <div class="streak-block">
+              <div class="streak-label">连续打卡</div>
+              <div class="streak-num joy-streak-md" id="streak-md">7</div>
+              <div class="streak-unit" id="streak-md-unit">天 · 保持住 🔥</div>
+            </div>
+            <!-- Joy face -->
+            <svg class="joy-expression" id="joy-face-md" width="40" height="40" viewBox="0 0 40 40">
+              <ellipse cx="8" cy="15" rx="6.5" ry="10" fill="#D4960A" transform="rotate(-10 8 15)"/>
+              <ellipse cx="32" cy="15" rx="6.5" ry="10" fill="#D4960A" transform="rotate(10 32 15)"/>
+              <ellipse cx="20" cy="23" rx="15" ry="14" fill="#F5BC30"/>
+              <g id="joy-eyes-md">
+                <circle cx="14" cy="21" r="2.8" fill="#1A1200"/>
+                <circle cx="26" cy="21" r="2.8" fill="#1A1200"/>
+                <circle cx="15" cy="20" r="0.9" fill="white"/>
+                <circle cx="27" cy="20" r="0.9" fill="white"/>
+              </g>
+              <ellipse cx="20" cy="26" rx="2.2" ry="1.4" fill="#C8800A"/>
+              <g id="joy-mouth-md">
+                <path d="M 14 29 Q 20 34 26 29" stroke="#1A1200" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="right-col">
+            <div>
+              <div class="level-tag">今日推荐</div>
+              <div class="level-name">颈部拳击派对</div>
+              <div class="level-meta">
+                <span>3 分钟</span>
+                <span class="dot-sep">·</span>
+                <span>颈部</span>
+              </div>
+            </div>
+            <div class="progress-dots" id="prog-dots-md">
+              <!-- filled by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LARGE WIDGET -->
+<div class="widgets-section">
+  <div class="widgets-row">
+    <div class="widget-wrapper">
+      <div class="widget-size-label">大 · 329×345</div>
+      <div class="widget widget-lg">
+        <div class="w-large">
+
+          <div class="top-bar">
+            <span class="app-name">今天不低头</span>
+            <div class="streak-chip">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M6 1C6 1 9.5 4.5 9.5 7C9.5 8.933 7.933 10.5 6 10.5C4.067 10.5 2.5 8.933 2.5 7C2.5 4.5 6 1 6 1Z" fill="var(--accent)" opacity="0.9"/>
+              </svg>
+              <span class="num joy-streak-lg" id="streak-lg">7</span>
+              <span class="unit">天连续</span>
+            </div>
+          </div>
+
+          <div class="today-card">
+            <div class="level-icon">🥊</div>
+            <div class="today-info">
+              <div class="tag">今日推荐</div>
+              <div class="name">颈部拳击派对</div>
+              <div class="meta">
+                <span>3 分钟</span>
+                <span class="dot-sep">·</span>
+                <span>颈部 · 中级</span>
+              </div>
+            </div>
+            <div class="cta-pill">开始 →</div>
+          </div>
+
+          <div class="rom-section">
+            <div class="rom-header">
+              <span class="rom-title">本周 ROM 进度</span>
+              <span class="rom-change" id="rom-change">↑ 颈屈 +8°</span>
+            </div>
+            <div class="rom-bars">
+              <div class="rom-bar-wrap">
+                <div class="rom-bar-bg">
+                  <div class="rom-bar-fill" id="bar-flex" style="height:72%; background: linear-gradient(to top, var(--teal), rgba(62,198,181,0.4));"></div>
+                </div>
+                <span class="rom-bar-label">颈屈</span>
+              </div>
+              <div class="rom-bar-wrap">
+                <div class="rom-bar-bg">
+                  <div class="rom-bar-fill" id="bar-ext" style="height:58%; background: linear-gradient(to top, var(--teal), rgba(62,198,181,0.4));"></div>
+                </div>
+                <span class="rom-bar-label">颈伸</span>
+              </div>
+              <div class="rom-bar-wrap">
+                <div class="rom-bar-bg">
+                  <div class="rom-bar-fill" id="bar-left" style="height:45%; background: linear-gradient(to top, var(--accent), rgba(245,188,48,0.4));"></div>
+                </div>
+                <span class="rom-bar-label">左转</span>
+              </div>
+              <div class="rom-bar-wrap">
+                <div class="rom-bar-bg">
+                  <div class="rom-bar-fill" id="bar-right" style="height:50%; background: linear-gradient(to top, var(--accent), rgba(245,188,48,0.4));"></div>
+                </div>
+                <span class="rom-bar-label">右转</span>
+              </div>
+              <div class="rom-bar-wrap">
+                <div class="rom-bar-bg">
+                  <div class="rom-bar-fill" id="bar-shl" style="height:62%; background: linear-gradient(to top, #8B7CF5, rgba(139,124,245,0.4));"></div>
+                </div>
+                <span class="rom-bar-label">肩左</span>
+              </div>
+              <div class="rom-bar-wrap">
+                <div class="rom-bar-bg">
+                  <div class="rom-bar-fill" id="bar-shr" style="height:55%; background: linear-gradient(to top, #8B7CF5, rgba(139,124,245,0.4));"></div>
+                </div>
+                <span class="rom-bar-label">肩右</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="week-dots" id="week-dots-lg">
+              <!-- filled by JS -->
+            </div>
+            <div class="week-label-row">
+              <span class="week-day-label">一</span>
+              <span class="week-day-label">二</span>
+              <span class="week-day-label">三</span>
+              <span class="week-day-label today">四</span>
+              <span class="week-day-label">五</span>
+              <span class="week-day-label">六</span>
+              <span class="week-day-label">日</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- PHONE MOCKUP -->
+<div class="phone-section">
+  <div class="section-label" style="max-width:900px;margin:0 auto 24px;">桌面效果</div>
+  <div class="phone-frame">
+    <div class="phone-wallpaper"></div>
+    <div class="phone-notch"></div>
+    <div class="phone-content">
+      <div class="phone-time">9:41</div>
+      <div class="phone-date">周四 8月24日</div>
+
+      <div class="phone-widgets-grid">
+        <!-- Full-width medium widget -->
+        <div class="phone-widget phone-widget-md widget" style="width:100%;">
+          <div class="w-medium">
+            <div class="left-col">
+              <div class="streak-block">
+                <div class="streak-label">连续打卡</div>
+                <div class="streak-num joy-streak-phone" id="streak-phone">7</div>
+                <div class="streak-unit" id="streak-phone-unit">天 · 保持住 🔥</div>
+              </div>
+              <svg class="joy-expression" id="joy-face-phone" width="40" height="40" viewBox="0 0 40 40">
+                <ellipse cx="8" cy="15" rx="6.5" ry="10" fill="#D4960A" transform="rotate(-10 8 15)"/>
+                <ellipse cx="32" cy="15" rx="6.5" ry="10" fill="#D4960A" transform="rotate(10 32 15)"/>
+                <ellipse cx="20" cy="23" rx="15" ry="14" fill="#F5BC30"/>
+                <g id="joy-eyes-phone">
+                  <circle cx="14" cy="21" r="2.8" fill="#1A1200"/>
+                  <circle cx="26" cy="21" r="2.8" fill="#1A1200"/>
+                  <circle cx="15" cy="20" r="0.9" fill="white"/>
+                  <circle cx="27" cy="20" r="0.9" fill="white"/>
+                </g>
+                <ellipse cx="20" cy="26" rx="2.2" ry="1.4" fill="#C8800A"/>
+                <g id="joy-mouth-phone">
+                  <path d="M 14 29 Q 20 34 26 29" stroke="#1A1200" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                </g>
+              </svg>
+            </div>
+            <div class="right-col">
+              <div>
+                <div class="level-tag">今日推荐</div>
+                <div class="level-name">颈部拳击派对</div>
+                <div class="level-meta"><span>3 分钟</span><span class="dot-sep">·</span><span>颈部</span></div>
+              </div>
+              <div class="progress-dots" id="prog-dots-phone"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row of two small widgets -->
+        <div class="phone-row-2">
+          <div class="phone-widget phone-widget-sm widget">
+            <div class="w-small">
+              <svg class="joy-bg" viewBox="0 0 100 100" fill="none">
+                <ellipse cx="50" cy="52" rx="32" ry="34" fill="var(--accent)"/>
+                <ellipse cx="26" cy="42" rx="11" ry="20" fill="var(--accent)" transform="rotate(-12 26 42)"/>
+                <ellipse cx="74" cy="42" rx="11" ry="20" fill="var(--accent)" transform="rotate(12 74 42)"/>
+              </svg>
+              <div class="streak-num joy-streak-sm2" id="streak-sm2">7</div>
+              <div class="bottom-row">
+                <div class="label-stack">
+                  <span class="label-main">连续天数</span>
+                  <span class="label-sub">今日已完成</span>
+                </div>
+                <svg class="joy-face joy-expression" id="joy-face-sm2" width="36" height="36" viewBox="0 0 36 36">
+                  <ellipse cx="8" cy="14" rx="6" ry="9" fill="#D4960A" transform="rotate(-10 8 14)"/>
+                  <ellipse cx="28" cy="14" rx="6" ry="9" fill="#D4960A" transform="rotate(10 28 14)"/>
+                  <ellipse cx="18" cy="20" rx="14" ry="13" fill="#F5BC30"/>
+                  <g id="joy-eyes-sm2"><circle cx="13" cy="19" r="2.5" fill="#1A1200"/><circle cx="23" cy="19" r="2.5" fill="#1A1200"/><circle cx="14" cy="18.2" r="0.8" fill="white"/><circle cx="24" cy="18.2" r="0.8" fill="white"/></g>
+                  <ellipse cx="18" cy="23" rx="2" ry="1.2" fill="#C8800A"/>
+                  <g id="joy-mouth-sm2"><path d="M 13 26 Q 18 30 23 26" stroke="#1A1200" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Small placeholder widget -->
+          <div class="phone-widget phone-widget-sm widget">
+            <div class="w-small" style="justify-content:center;align-items:center;text-align:center;">
+              <div style="font-size:28px;margin-bottom:6px;">💧</div>
+              <div style="font-family:var(--font-display);font-size:10px;color:var(--text-2);line-height:1.5;">距上次<br>训练 <span style="color:var(--teal);font-weight:700;">2h</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="notes-grid">
+  <div class="note-card">
+    <h4><span class="badge"></span>小组件 · 留存逻辑</h4>
+    <p>Streak 数字在小组件中占主视觉，和 Duolingo 一样用「数字本身」制造归因拉回。Joy 表情随状态切换，强化情感连接，断签时显示灰色 + 低落表情。</p>
+  </div>
+  <div class="note-card">
+    <h4><span class="badge"></span>中组件 · 零摩擦入口</h4>
+    <p>左侧 Streak + Joy，右侧今日推荐关卡。点击整个组件直跳关卡页面，目标是减少「打开 App 再找」的中间步骤。进度点显示本周完成情况。</p>
+  </div>
+  <div class="note-card">
+    <h4><span class="badge"></span>大组件 · 数据感知</h4>
+    <p>ROM 柱状图让用户在桌面就能看到活动度进展，强化「量化成就感」。颈部/肩部用两种色区分部位，本周打卡点线合并，信息密度控制在可扫视范围。</p>
+  </div>
+</div>
+
+<script>
+  const LEVELS = ['颈部拳击派对', '摘星训练', '划船机', '喂饭挑战'];
+  const LEVEL_ICONS = ['🥊', '⭐', '🚣', '🍜'];
+  const WEEK_STATES = {
+    0:  ['rest','rest','rest','rest','rest','rest','today'],
+    3:  ['done','done','done','today','rest','rest','rest'],
+    7:  ['done','done','done','done','done','done','today'],
+    21: ['done','done','done','done','done','done','today'],
+    66: ['done','done','done','done','done','done','today'],
+  };
+
+  function getJoyMood(streak) {
+    if (streak === 0) return 'broken';
+    if (streak < 4) return 'ok';
+    if (streak < 8) return 'happy';
+    return 'excited';
+  }
+
+  function applyJoyFace(suffix, mood) {
+    const eyeIds = ['joy-eyes-sm','joy-eyes-md','joy-eyes-phone','joy-eyes-sm2'];
+    const mouthIds = ['joy-mouth-sm','joy-mouth-md','joy-mouth-phone','joy-mouth-sm2'];
+
+    // Map suffix to index
+    const idx = { '-sm': 0, '-md': 1, '-phone': 2, '-sm2': 3 }[suffix] ?? 0;
+
+    const eyeEl = document.getElementById(eyeIds[idx]);
+    const mouthEl = document.getElementById(mouthIds[idx]);
+    if (!eyeEl || !mouthEl) return;
+
+    // Adjust eye center coords per viewBox size
+    const isSmall = (idx === 0 || idx === 3);
+    const [ex1, ex2, ey] = isSmall ? [13, 23, 19] : [14, 26, 21];
+    const [mx1, mx2, my1, my2] = isSmall ? [13, 23, 26, 30] : [14, 26, 29, 34];
+    const r = isSmall ? 2.5 : 2.8;
+
+    if (mood === 'broken') {
+      // Sad eyes (downward inner corners)
+      eyeEl.innerHTML = `
+        <path d="M ${ex1-r} ${ey-1.5} L ${ex1+r} ${ey+1.5}" stroke="#1A1200" stroke-width="2" stroke-linecap="round"/>
+        <path d="M ${ex2-r} ${ey-1.5} L ${ex2+r} ${ey+1.5}" stroke="#1A1200" stroke-width="2" stroke-linecap="round"/>`;
+      mouthEl.innerHTML = `<path d="M ${mx1} ${my2} Q ${(mx1+mx2)/2} ${my1-2} ${mx2} ${my2}" stroke="#1A1200" stroke-width="${isSmall?1.5:1.6}" fill="none" stroke-linecap="round"/>`;
+    } else if (mood === 'ok') {
+      eyeEl.innerHTML = `
+        <circle cx="${ex1}" cy="${ey}" r="${r}" fill="#1A1200"/>
+        <circle cx="${ex2}" cy="${ey}" r="${r}" fill="#1A1200"/>
+        <circle cx="${ex1+1}" cy="${ey-0.8}" r="${r*0.32}" fill="white"/>
+        <circle cx="${ex2+1}" cy="${ey-0.8}" r="${r*0.32}" fill="white"/>`;
+      mouthEl.innerHTML = `<line x1="${mx1+2}" y1="${(my1+my2)/2}" x2="${mx2-2}" y2="${(my1+my2)/2}" stroke="#1A1200" stroke-width="${isSmall?1.5:1.6}" stroke-linecap="round"/>`;
+    } else if (mood === 'happy') {
+      eyeEl.innerHTML = `
+        <circle cx="${ex1}" cy="${ey}" r="${r}" fill="#1A1200"/>
+        <circle cx="${ex2}" cy="${ey}" r="${r}" fill="#1A1200"/>
+        <circle cx="${ex1+1}" cy="${ey-0.8}" r="${r*0.32}" fill="white"/>
+        <circle cx="${ex2+1}" cy="${ey-0.8}" r="${r*0.32}" fill="white"/>`;
+      mouthEl.innerHTML = `<path d="M ${mx1} ${my1} Q ${(mx1+mx2)/2} ${my2} ${mx2} ${my1}" stroke="#1A1200" stroke-width="${isSmall?1.5:1.6}" fill="none" stroke-linecap="round"/>`;
+    } else { // excited
+      // Star/sparkle eyes
+      eyeEl.innerHTML = `
+        <circle cx="${ex1}" cy="${ey}" r="${r}" fill="#1A1200"/>
+        <circle cx="${ex2}" cy="${ey}" r="${r}" fill="#1A1200"/>
+        <circle cx="${ex1+1}" cy="${ey-1}" r="${r*0.4}" fill="white"/>
+        <circle cx="${ex2+1}" cy="${ey-1}" r="${r*0.4}" fill="white"/>
+        <circle cx="${ex1-0.5}" cy="${ey+0.8}" r="${r*0.22}" fill="white"/>
+        <circle cx="${ex2-0.5}" cy="${ey+0.8}" r="${r*0.22}" fill="white"/>`;
+      mouthEl.innerHTML = `
+        <path d="M ${mx1} ${my1} Q ${(mx1+mx2)/2} ${my2+1} ${mx2} ${my1}" stroke="#1A1200" stroke-width="${isSmall?1.5:1.6}" fill="none" stroke-linecap="round"/>`;
+    }
+  }
+
+  function buildProgDots(containerId, streak) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const completed = Math.min(streak, 4);
+    let html = '';
+    for (let i = 0; i < 5; i++) {
+      if (i < completed) html += '<span class="prog-dot done"></span>';
+      else if (i === completed) html += '<span class="prog-dot today"></span>';
+      else html += '<span class="prog-dot"></span>';
+    }
+    html += `<span class="prog-label">${completed}/5</span>`;
+    el.innerHTML = html;
+  }
+
+  function buildWeekDots(containerId, streak) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    const key = [0, 3, 7, 21, 66].includes(streak) ? streak : 7;
+    const states = WEEK_STATES[key];
+    el.innerHTML = states.map(s => `<div class="week-dot ${s}"></div>`).join('');
+  }
+
+  function setStreak(n) {
+    // Update pills
+    document.querySelectorAll('.streak-pill').forEach(p => {
+      p.classList.toggle('active', p.textContent.startsWith(n === 0 ? '0' : String(n)));
+    });
+
+    const mood = getJoyMood(n);
+    const isBroken = n === 0;
+    const displayNum = n;
+
+    // Update all streak numbers
+    document.querySelectorAll('.joy-streak-sm, .joy-streak-sm2').forEach(el => {
+      el.textContent = displayNum;
+      el.classList.toggle('broken', isBroken);
+    });
+    document.querySelectorAll('.joy-streak-md, .joy-streak-phone').forEach(el => {
+      el.textContent = displayNum;
+      el.classList.toggle('broken', isBroken);
+    });
+    document.querySelectorAll('.joy-streak-lg').forEach(el => {
+      el.textContent = displayNum;
+    });
+
+    // Unit text
+    const unitText = isBroken ? '天 · 重新开始吧' : n >= 21 ? `天 · 超厉害 ⚡` : n >= 7 ? '天 · 保持住 🔥' : '天 · 继续加油';
+    ['streak-md-unit','streak-phone-unit'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = unitText;
+    });
+
+    // Streak chip in small widget label
+    const smLabel = document.getElementById('streak-sm-label');
+    const smSub = document.getElementById('streak-sm-sub');
+    if (smLabel) smLabel.textContent = isBroken ? '需要打卡' : '连续天数';
+    if (smSub) smSub.textContent = isBroken ? '今日未完成' : '今日已完成';
+
+    // Apply joy faces
+    ['-sm', '-md', '-phone', '-sm2'].forEach(suffix => applyJoyFace(suffix, mood));
+
+    // Progress dots
+    buildProgDots('prog-dots-md', n);
+    buildProgDots('prog-dots-phone', n);
+
+    // Week dots
+    buildWeekDots('week-dots-lg', n);
+
+    // ROM change label
+    const romChange = document.getElementById('rom-change');
+    if (romChange) {
+      if (isBroken) { romChange.textContent = '本周暂无数据'; romChange.style.color = 'var(--text-3)'; }
+      else if (n >= 21) { romChange.textContent = '↑ 颈屈 +15°'; romChange.style.color = 'var(--green)'; }
+      else { romChange.textContent = '↑ 颈屈 +8°'; romChange.style.color = 'var(--green)'; }
+    }
+
+    // ROM bars
+    const bars = [
+      ['bar-flex', isBroken?20:72],
+      ['bar-ext', isBroken?20:58],
+      ['bar-left', isBroken?20:45],
+      ['bar-right', isBroken?20:50],
+      ['bar-shl', isBroken?20:62],
+      ['bar-shr', isBroken?20:55],
+    ];
+    bars.forEach(([id, h]) => {
+      const el = document.getElementById(id);
+      if (el) el.style.height = h + '%';
+    });
+  }
+
+  // Init
+  buildProgDots('prog-dots-md', 7);
+  buildProgDots('prog-dots-phone', 7);
+  buildWeekDots('week-dots-lg', 7);
+  ['-sm', '-md', '-phone', '-sm2'].forEach(suffix => applyJoyFace(suffix, 'happy'));
+</script>
+</body>
+</html>

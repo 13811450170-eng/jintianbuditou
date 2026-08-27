@@ -1,0 +1,21 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>抠像对比</title>
+<style>
+  body{margin:0;font-family:system-ui;background:#333}
+  .row{display:flex}
+  .cell{flex:1;padding:16px;text-align:center;color:#fff}
+  .pink{background:#E8859F}.dark{background:#1a2740}
+  video{width:240px;height:240px;display:block;margin:6px auto}
+  h3{margin:4px 0;font-size:14px;opacity:.9}
+  .lbl{font-size:12px;opacity:.7}
+</style></head><body>
+  <div class="row">
+    <div class="cell pink"><h3>A · sim0.10</h3><span class="lbl">chromakey 中</span><video src="img/joy-chin-A.webm" autoplay loop muted playsinline></video></div>
+    <div class="cell pink"><h3>B · sim0.08</h3><span class="lbl">chromakey 紧</span><video src="img/joy-chin-B.webm" autoplay loop muted playsinline></video></div>
+    <div class="cell pink"><h3>C · colorkey</h3><span class="lbl">另一算法</span><video src="img/joy-chin-C.webm" autoplay loop muted playsinline></video></div>
+  </div>
+  <div class="row">
+    <div class="cell dark"><video src="img/joy-chin-A.webm" autoplay loop muted playsinline></video></div>
+    <div class="cell dark"><video src="img/joy-chin-B.webm" autoplay loop muted playsinline></video></div>
+    <div class="cell dark"><video src="img/joy-chin-C.webm" autoplay loop muted playsinline></video></div>
+  </div>
+</body></html>

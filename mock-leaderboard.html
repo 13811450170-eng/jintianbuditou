@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1440">
+<title>今天不低头 · 战队周排行</title>
+<style>
+:root {
+  --bg:     #F5F6FA;
+  --card:   #FFFFFF;
+  --line:   #E8E9EF;
+  --ink:    #0A0A0F;
+  --ink-2:  #3A3A45;
+  --ink-3:  #6B6B7A;
+  --ink-4:  #A8A8B3;
+  --blue:   #2B6FE6;
+  --green:  #18A058;
+  --red:    #D94F4F;
+  --gold:   #C8880A;
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: var(--font); background: var(--bg); color: var(--ink);
+  height: 100vh; overflow: hidden; -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 1440px; margin: 0 auto;
+  padding: 20px 40px 40px;
+  height: 100vh;
+  display: flex; flex-direction: column;
+}
+
+/* ── 顶栏 ── */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 0; border: none; background: none;
+  font-size: 14px; color: var(--ink-3); cursor: pointer;
+  transition: color .15s;
+}
+.back-btn:hover { color: var(--blue); }
+.back-btn svg { width: 16px; height: 16px; }
+.sep { color: var(--ink-4); font-size: 14px; }
+.page-title { font-size: 14px; color: var(--ink-2); font-weight: 500; }
+.topbar-spacer { flex: 1; }
+.week-label { font-size: 13px; color: var(--ink-3); }
+
+/* ── 战队信息条 ── */
+.squad-bar {
+  background: linear-gradient(105deg, #FFFBF0 0%, #FFF7E6 40%, #F0F4FF 100%);
+  border: 1px solid rgba(200, 136, 10, 0.18);
+  border-radius: 10px;
+  padding: 26px 32px;
+  display: flex; align-items: center; gap: 32px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  position: relative; overflow: hidden;
+}
+.squad-bar::after {
+  content: '🏆';
+  position: absolute; right: 180px; top: 50%; transform: translateY(-50%);
+  font-size: 72px; opacity: 0.06; pointer-events: none; user-select: none;
+}
+.squad-name-block { display: flex; align-items: center; gap: 10px; }
+.squad-emoji { font-size: 22px; }
+.squad-name { font-size: 17px; font-weight: 700; }
+.squad-meta { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+
+.divider { width: 1px; height: 40px; background: var(--line); flex-shrink: 0; }
+
+.stat-item { text-align: center; }
+.stat-n { font-size: 22px; font-weight: 700; color: #B87A00; }
+.stat-l { font-size: 12px; color: var(--ink-3); margin-top: 3px; }
+
+.spacer { flex: 1; }
+.invite-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border-radius: 6px; border: 1px solid var(--blue);
+  font-size: 14px; font-weight: 600; color: var(--blue);
+  background: none; cursor: pointer; transition: background .15s;
+}
+.invite-btn:hover { background: #EFF4FD; }
+.invite-btn svg { width: 14px; height: 14px; stroke: var(--blue); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── 两列榜单 ── */
+.boards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+  flex: 0 1 calc(100vh - 240px);
+  min-height: 0;
+}
+
+.board {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+/* 连续打卡榜顶部橙色 */
+.board:first-child { border-top: 3px solid #F5A623; }
+.board:first-child .board-title { color: #C87800; }
+
+/* 训练得分榜顶部蓝色 */
+.board:last-child { border-top: 3px solid var(--blue); }
+.board:last-child .board-title { color: var(--blue); }
+
+.board table {
+  flex: 1;
+  border-collapse: collapse;
+}
+.board tbody { display: table-row-group; }
+.board tbody tr { height: 1px; }
+.board tbody td { height: inherit; }
+
+.board-head {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: baseline; justify-content: space-between;
+}
+.board-title { font-size: 15px; font-weight: 700; }
+.board-unit  { font-size: 12px; color: var(--ink-3); }
+
+table {
+  width: 100%; border-collapse: collapse; table-layout: fixed;
+}
+th, td {
+  padding: 12px 20px; text-align: left;
+  font-size: 13px;
+}
+th {
+  font-size: 12px; font-weight: 600; color: var(--ink-3);
+  background: #FAFBFC; border-bottom: 1px solid var(--line);
+}
+td { border-bottom: 1px solid var(--line); }
+tr:last-child td { border-bottom: none; }
+
+/* 前三名行底色 */
+tr.rank-1 td { background: #FFFBEE; }
+tr.rank-2 td { background: #F8F8FA; }
+tr.rank-3 td { background: #FFF8F4; }
+tr.rank-1:hover td { background: #FFF6DC; }
+tr.rank-2:hover td { background: #F2F2F6; }
+tr.rank-3:hover td { background: #FFEEE5; }
+
+/* 前三名左侧彩条 */
+tr.rank-1 td:first-child { border-left: 3px solid #F5A623; padding-left: 17px; }
+tr.rank-2 td:first-child { border-left: 3px solid #9E9EA8; padding-left: 17px; }
+tr.rank-3 td:first-child { border-left: 3px solid #C07848; padding-left: 17px; }
+
+tr:hover td { background: #FAFBFC; }
+tr.is-me td  { background: #F3F6FF; }
+
+.rank-col { width: 36px; color: var(--ink-3); font-weight: 600; font-size: 13px; }
+.medal    { font-size: 15px; }
+.name-col { font-weight: 600; }
+.dept-col { color: var(--ink-3); font-size: 12px; }
+.score-col { text-align: right; font-weight: 700; font-size: 15px; color: var(--blue); }
+
+.me-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+  background: #DDEAFF; color: var(--blue);
+  margin-left: 6px; vertical-align: middle;
+}
+
+/* 前三名 score 颜色 */
+.rank-1 .score-col { color: var(--gold); }
+.rank-2 .score-col { color: var(--ink-3); }
+.rank-3 .score-col { color: #A0622A; }
+
+/* ── 邀请弹层 ── */
+.overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,10,15,0.3);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.overlay.show { opacity: 1; pointer-events: auto; }
+.invite-sheet {
+  width: 400px; background: var(--card);
+  border-radius: 12px; padding: 28px 28px 24px;
+  box-shadow: 0 8px 40px rgba(10,10,15,0.14);
+  transform: translateY(8px);
+  transition: transform .25s cubic-bezier(0.34,1.56,0.64,1);
+}
+.overlay.show .invite-sheet { transform: translateY(0); }
+.sheet-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.sheet-sub   { font-size: 13px; color: var(--ink-3); margin-bottom: 20px; line-height: 1.6; }
+.code-box {
+  background: var(--bg); border-radius: 8px;
+  padding: 14px 18px; margin-bottom: 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.invite-code { font-size: 24px; font-weight: 900; letter-spacing: 5px; color: var(--blue); }
+.copy-btn {
+  font-size: 13px; font-weight: 600; color: var(--blue);
+  background: #EFF4FD; border: none; border-radius: 6px;
+  padding: 7px 14px; cursor: pointer; transition: background .15s;
+}
+.copy-btn:hover { background: #DDEAFF; }
+.sheet-btns { display: flex; gap: 10px; }
+.sheet-btn {
+  flex: 1; padding: 11px; border-radius: 8px; border: none;
+  font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity .15s;
+}
+.sheet-btn.primary { background: var(--blue); color: #fff; }
+.sheet-btn.primary:hover { opacity: .88; }
+.sheet-btn.secondary { background: var(--bg); color: var(--ink-2); }
+.sheet-btn.secondary:hover { background: var(--line); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 顶栏 -->
+  <div class="topbar">
+    <button class="back-btn" onclick="history.back()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      返回
+    </button>
+    <span class="sep">/</span>
+    <span class="page-title">战队周排行</span>
+    <div class="topbar-spacer"></div>
+    <span class="week-label" id="weekLabel"></span>
+  </div>
+
+  <!-- 战队信息条 -->
+  <div class="squad-bar">
+    <div class="squad-name-block">
+      <span class="squad-emoji">💪</span>
+      <div>
+        <div class="squad-name">北极星战队</div>
+        <div class="squad-meta">随机匹配 · 10 人 · 第 3 周 · 每 4 周重置</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="stat-item">
+      <div class="stat-n">47</div>
+      <div class="stat-l">本周总打卡(天)</div>
+    </div>
+    <div class="divider"></div>
+    <div class="stat-item">
+      <div class="stat-n">4.7</div>
+      <div class="stat-l">人均天数</div>
+    </div>
+    <div class="divider"></div>
+    <div class="stat-item">
+      <div class="stat-n">3</div>
+      <div class="stat-l">满勤成员</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="invite-btn" onclick="showInvite()">
+      <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      邀请队友
+    </button>
+  </div>
+
+  <!-- 两列榜单 -->
+  <div class="boards" id="boards"></div>
+
+</div>
+
+<!-- 邀请弹层 -->
+<div class="overlay" id="overlay" onclick="hideInvite(event)">
+  <div class="invite-sheet" onclick="event.stopPropagation()">
+    <div class="sheet-title">邀请队友</div>
+    <div class="sheet-sub">把邀请码发给同事，Ta 输入后直接加入你的战队。<br>战队最多 10 人，每周末结算排名。</div>
+    <div class="code-box">
+      <div class="invite-code">NJ-4821</div>
+      <button class="copy-btn" id="copyBtn" onclick="copyCode()">复制</button>
+    </div>
+    <div class="sheet-btns">
+      <button class="sheet-btn primary" onclick="hideInvite()">分享给同事</button>
+      <button class="sheet-btn secondary" onclick="hideInvite()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BOARDS = [
+  {
+    title: '连续打卡', unit: '历史连续天数',
+    col: '连续天数',
+    data: [
+      { name:'王雪梅', dept:'算法部',   score:'14 天' },
+      { name:'刘四喜', dept:'体验设计', score:'12 天', isMe:true },
+      { name:'张明宇', dept:'前端部',   score:'8 天' },
+      { name:'陈佳慧', dept:'产品部',   score:'6 天' },
+      { name:'吴静怡', dept:'数据部',   score:'5 天' },
+      { name:'林浩然', dept:'后端部',   score:'4 天' },
+      { name:'孙晓燕', dept:'设计部',   score:'3 天' },
+      { name:'赵大鹏', dept:'运营部',   score:'3 天' },
+      { name:'周俊杰', dept:'安全部',   score:'2 天' },
+      { name:'郭思远', dept:'质量部',   score:'1 天' },
+    ]
+  },
+  {
+    title: '训练得分', unit: '本周累计',
+    col: '得分',
+    data: [
+      { name:'陈佳慧', dept:'产品部',   score:'2840 分' },
+      { name:'王雪梅', dept:'算法部',   score:'2710 分' },
+      { name:'张明宇', dept:'前端部',   score:'2490 分' },
+      { name:'林浩然', dept:'后端部',   score:'2120 分' },
+      { name:'刘四喜', dept:'体验设计', score:'1980 分', isMe:true },
+      { name:'吴静怡', dept:'数据部',   score:'1650 分' },
+      { name:'孙晓燕', dept:'设计部',   score:'1400 分' },
+      { name:'赵大鹏', dept:'运营部',   score:'1100 分' },
+      { name:'周俊杰', dept:'安全部',   score:'720 分'  },
+      { name:'郭思远', dept:'质量部',   score:'310 分'  },
+    ]
+  }
+];
+
+const MEDAL = {0:'🥇', 1:'🥈', 2:'🥉'};
+
+function renderBoards() {
+  const container = document.getElementById('boards');
+  BOARDS.forEach(board => {
+    const el = document.createElement('div');
+    el.className = 'board';
+
+    const rows = board.data.map((p, i) => {
+      const trClass = [i===0?'rank-1': i===1?'rank-2': i===2?'rank-3':'', p.isMe?'is-me':''].filter(Boolean).join(' ');
+      const pos = i < 3 ? `<span class="medal">${MEDAL[i]}</span>` : i+1;
+      const badge = p.isMe ? '<span class="me-badge">我</span>' : '';
+      return `<tr class="${trClass}">
+        <td class="rank-col">${pos}</td>
+        <td class="name-col">${p.name}${badge}</td>
+        <td class="dept-col">${p.dept}</td>
+        <td class="score-col">${p.score}</td>
+      </tr>`;
+    }).join('');
+
+    el.innerHTML = `
+      <div class="board-head">
+        <span class="board-title">${board.title}</span>
+        <span class="board-unit">${board.unit}</span>
+      </div>
+      <table>
+        <thead><tr>
+          <th style="width:36px">排名</th>
+          <th>用户名</th>
+          <th>部门</th>
+          <th style="text-align:right">${board.col}</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+    container.appendChild(el);
+  });
+}
+
+function setWeekLabel() {
+  const now = new Date();
+  const day = now.getDay() || 7;
+  const mon = new Date(now); mon.setDate(now.getDate() - day + 1);
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  const fmt = d => `${d.getMonth()+1}月${d.getDate()}日`;
+  document.getElementById('weekLabel').textContent = `${fmt(mon)} – ${fmt(sun)}`;
+}
+
+function showInvite() { document.getElementById('overlay').classList.add('show'); }
+function hideInvite(e) {
+  if (!e || e.target === document.getElementById('overlay'))
+    document.getElementById('overlay').classList.remove('show');
+}
+function copyCode() {
+  navigator.clipboard.writeText('NJ-4821').catch(()=>{});
+  const btn = document.getElementById('copyBtn');
+  btn.textContent = '已复制 ✓';
+  setTimeout(() => btn.textContent = '复制', 1500);
+}
+
+setWeekLabel();
+renderBoards();
+</script>
+</body>
+</html>
