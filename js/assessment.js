@@ -41,7 +41,7 @@ const RED_FLAGS_GENERIC = [
   '发烧伴关节红肿热痛',
 ];
 const RED_FLAGS = { neck: RED_FLAGS_NECK, shoulder: RED_FLAGS_SHOULDER };
-function redFlagsFor(zone) { return RED_FLAGS[zone] || RED_FLAGS_GENERIC; }
+export function redFlagsFor(zone) { return RED_FLAGS[zone] || RED_FLAGS_GENERIC; }
 
 // 颈部6向ROM采集顺序(FaceLandmarker 能测的方向)。axis+dir 决定读 rel 的哪个分量、哪个符号。
 // target:达标目标角(和后端 NECK_TARGET_ROM 对齐,仅用于前端进度条,判定以后端为准)。
@@ -103,18 +103,63 @@ function waitArmsDown(k, isSkipped) {
   });
 }
 
+// joy-mask.js 是挂 window.JoyMask 的经典脚本(非 module);按需注入,失败不阻断。
+function ensureJoyMask() {
+  return new Promise(resolve => {
+    if (window.JoyMask) { resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'js/joy-mask.js';
+    s.onload = () => resolve();
+    s.onerror = () => resolve();
+    document.head.appendChild(s);
+  });
+}
+
+// 面具小窗:每帧把 Joy 头贴到脸上(隐私+IP,和拳击/摘星关同一套)。识别不到时给提示。
+function maskHint(ctx, w, h, txt) {
+  ctx.fillStyle = 'rgba(255,255,255,0.32)';
+  ctx.font = '12px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(txt, w / 2, h / 2);
+}
+// 颈部 Face Mesh:用 478 landmarks
+function drawMaskFace(ctx, canvas, snap, camOK) {
+  if (!ctx || !canvas) return;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const L = snap && snap.landmarks;
+  if (window.JoyMask && L && L.length) { JoyMask.draw(ctx, L, w, h); return; }
+  maskHint(ctx, w, h, camOK ? '识别中…' : '摄像头未开');
+}
+// 肩部 Body Pose:头部点 0鼻 · 7左耳 · 8右耳(镜像后 7=画面右耳、8=画面左耳)
+function drawMaskPose(ctx, canvas, snap, camOK) {
+  if (!ctx || !canvas) return;
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const lm = snap && snap.landmarks;
+  if (window.JoyMask && lm) {
+    const vis = p => (p.visibility == null ? 1 : p.visibility);
+    const proj = i => { const p = lm[i]; if (!p || vis(p) < 0.3) return null; return { x: (1 - p.x) * w, y: p.y * h }; };
+    const nose = proj(0), earR = proj(7), earL = proj(8);
+    if (earL && earR) { JoyMask.drawByPoints(ctx, { nose, earL, earR }); return; }
+  }
+  maskHint(ctx, w, h, camOK ? '识别中…' : '摄像头未开');
+}
+
 // 肩部举臂 ROM 采集步骤(UI 复用颈部卡片样式,内核换 pose-body-kernel)
-async function romStepShoulder(c) {
+export async function romStepShoulder(c) {
   c.innerHTML = `
     <div class="asmt-kicker">活动度测量 · 肩部</div>
     <div class="asmt-title" id="asmtRomTitle">先坐正,手自然垂放</div>
-    <div class="asmt-cam"><video id="asmtVideo" playsinline muted></video></div>
+    <div class="asmt-cam"><video id="asmtVideo" playsinline muted></video><canvas id="asmtMask" width="200" height="150"></canvas></div>
     <div class="asmt-desc" id="asmtRomDesc">让摄像头看清你的上半身,保持自然…</div>
     <div class="asmt-bar"><div class="asmt-bar-fill" id="asmtBar"></div></div>
     <div class="asmt-progress" id="asmtProg">校准中</div>
     <button class="asmt-btn ghost" id="asmtRomSkip">跳过评估,直接开始</button>
   `;
   const shownVideo = c.querySelector('#asmtVideo');
+  const maskCanvas = c.querySelector('#asmtMask');
+  const maskCtx = maskCanvas.getContext('2d');
   const titleEl = c.querySelector('#asmtRomTitle');
   const descEl  = c.querySelector('#asmtRomDesc');
   const barEl   = c.querySelector('#asmtBar');
@@ -123,6 +168,7 @@ async function romStepShoulder(c) {
   let skipped = false;
   c.querySelector('#asmtRomSkip').addEventListener('click', () => { skipped = true; });
 
+  ensureJoyMask();
   // 用隐藏 video 给内核,把摄像头流镜像到可见小窗
   const hiddenVideo = document.createElement('video');
   hiddenVideo.setAttribute('playsinline', ''); hiddenVideo.muted = true;
@@ -140,7 +186,8 @@ async function romStepShoulder(c) {
   }
 
   let running = true;
-  (function tickLoop() { if (!running) return; k.tick(performance.now()); requestAnimationFrame(tickLoop); })();
+  // tick 返回帧数据(含 landmarks)→ 每帧把 Joy 面具画到小窗(不显真人脸)
+  (function tickLoop() { if (!running) return; const snap = k.tick(performance.now()); drawMaskPose(maskCtx, maskCanvas, snap, true); requestAnimationFrame(tickLoop); })();
 
   // 稳定 1 秒后开始(等模型热身)
   await new Promise(r => setTimeout(r, 1000));
@@ -169,7 +216,7 @@ async function romStepShoulder(c) {
 }
 
 let styleInjected = false;
-function injectStyle() {
+export function injectStyle() {
   if (styleInjected) return; styleInjected = true;
   const css = `
   .asmt-mask{position:fixed;inset:0;z-index:9999;background:rgba(12,14,24,.78);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-family:var(--font,"PingFang SC",sans-serif);}
@@ -183,11 +230,14 @@ function injectStyle() {
   .asmt-yn button{border:1px solid rgba(10,10,15,.15);background:#fff;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:700;cursor:pointer;color:#6B6B7A;font-family:inherit;}
   .asmt-yn button.on-yes{background:#FF6B4A;color:#fff;border-color:#FF6B4A;}
   .asmt-yn button.on-no{background:#4CAF88;color:#fff;border-color:#4CAF88;}
+  .asmt-q.flagged-row{border-color:rgba(255,107,74,.45);background:rgba(255,107,74,.06);}
+  .asmt-btn.refer{background:#FF6B4A;}
   .asmt-btn{margin-top:18px;width:100%;border:none;border-radius:999px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;background:#0A0A0F;color:#fff;font-family:inherit;transition:filter .15s;}
   .asmt-btn:hover{filter:brightness(1.15);} .asmt-btn:disabled{opacity:.4;cursor:not-allowed;}
   .asmt-btn.ghost{background:#F5F5F7;color:#6B6B7A;margin-top:8px;}
   .asmt-cam{position:relative;width:200px;height:150px;margin:0 auto 14px;border-radius:16px;overflow:hidden;background:#000;}
-  .asmt-cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+  .asmt-cam video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);}
+  .asmt-cam canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
   .asmt-step-big{font-size:40px;margin-bottom:6px;}
   .asmt-bar{height:10px;border-radius:999px;background:#EDEDF0;overflow:hidden;margin:14px 0 6px;}
   .asmt-bar-fill{height:100%;background:linear-gradient(90deg,#00A3FF,#4CAF88);width:0%;transition:width .1s;}
@@ -203,6 +253,7 @@ function mask() {
   m.appendChild(c); document.body.appendChild(m);
   return { m, c, close: () => m.remove() };
 }
+export { mask };
 
 // ——— 第 0 步:AI 问诊(调 /api/intro,问题每次不同)———
 // 返回答案对象 {feel, goal, ...};拿不到问题(后端挂)→返回 {},静默跳过。
@@ -315,33 +366,44 @@ function fatigueRecapStep(c, fat) {
 
 // ——— 第一步:红旗问卷 ———
 // 返回 {hit:bool, answers:{}} —— hit=true 表示命中红旗。flags:该部位红旗集合
-function redFlagStep(c, flags) {
+// 交互:默认每项预选"没有",健康用户直接点"都没有,进入游戏"(0 次点击);
+//       点"有"即标红该项,命中红旗 → 不放行,转介线下。
+export function redFlagStep(c, flags) {
   return new Promise(resolve => {
     const answers = {};
+    flags.forEach((_, i) => { answers[i] = false; });   // 默认全部"没有"
     c.innerHTML = `
       <div class="asmt-kicker">开始前 · 安全确认</div>
       <div class="asmt-title">先花 20 秒,确认能安全练习</div>
       <div class="asmt-desc">如果有下面这些情况,先别玩游戏,建议去线下看看。</div>
       <div id="asmtQs"></div>
-      <button class="asmt-btn" id="asmtNext" disabled>继续 →</button>
+      <button class="asmt-btn" id="asmtNext">都没有,进入游戏 →</button>
     `;
     const qs = c.querySelector('#asmtQs');
+    const nextBtn = c.querySelector('#asmtNext');
+    // 有任一"有" → 按钮变转介语气,点了不进游戏
+    const refreshBtn = () => {
+      const any = Object.values(answers).some(Boolean);
+      nextBtn.textContent = any ? '有情况,先去线下看看 →' : '都没有,进入游戏 →';
+      nextBtn.classList.toggle('refer', any);
+    };
     flags.forEach((q, i) => {
       const row = document.createElement('div'); row.className = 'asmt-q';
       row.innerHTML = `<span class="asmt-q-txt">${q}</span>
-        <span class="asmt-yn"><button data-v="yes">有</button><button data-v="no">没有</button></span>`;
+        <span class="asmt-yn"><button data-v="yes">有</button><button data-v="no" class="on-no">没有</button></span>`;
+      const yesB = row.querySelector('[data-v=yes]');
+      const noB  = row.querySelector('[data-v=no]');
       row.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
         answers[i] = b.dataset.v === 'yes';
-        row.querySelector('[data-v=yes]').classList.toggle('on-yes', answers[i]);
-        row.querySelector('[data-v=no]').classList.toggle('on-no', !answers[i]);
-        // 全部答完才亮"继续"
-        c.querySelector('#asmtNext').disabled = Object.keys(answers).length < flags.length;
+        yesB.classList.toggle('on-yes', answers[i]);
+        noB.classList.toggle('on-no', !answers[i]);
+        row.classList.toggle('flagged-row', answers[i]);
+        refreshBtn();
       }));
       qs.appendChild(row);
     });
-    c.querySelector('#asmtNext').addEventListener('click', () => {
-      const hit = Object.values(answers).some(Boolean);
-      resolve({ hit, answers });
+    nextBtn.addEventListener('click', () => {
+      resolve({ hit: Object.values(answers).some(Boolean), answers });
     });
   });
 }
@@ -575,18 +637,20 @@ export async function runAssessment(zone = 'neck') {
 }
 
 // 采集颈部6向ROM:用内核 tick 读 rel,依次引导6方向,每向记峰值角。返回 romNeck 或 null(降级)
-async function romStepShared(c, kernelVideo, k) {
+export async function romStepShared(c, kernelVideo, k) {
   const romNeck = {};
   c.innerHTML = `
     <div class="asmt-kicker">活动度测量 · 颈部</div>
     <div class="asmt-title" id="asmtRomTitle">先坐正,收下巴</div>
-    <div class="asmt-cam"><video id="asmtVideo" playsinline muted></video></div>
+    <div class="asmt-cam"><video id="asmtVideo" playsinline muted></video><canvas id="asmtMask" width="200" height="150"></canvas></div>
     <div class="asmt-desc" id="asmtRomDesc">让摄像头看清你的脸,保持中立…</div>
     <div class="asmt-bar"><div class="asmt-bar-fill" id="asmtBar"></div></div>
     <div class="asmt-progress" id="asmtProg">校准中</div>
     <button class="asmt-btn ghost" id="asmtRomSkip">跳过评估,直接开始</button>
   `;
   const shownVideo = c.querySelector('#asmtVideo');
+  const maskCanvas = c.querySelector('#asmtMask');
+  const maskCtx = maskCanvas.getContext('2d');
   const titleEl = c.querySelector('#asmtRomTitle');
   const descEl = c.querySelector('#asmtRomDesc');
   const barEl = c.querySelector('#asmtBar');
@@ -596,12 +660,14 @@ async function romStepShared(c, kernelVideo, k) {
   let skipped = false;
   c.querySelector('#asmtRomSkip').addEventListener('click', () => { skipped = true; });
 
+  ensureJoyMask();
   try { await k.startCamera(); } catch (e) { return null; }
   // 把内核摄像头的流也显示到可见小窗
   if (kernelVideo.srcObject) { shownVideo.srcObject = kernelVideo.srcObject; shownVideo.play().catch(()=>{}); }
 
   let running = true;
-  (function tickLoop(){ if(!running) return; k.tick(performance.now()); requestAnimationFrame(tickLoop); })();
+  // tick 返回帧数据(含 landmarks)→ 每帧把 Joy 面具画到小窗(不显真人脸)
+  (function tickLoop(){ if(!running) return; const snap = k.tick(performance.now()); drawMaskFace(maskCtx, maskCanvas, snap, true); requestAnimationFrame(tickLoop); })();
 
   await new Promise(r => setTimeout(r, 400));
   k.beginCalibration();
