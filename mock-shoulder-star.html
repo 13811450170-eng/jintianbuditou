@@ -241,33 +241,52 @@
     display:flex;align-items:center;gap:10px;
   }
   .hud-title .ico{stroke:var(--title-txt);width:19px;height:19px;}
+  /* ===== 左上英雄:大号星屑(信息当主角,套拳击 HUD 规则)===== */
+  .hud-left{position:absolute;top:20px;left:20px;z-index:40;
+    display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
+  .score-hero{
+    display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+    padding:14px 30px 18px;border-radius:var(--r-lg);min-width:180px;
+  }
+  .score-hero .sh-label{
+    display:flex;align-items:center;gap:8px;
+    font-size:16px;font-weight:800;letter-spacing:2px;color:var(--gold-bright);opacity:.9;
+  }
+  .score-hero .sh-label .ico{width:20px;height:20px;}
+  .score-hero .sh-num{
+    font-size:76px;font-weight:900;line-height:1;color:#fff;letter-spacing:1px;
+    text-shadow:0 2px 10px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;
+  }
+  .score-hero .sh-num.bump{animation:scoreBump .42s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes scoreBump{0%{transform:scale(1);}42%{transform:scale(1.26);color:var(--gold-bright);}100%{transform:scale(1);}}
+  /* 烟花小胶囊(副信息) */
   .hud-chip{
-    position:absolute; top:16px;
     display:flex; align-items:center; gap:10px;
-    padding:11px 18px;
+    padding:11px 22px;
     border-radius:var(--r-pill);
-    font-size:16px; font-weight:700;
+    font-size:17px; font-weight:800; letter-spacing:.5px;
     color:var(--gold-bright);
-    z-index:40;
   }
-  .hud-chip .ico{ width:19px;height:19px; }
+  .hud-chip .ico{ width:20px;height:20px; }
   .hud-chip .lb{opacity:.9;}
-  .hud-chip b{color:#fff;font-size:21px;font-weight:900;}
-  #chipFw{ left:16px; }
-  #chipDust{ left:16px; top:68px; }
+  .hud-chip b{color:#fff;font-size:24px;font-weight:900;}
 
-  /* 星座图鉴卡 */
+  /* ===== 右上英雄:大号点亮进度 X/8(套拳击右上英雄块规则)===== */
   .codex{
-    position:absolute; top:16px; right:16px;
-    width:172px;
-    border-radius:var(--r-md);
-    padding:15px 17px;
+    position:absolute; top:20px; right:20px;
+    display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+    border-radius:var(--r-lg);
+    padding:14px 30px 16px;
     z-index:40;
   }
-  .codex h4{ font-size:12px; color:var(--gold-bright); letter-spacing:1px; margin-bottom:8px; font-weight:800;}
-  .codex .count{ font-size:22px; font-weight:900; color:#fff; }
-  .codex .count small{ font-size:12px; color:#9aa3c7; font-weight:700; }
-  #codexSvg{ width:100%; height:64px; display:block; margin-top:4px; }
+  .codex h4{ display:flex;align-items:center;gap:8px;
+    font-size:16px; color:var(--gold-bright); letter-spacing:2px; font-weight:800; opacity:.9;}
+  .codex h4 .ico{width:20px;height:20px;}
+  .codex .count{ font-size:76px; font-weight:900; color:#fff; line-height:1;
+    letter-spacing:1px; text-shadow:0 2px 10px rgba(0,0,0,.5); font-variant-numeric:tabular-nums;}
+  .codex .count small{ font-size:24px; color:#9aa3c7; font-weight:800; }
+  .codex .count.bump{animation:scoreBump .42s cubic-bezier(.34,1.56,.64,1);}
+  #codexSvg{ width:150px; height:44px; display:block; margin-top:4px; opacity:.85; }
 
   /* ==================== 可摘星星 ==================== */
   .pick-star{
@@ -284,9 +303,11 @@
   }
   .pick-star svg{ width:100%; height:100%; overflow:visible; }
   .pick-star .halo{
-    position:absolute; inset:-40%;
+    position:absolute; inset:-55%;
     border-radius:50%;
-    background: radial-gradient(circle, rgba(255,224,130,.55), transparent 68%);
+    /* closest-side:渐变到盒子边缘前已全透明,四角天然无色,即使 border-radius 未裁也绝不出方块 */
+    background: radial-gradient(circle closest-side, rgba(255,224,130,.6), transparent 100%);
+    pointer-events:none;
     animation: haloPulse 2.2s ease-in-out infinite;
   }
   @keyframes haloPulse{
@@ -685,12 +706,19 @@
 
   <!-- HUD -->
   <div class="hud-title"><svg class="ico"><use href="#i-moon"/></svg>举臂摘星 · 星光派对</div>
-  <div class="hud-chip glass" id="chipFw"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">烟花</span><b id="fwCount">0</b></div>
-  <div class="hud-chip glass" id="chipDust"><svg class="ico"><use href="#i-spark"/></svg><span class="lb">星屑</span><b id="dustCount">0</b></div>
+  <!-- 左上英雄:大号星屑;烟花作副信息 -->
+  <div class="hud-left">
+    <div class="score-hero glass">
+      <span class="sh-label"><svg class="ico"><use href="#i-spark"/></svg>星屑</span>
+      <span class="sh-num" id="dustCount">0</span>
+    </div>
+    <div class="hud-chip glass"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">烟花</span><b id="fwCount">0</b></div>
+  </div>
+  <!-- 右上英雄:大号点亮进度 X/8 -->
   <div class="codex glass">
-    <h4>今日星座</h4>
-    <div class="count"><span id="codexNum">0</span><small>/12 颗</small></div>
-    <svg id="codexSvg" viewBox="0 0 150 64"></svg>
+    <h4><svg class="ico"><use href="#i-star"/></svg>点亮</h4>
+    <div class="count"><span id="codexNum">0</span><small>/8</small></div>
+    <svg id="codexSvg" viewBox="0 0 150 44"></svg>
   </div>
 
   <div class="coach-tip glass" id="coachTip"><svg class="ico"><use href="#i-hands-up"/></svg>举起双手 · 够向星空</div>
@@ -868,6 +896,8 @@ function placeStar(xPct, yPct){
 const CODEX_PTS=[[18,42],[38,20],[58,34],[80,16],[104,40],[128,24],[75,50]];
 let codexCount=0;
 function renderCodex(){
+  const numEl=document.getElementById('codexNum');
+  if(numEl) numEl.textContent=codexCount;   // 右上英雄块:本局已点亮 X(/8 是静态)
   const svg=document.getElementById('codexSvg');
   svg.innerHTML='';
   const ns='http://www.w3.org/2000/svg';
@@ -925,7 +955,10 @@ function addScore(big){
   dustCount+=big?10:5;
   fwEl.textContent=fwCount;
   dustEl.textContent=dustCount;
+  dustEl.classList.remove('bump'); void dustEl.offsetWidth; dustEl.classList.add('bump');
   if(codexCount<12){ codexCount++; renderCodex(); }
+  const cnt=document.querySelector('.codex .count');
+  if(cnt){ cnt.classList.remove('bump'); void cnt.offsetWidth; cnt.classList.add('bump'); }
 }
 
 /* 庆祝:场景做一次欢庆脉冲(底图微微一弹 + 屏幕泛光),狗已在底图中静态举手 */

@@ -87,48 +87,74 @@
   }
   .hud-title .ico{stroke:var(--title-txt);width:19px;height:19px;}
 
-  .hud-left{position:absolute;top:16px;left:16px;z-index:30;
-    display:flex;flex-direction:column;gap:9px;}
+  /* ===== 左上英雄:大号喂食数(信息当主角,套拳击 HUD 规则)===== */
+  .hud-left{position:absolute;top:20px;left:20px;z-index:30;
+    display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
+  .score-hero{
+    display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+    padding:14px 32px 18px;border-radius:var(--r-lg);min-width:186px;
+  }
+  .score-hero .sh-label{
+    display:flex;align-items:center;gap:8px;
+    font-size:17px;font-weight:800;letter-spacing:2px;color:var(--gold-bright);opacity:.9;
+  }
+  .score-hero .sh-label .ico{width:20px;height:20px;}
+  .score-hero .sh-num{
+    font-size:82px;font-weight:900;line-height:1;color:#fff;letter-spacing:1px;
+    text-shadow:0 2px 10px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;
+  }
+  .score-hero .sh-num.bump{animation:scoreBump .42s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes scoreBump{0%{transform:scale(1);}42%{transform:scale(1.26);color:var(--gold-bright);}100%{transform:scale(1);}}
+  /* 连击小胶囊(副信息) */
   .chip{
-    display:flex;align-items:center;gap:11px;
-    padding:11px 19px;border-radius:var(--r-pill);
-    color:var(--gold-bright);font-size:16px;font-weight:700;letter-spacing:.5px;
+    display:flex;align-items:center;gap:10px;
+    padding:11px 22px;border-radius:var(--r-pill);
+    color:var(--gold-bright);font-size:18px;font-weight:800;letter-spacing:.5px;
   }
-  .chip .ico{width:20px;height:20px;}
+  .chip .ico{width:22px;height:22px;}
   .chip .lb{opacity:.9;}
-  .chip .val{color:#fff;font-size:22px;font-weight:900;min-width:22px;text-align:center;}
-  .chip .unit{font-size:13px;opacity:.7;font-weight:700;}
+  .chip .val{color:#fff;font-size:26px;font-weight:900;min-width:26px;text-align:center;}
+  .chip .unit{font-size:15px;opacity:.7;font-weight:700;}
+  .combo-chip.hot{box-shadow:inset 0 1px 1px rgba(255,255,255,.45),0 0 14px rgba(255,214,107,.35),var(--shadow-2);}
+  .combo-chip.hot .val{color:var(--gold-bright);}
 
+  /* ===== 右上英雄:大号喂饱进度%(套拳击右上英雄块规则)===== */
   .progress-wrap{
-    position:absolute;top:16px;right:16px;z-index:30;width:205px;
-    border-radius:var(--r-md);padding:14px 18px;
+    position:absolute;top:20px;right:20px;z-index:30;
+    display:flex;flex-direction:column;align-items:flex-end;gap:6px;
+    border-radius:var(--r-lg);padding:14px 32px 18px;min-width:186px;
   }
-  .progress-label{display:flex;justify-content:space-between;align-items:center;
-    font-size:13px;color:var(--gold-bright);font-weight:800;letter-spacing:1px;
-    margin-bottom:10px;}
-  .progress-label .pct{color:#fff;font-size:15px;font-weight:900;}
-  .progress-track{height:10px;background:rgba(255,255,255,.16);border-radius:var(--r-pill);overflow:hidden;}
+  .progress-label{display:flex;align-items:center;gap:8px;
+    font-size:17px;color:var(--gold-bright);font-weight:800;letter-spacing:2px;opacity:.9;}
+  .progress-label .ico{width:20px;height:20px;}
+  .pw-num{
+    font-size:76px;font-weight:900;line-height:1;color:#fff;letter-spacing:1px;
+    text-shadow:0 2px 10px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;
+  }
+  /* 细进度条移到大数字下方当辅助刻度 */
+  .progress-track{width:150px;height:7px;background:rgba(255,255,255,.16);border-radius:var(--r-pill);overflow:hidden;}
   .progress-fill{height:100%;width:0%;border-radius:var(--r-pill);
     background:linear-gradient(90deg,var(--brand),var(--gold));transition:width .5s;}
 
-  /* 判定飘字 · 命中感 */
+  /* 判定飘字 · 命中感(屏幕正中,做大做干脆——套拳击规则)*/
   .floater{
-    position:absolute;left:50%;top:24%;transform:translateX(-50%);z-index:28;
+    position:absolute;left:50%;top:40%;transform:translateX(-50%);z-index:28;
     text-align:center;pointer-events:none;font-weight:900;
   }
   .floater .big{
-    font-size:60px;letter-spacing:2px;
+    font-size:130px;letter-spacing:3px;line-height:.9;
     background:linear-gradient(135deg,#fff,var(--gold-bright));
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    filter:drop-shadow(0 2px 10px rgba(0,0,0,.6)) drop-shadow(0 0 18px var(--brand));
+    filter:drop-shadow(0 4px 18px rgba(0,0,0,.75)) drop-shadow(0 0 28px var(--brand));
   }
-  .floater .sub{font-size:18px;color:#fff;margin-top:4px;font-weight:800;text-shadow:0 1px 6px rgba(0,0,0,.75);}
-  .floater.play{animation:floatHit 1.3s cubic-bezier(.2,.8,.2,1) forwards;}
+  .floater .sub{font-size:28px;color:#fff;margin-top:6px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.85);}
+  .floater.play{animation:floatHit 1s cubic-bezier(.15,.9,.2,1) forwards;}
   @keyframes floatHit{
-    0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.5);}
-    12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.42);}
-    26%{transform:translateX(-50%) translateY(-3px) scale(1.05);}
-    100%{opacity:0;transform:translateX(-50%) translateY(-52px) scale(1);}
+    0%{opacity:0;transform:translateX(-50%) scale(.4);}
+    14%{opacity:1;transform:translateX(-50%) scale(1.5);}
+    28%{transform:translateX(-50%) scale(1);}
+    72%{opacity:1;transform:translateX(-50%) scale(1);}
+    100%{opacity:0;transform:translateX(-50%) scale(1.02);}
   }
 
   /* ---------- 狗狗说话气泡(外圈=喂食保持进度环) ---------- */
@@ -413,12 +439,18 @@
 
     <!-- HUD -->
     <div class="hud-title"><svg class="ico"><use href="#i-bowl"/></svg>今天不低头 · Doga 餐厅</div>
+    <!-- 左上英雄:大号喂食数;连击作副信息 -->
     <div class="hud-left">
-      <div class="chip glass"><svg class="ico"><use href="#i-bowl"/></svg><span class="lb">喂食</span><span class="val" id="fedVal">0</span><span class="unit">只</span></div>
-      <div class="chip glass"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
+      <div class="score-hero glass">
+        <span class="sh-label"><svg class="ico"><use href="#i-bowl"/></svg>喂食</span>
+        <span class="sh-num" id="fedVal">0</span>
+      </div>
+      <div class="chip combo-chip glass" id="comboChip"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
     </div>
+    <!-- 右上英雄:大号喂饱进度% -->
     <div class="progress-wrap glass">
-      <div class="progress-label"><span>喂饱进度</span><span class="pct" id="progPct">0%</span></div>
+      <div class="progress-label"><svg class="ico"><use href="#i-bowl"/></svg>喂饱</div>
+      <div class="pw-num"><span id="progPct">0</span>%</div>
       <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
     </div>
 
@@ -713,8 +745,10 @@ function successFeed(){
 
   fed++; combo++; if(combo>maxCombo) maxCombo=combo;
   fedVal.textContent=fed; comboVal.textContent=combo;
+  fedVal.classList.remove('bump'); void fedVal.offsetWidth; fedVal.classList.add('bump');
+  const comboChip=$('comboChip'); if(comboChip) comboChip.classList.toggle('hot', combo>=3);
   const pr=Math.min(100,Math.round(fed/TOTAL_FEEDS*100));
-  progFill.style.width=pr+'%'; progPct.textContent=pr+'%';
+  progFill.style.width=pr+'%'; progPct.textContent=pr;
   floatBig('喂饱啦！', combo>1?`连击 ×${combo}`:'转头喂到 +1');
 
   later(()=>{
@@ -844,7 +878,8 @@ async function start(){
   layer.innerHTML='';
   fed=0; combo=0; maxCombo=0; roundIdx=0; running=false;
   fedVal.textContent=0; comboVal.textContent=0;
-  progFill.style.width='0%'; progPct.textContent='0%';
+  fedVal.classList.remove('bump'); $('comboChip')&&$('comboChip').classList.remove('hot');
+  progFill.style.width='0%'; progPct.textContent='0';
   v.currentTime=0; v.play().catch(()=>{});
 
   // 唤起摄像头 + 头姿检测(失败→键盘兜底,不阻断)
