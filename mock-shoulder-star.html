@@ -706,7 +706,7 @@
   </div>
 
   <!-- 右下角 · 真人点阵脸小窗 -->
-  <div class="you-cam" data-track="pose-reach">
+  <div class="you-cam" data-track="pose-reach" data-mask>
     <video autoplay playsinline muted></video>
     <canvas class="you-mesh" width="336" height="252"></canvas>
     <div class="you-label"><span class="you-dot"></span>YOU</div>
@@ -799,6 +799,7 @@
   <div id="dbgAngle" style="position:absolute;left:10px;bottom:10px;z-index:80;font:12px monospace;color:#6bff9d;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;display:none;"></div>
 </div>
 
+<script src="js/joy-mask.js"></script>
 <script type="module">
 import { createPoseBodyKernel } from "./js/pose-body-kernel.js";
 import { track } from "./js/telemetry.js";
@@ -1094,9 +1095,25 @@ function drawPoseReal(lm){
   let headR=16; if(shL&&shR) headR=Math.max(12,Math.hypot(shR.x-shL.x,shR.y-shL.y)*0.34);
   drawSkeleton({ nose:g(0), shL, shR, elL:g(13), elR:g(14), wrL:g(15), wrR:g(16), hipL:g(23), hipR:g(24), headR });
 }
+const MASK_MODE = (location.search.indexOf('mesh=1')<0);   // 默认 Joy 面具;?mesh=1 强制骨架调试
+// 面具模式:直接用头部点原始归一化坐标投影(不走上肢 bbox 缩放,避免举臂时抖动/偏移)
+// BlazePose 头部点:0鼻 · 7左耳 · 8右耳。镜像后 7 落画面右=earR、8 落画面左=earL。
+function drawJoyMaskPose(lm){
+  const W=meshCanvas.width,H=meshCanvas.height;
+  const vis=p=>(p.visibility==null?1:p.visibility);
+  const proj=i=>{ const p=lm[i]; if(!p||vis(p)<0.3)return null; return { x:(1-p.x)*W, y:p.y*H }; };
+  const nose=proj(0), earR=proj(7), earL=proj(8);
+  if(window.JoyMask && earL && earR){ JoyMask.drawByPoints(meshCtx, {nose, earL, earR}); }
+  else { meshHint('SEARCHING…'); }
+}
 function drawYou(){
   if(!meshCtx) return;
-  if(camOK && pose.landmarks){ drawPoseReal(pose.landmarks); }
+  const camBox=meshCanvas.closest('.you-cam');
+  const maskMode=(!camBox || camBox.dataset.faceMode!=='mesh') && MASK_MODE;
+  if(camOK && pose.landmarks){
+    if(maskMode){ meshBg(); drawJoyMaskPose(pose.landmarks); }
+    else drawPoseReal(pose.landmarks);
+  }
   else meshHint(camOK ? 'SEARCHING…' : '键盘模式 · 按住 ↑ 举臂');
 }
 
