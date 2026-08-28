@@ -17,13 +17,14 @@
 //   不烘死在内核里——四关现值发散，收敛是设计决策，不是重构。
 // ============================================================
 
-import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+import { FaceLandmarker, FilesetResolver } from "../mediapipe/vision_bundle.mjs";
 
 export const KERNEL_VERSION = '1.0.0';
 
 // MediaPipe 资源地址(四关一致，集中一处便于将来切内网自托管)
-const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
-const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+// 已本地化：import 相对本 js 文件(../)，运行时 fetch 相对引用页面(./)
+const WASM_URL = "./mediapipe/wasm";
+const MODEL_URL = "./mediapipe/models/face_landmarker.task";
 
 // 关键地标下标
 const NOSE_TIP = 1;

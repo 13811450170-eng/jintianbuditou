@@ -15,12 +15,13 @@
 // 与 FaceLandmarker 不同页共存(颈/眼用 pose-kernel 的 Face,肩用本内核的 Pose,分步切换)。
 // ============================================================
 
-import { PoseLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+import { PoseLandmarker, FilesetResolver } from "../mediapipe/vision_bundle.mjs";
 
 export const BODY_KERNEL_VERSION = '1.0.0';
 
-const WASM_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
-const MODEL_URL = "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+// 已本地化：import 相对本 js 文件(../)，运行时 fetch 相对引用页面(./)
+const WASM_URL = "./mediapipe/wasm";
+const MODEL_URL = "./mediapipe/models/pose_landmarker_lite.task";
 
 // 33 点关键索引
 const L = { shoulder: 11, elbow: 13, wrist: 15, hip: 23 };
