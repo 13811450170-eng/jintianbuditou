@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>今天不低头 · 京ME 健康提醒示意</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+  :root{
+    /* 品牌 */
+    --joy:#F5BC30; --joy-deep:#C8800A; --joy-ink:#1A1200;
+    /* 部位色(与 index/zone 一致) */
+    --neck:#00A3FF;  --neck-bg:#E1F2FF;  --neck-deep:#0072B3;
+    --shoulder:#7C5AFF; --shoulder-bg:#EBE5FF; --shoulder-deep:#5A3FCC;
+    --coral:#FF7A52; --coral-deep:#E85B32;
+    --fire:#FF9800; --fire-2:#FFB74D;
+    /* 中性 */
+    --ink:#1B1D24; --ink-2:#454A56; --ink-3:#767C8A; --ink-4:#9AA0AD;
+    --line:#E7EAF0; --paper:#FFFFFF;
+    --bg:#E9ECF3;
+    --font-d:'Sora','Noto Sans SC',system-ui,sans-serif;
+    --font-b:'Noto Sans SC',system-ui,sans-serif;
+    --r-lg:22px; --r-md:16px; --r-sm:12px;
+    --sh-1:0 2px 10px rgba(30,40,70,.06);
+    --sh-2:0 14px 40px rgba(30,40,70,.12);
+    --sh-card:0 6px 22px rgba(30,40,70,.10);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{background:var(--bg);color:var(--ink);font-family:var(--font-b);-webkit-font-smoothing:antialiased;}
+  body{padding:34px 30px 90px;}
+
+  /* ---------- 顶栏 ---------- */
+  .top{max-width:1280px;margin:0 auto 26px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+  .top .logo{
+    width:52px;height:52px;border-radius:15px;object-fit:cover;
+    box-shadow:0 6px 18px rgba(200,128,10,.28);flex:none;
+  }
+  .top h1{font-family:var(--font-d);font-size:23px;font-weight:800;letter-spacing:.3px;}
+  .top .sub{font-size:13px;color:var(--ink-3);margin-top:3px;line-height:1.5;}
+  .top .tag{
+    margin-left:auto;font-family:var(--font-d);font-size:12px;font-weight:700;
+    color:var(--joy-deep);background:#FFF3D6;border:1px solid #F5D98A;
+    padding:8px 15px;border-radius:999px;
+  }
+
+  /* ---------- 布局 ---------- */
+  .wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:1fr 1.15fr;gap:28px;align-items:start;}
+  @media(max-width:1080px){.wrap{grid-template-columns:1fr;}}
+
+  /* ===== 左:方案总览 ===== */
+  .plan{position:sticky;top:24px;display:flex;flex-direction:column;gap:16px;}
+  @media(max-width:1080px){.plan{position:static;}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-1);padding:22px 22px;}
+  .card .eyebrow{font-family:var(--font-d);font-size:11px;font-weight:800;letter-spacing:2px;color:var(--ink-4);text-transform:uppercase;}
+  .card h2{font-family:var(--font-d);font-size:17px;font-weight:800;margin:7px 0 12px;}
+  .card p{font-size:13.5px;line-height:1.72;color:var(--ink-2);}
+  .card p + p{margin-top:9px;}
+  .k{font-weight:700;color:var(--ink);}
+  .axis{
+    margin-top:14px;display:flex;align-items:center;gap:0;
+    background:linear-gradient(90deg,#FFE0D4,#EFEAFF);border-radius:999px;height:8px;position:relative;
+  }
+  .axis .pt{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%);border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.15);}
+  .axis-lab{display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--ink-3);}
+  .axis-lab .mid{color:var(--joy-deep);font-weight:700;}
+
+  /* 节奏表 */
+  .rhythm{display:flex;flex-direction:column;gap:9px;margin-top:4px;}
+  .slot{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--r-sm);background:#F7F8FB;border:1px solid var(--line);}
+  .slot .time{font-family:var(--font-d);font-weight:800;font-size:14px;min-width:52px;color:var(--ink);}
+  .slot .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .slot .txt{font-size:12.5px;color:var(--ink-2);line-height:1.45;}
+  .slot .txt b{color:var(--ink);font-weight:700;}
+  .slot .badge{margin-left:auto;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;}
+
+  /* 铁律清单 */
+  .rules{display:flex;flex-direction:column;gap:11px;margin-top:2px;}
+  .rule{display:flex;gap:11px;align-items:flex-start;}
+  .rule .n{font-family:var(--font-d);font-weight:800;font-size:12px;color:#fff;background:var(--joy-deep);width:21px;height:21px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex:none;margin-top:1px;}
+  .rule .rt{font-size:13px;line-height:1.6;color:var(--ink-2);}
+  .rule .rt b{color:var(--ink);font-weight:700;}
+
+  .grad-note{margin-top:13px;padding:13px 14px;border-radius:var(--r-sm);background:linear-gradient(100deg,#FFF6E0,#FFEFD0);border:1px solid #F3DDA0;}
+  .grad-note .gt{font-family:var(--font-d);font-weight:800;font-size:13px;color:var(--joy-deep);margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+  .grad-note p{font-size:12.5px;color:#7A5A10;line-height:1.6;}
+
+  /* ===== 右:京ME 会话窗口 ===== */
+  .phone-lab{display:flex;flex-direction:column;gap:10px;}
+  .lab-hint{font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:7px;padding-left:4px;}
+  .lab-hint .d{width:6px;height:6px;border-radius:50%;background:var(--joy);}
+
+  .jm{background:var(--paper);border-radius:26px;box-shadow:var(--sh-2);overflow:hidden;border:1px solid #DFE3EC;}
+  /* 会话标题栏 */
+  .jm-head{
+    display:flex;align-items:center;gap:11px;padding:15px 18px;
+    background:linear-gradient(180deg,#FBFCFE,#F2F5FA);border-bottom:1px solid var(--line);
+  }
+  .jm-head .ava{width:38px;height:38px;border-radius:11px;object-fit:cover;flex:none;box-shadow:0 3px 9px rgba(200,128,10,.25);}
+  .jm-head .nm{font-family:var(--font-d);font-weight:800;font-size:15px;display:flex;align-items:center;gap:7px;}
+  .jm-head .robot{font-size:10px;font-weight:700;color:#8A63D6;background:#F0E9FF;border:1px solid #DFD0FA;padding:2px 7px;border-radius:6px;letter-spacing:.5px;}
+  .jm-head .st{font-size:11px;color:var(--ink-4);margin-top:2px;}
+  .jm-head .ic{margin-left:auto;display:flex;gap:16px;color:var(--ink-4);}
+  .jm-head .ic svg{width:19px;height:19px;}
+
+  .jm-body{background:#F4F6FA;padding:20px 16px 8px;max-height:none;}
+  .daysep{text-align:center;margin:6px 0 16px;}
+  .daysep span{font-size:11px;color:var(--ink-4);background:#E4E8F0;padding:3px 12px;border-radius:999px;}
+  .msg{margin-bottom:24px;}
+  .msg .ts{text-align:center;font-size:11px;color:var(--ink-4);margin-bottom:12px;}
+  .msg .row{display:flex;gap:10px;align-items:flex-start;}
+  .msg .row .ava{width:34px;height:34px;border-radius:10px;object-fit:cover;flex:none;box-shadow:0 2px 7px rgba(200,128,10,.22);}
+  .msg .wholine{font-size:11.5px;color:var(--ink-4);margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+  .msg .wholine .robot{font-size:9px;color:#8A63D6;background:#F0E9FF;border:1px solid #DFD0FA;padding:1px 6px;border-radius:5px;}
+
+  /* 提醒卡 */
+  .rcard{background:#fff;border-radius:16px;box-shadow:var(--sh-card);overflow:hidden;max-width:388px;}
+  .rcard .htitle{padding:14px 16px 12px;}
+  .rcard .htitle .t{font-family:var(--font-d);font-weight:800;font-size:16.5px;line-height:1.35;display:flex;align-items:center;gap:8px;}
+  .rcard .htitle .kick{font-size:11.5px;font-weight:700;margin-top:5px;letter-spacing:.5px;}
+  .rcard .rbody{padding:0 16px 14px;}
+  .rcard .rbody p{font-size:13.5px;line-height:1.72;color:#3A3F4B;}
+  .rcard .rbody p + p{margin-top:8px;}
+  .rcard .pin{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12px;color:var(--ink-3);background:#F4F6FA;padding:6px 11px;border-radius:999px;}
+
+  /* hero banner */
+  .hero{margin:2px 16px 0;border-radius:14px;overflow:hidden;position:relative;height:132px;display:flex;align-items:center;}
+  .hero .txt{padding:0 0 0 20px;z-index:2;max-width:60%;}
+  .hero .txt .zone{font-size:12px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:1px;}
+  .hero .txt .lv{font-family:var(--font-d);font-weight:800;font-size:22px;color:#fff;margin-top:3px;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.18);}
+  .hero .txt .meta{margin-top:9px;display:inline-flex;gap:7px;}
+  .hero .txt .chip{font-size:10.5px;font-weight:700;color:#fff;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.35);padding:3px 9px;border-radius:999px;backdrop-filter:blur(4px);}
+  .hero .joy{position:absolute;right:-6px;bottom:0;height:150px;z-index:1;filter:drop-shadow(0 6px 14px rgba(0,0,0,.22));}
+  .hero.neck .joy{height:138px;right:6px;bottom:-4px;}
+  .hero .stars{position:absolute;inset:0;z-index:0;pointer-events:none;}
+
+  /* CTA */
+  .cta-wrap{padding:12px 16px 15px;}
+  .cta{
+    width:100%;border:none;border-radius:12px;padding:13px;font-family:var(--font-d);
+    font-weight:800;font-size:14.5px;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;
+    transition:transform .15s,filter .15s;
+  }
+  .cta:hover{filter:brightness(1.04);transform:translateY(-1px);}
+  .cta:active{transform:translateY(0);}
+  .cta .arr{font-family:var(--font-d);}
+  .cta-sub{width:100%;border:none;background:transparent;color:var(--ink-4);font-family:var(--font-b);font-size:12.5px;padding:10px;cursor:pointer;margin-top:2px;}
+  .cta-sub:hover{color:var(--ink-2);}
+
+  .streak-tail{
+    display:flex;align-items:center;gap:7px;padding:9px 16px;margin:0 16px 14px;
+    background:linear-gradient(100deg,#FFF3E0,#FFE8CC);border-radius:11px;font-size:12.5px;color:#9A5B00;font-weight:600;
+  }
+  .streak-tail .fire{font-size:15px;}
+
+  /* 卡内小分隔:菜单栏(仿京ME底部) */
+  .jm-menu{display:flex;border-top:1px solid var(--line);background:#fff;}
+  .jm-menu .mi{flex:1;text-align:center;padding:11px;font-size:12.5px;color:var(--ink-2);font-weight:600;border-right:1px solid var(--line);}
+  .jm-menu .mi:last-child{border-right:none;}
+
+  /* 数据小卡(周报卡用) */
+  .rep-stats{display:flex;gap:9px;margin:0 16px;}
+  .rep-stats .s{flex:1;background:#F7F8FB;border:1px solid var(--line);border-radius:12px;padding:11px 8px;text-align:center;}
+  .rep-stats .s .v{font-family:var(--font-d);font-weight:800;font-size:19px;color:var(--fire);}
+  .rep-stats .s .v small{font-size:11px;}
+  .rep-stats .s .l{font-size:10.5px;color:var(--ink-3);margin-top:3px;}
+  .rep-stats .s.up .v{color:#22B07D;}
+  .medal{display:inline-flex;align-items:center;gap:6px;margin:12px 16px 0;font-size:12.5px;font-weight:700;color:#9A5B00;background:#FFF3D6;border:1px solid #F3DDA0;padding:7px 12px;border-radius:999px;}
+
+  .toast{
+    position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+    background:rgba(27,29,36,.94);color:#fff;font-size:13px;padding:12px 20px;border-radius:12px;
+    opacity:0;pointer-events:none;transition:all .3s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:88vw;text-align:center;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .footnote{max-width:1280px;margin:26px auto 0;font-size:11.5px;color:var(--ink-4);text-align:center;line-height:1.6;}
+</style>
+</head>
+<body>
+
+  <div class="top">
+    <img class="logo" src="img/joy-app-icon.png" alt="Joy">
+    <div>
+      <h1>京ME 健康提醒 · 方案示意</h1>
+      <div class="sub">「今天不低头」的自有触发层 —— 让 Joy 在工位按时段敲你肩膀,提醒即入口,一点直进 30 秒关卡</div>
+    </div>
+    <div class="tag">示意稿 · 非真实推送</div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ================= 左:方案总览 ================= -->
+    <div class="plan">
+
+      <div class="card">
+        <div class="eyebrow">它是什么</div>
+        <h2>京ME 推送 = 触发环节的「自有触发」</h2>
+        <p>桌宠、手机小组件、京ME 推送是我们养成习惯的三个外部触发。它们摆在<span class="k">「打断式 ↔ 环境式」</span>这根轴上 —— 京ME 站在打断的一端:<span class="k">最能被看见,也最容易被静音</span>。</p>
+        <p>所以京ME 的活儿不是常驻刷存在感(那是桌宠和小组件干的),而是<span class="k">按生理钟在关键时刻补一枪</span>:上午脖子僵、下午肩背沉、断更两天、周末复盘。</p>
+        <div class="axis">
+          <div class="pt" style="left:8%;background:#FF6B4A;"></div>
+          <div class="pt" style="left:50%;background:var(--joy);"></div>
+          <div class="pt" style="left:92%;background:#7C5AFF;"></div>
+        </div>
+        <div class="axis-lab">
+          <span>京ME 推送<br>打断 · 按点</span>
+          <span class="mid" style="text-align:center;">桌宠<br>半推送 · 工位</span>
+          <span style="text-align:right;">手机小组件<br>常驻 · 瞄一眼</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">推送节奏</div>
+        <h2>一天最多两枪,踩着身体的点</h2>
+        <div class="rhythm">
+          <div class="slot">
+            <span class="time">09:30</span>
+            <span class="dot" style="background:var(--neck);"></span>
+            <span class="txt"><b>颈椎场</b> · 伏案一上午,脖子最先僵 → 拳击派对</span>
+            <span class="badge" style="color:var(--neck-deep);background:var(--neck-bg);">每日</span>
+          </div>
+          <div class="slot">
+            <span class="time">15:00</span>
+            <span class="dot" style="background:var(--shoulder);"></span>
+            <span class="txt"><b>肩背场</b> · 下午三点最容易含胸犯困 → 举臂摘星</span>
+            <span class="badge" style="color:var(--shoulder-deep);background:var(--shoulder-bg);">每日</span>
+          </div>
+          <div class="slot">
+            <span class="time">断更</span>
+            <span class="dot" style="background:var(--coral);"></span>
+            <span class="txt"><b>召回</b> · 断了两天才轻轻喊一次,只安慰不指责</span>
+            <span class="badge" style="color:var(--coral-deep);background:#FFEAE1;">T+2</span>
+          </div>
+          <div class="slot">
+            <span class="time">周日</span>
+            <span class="dot" style="background:var(--fire);"></span>
+            <span class="txt"><b>周报</b> · 晚上八点送一周战报 + 称号 → 身体周报</span>
+            <span class="badge" style="color:#9A5B00;background:#FFF3D6;">每周</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="eyebrow">文案铁律</div>
+        <h2>Joy 怎么说话</h2>
+        <div class="rules">
+          <div class="rule"><span class="n">1</span><span class="rt"><b>第一人称「我陪你」。</b>不是系统播报,是趴在工位那头的小狗在喊你,一句钩子 + 一个动作,不啰嗦。</span></div>
+          <div class="rule"><span class="n">2</span><span class="rt"><b>提醒即入口。</b>每条推送直接推一个 30 秒关卡,点主按钮就进,不用先找。一次只推一个部位。</span></div>
+          <div class="rule"><span class="n">3</span><span class="rt"><b>治愈不惩罚。</b>断更了不写「你已 X 天没打卡」,只说「好几天没见你啦」;失败零指责。</span></div>
+          <div class="rule"><span class="n">4</span><span class="rt"><b>三端不齐响。</b>桌宠常驻做氛围,小组件靠瞄一眼,京ME 只在上面这几个点补 —— 避免被一起静音。</span></div>
+        </div>
+        <div class="grad-note">
+          <div class="gt">🎓 终点:把自己「毕业」掉</div>
+          <p>连续达标就自动降频,推得越来越少。目标是有一天脖子一酸你自己就想起来 —— 京ME 只是根拐杖,能扔掉才算真的养成了习惯。</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ================= 右:京ME 会话预览 ================= -->
+    <div class="phone-lab">
+      <div class="lab-hint"><span class="d"></span>京ME 会话预览 · 四类提醒卡(下滑查看)</div>
+
+      <div class="jm">
+        <!-- 会话标题栏 -->
+        <div class="jm-head">
+          <img class="ava" src="img/joy-app-icon.png" alt="Joy">
+          <div>
+            <div class="nm">今天不低头 · Joy <span class="robot">机器人</span></div>
+            <div class="st">你的工位健康搭子 · 只在你该动的时候出现</div>
+          </div>
+          <div class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="14" height="14" rx="2"/><path d="M17 9l4-2v10l-4-2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+          </div>
+        </div>
+
+        <div class="jm-body">
+          <div class="daysep"><span>今天</span></div>
+
+          <!-- 卡1 · 上午颈椎 -->
+          <div class="msg">
+            <div class="ts">上午 9:30</div>
+            <div class="row">
+              <img class="ava" src="img/joy-app-icon.png" alt="">
+              <div style="flex:1;">
+                <div class="wholine">今天不低头 · Joy <span class="robot">机器人</span></div>
+                <div class="rcard">
+                  <div class="htitle">
+                    <div class="t">🦒 脖子该抬抬头啦</div>
+                    <div class="kick" style="color:var(--neck-deep);">上午工间提醒 · 颈椎场</div>
+                  </div>
+                  <div class="rbody">
+                    <p>早上好呀,又埋头写了一上午了吧?低头久了,脖子最先僵。</p>
+                    <p>陪我打 <b>40 秒</b>拳击吧 —— 左钩右钩上勾下勾,挥拳时脖子跟着转起来,比干坐着舒服多啦。</p>
+                    <span class="pin">📍 就在工位,站起来就能玩 · 不开摄像头也行</span>
+                  </div>
+                  <div class="hero neck" style="background:linear-gradient(115deg,#0090E8,#00A3FF 55%,#5EC4FF);">
+                    <div class="txt">
+                      <div class="zone">颈部训练营</div>
+                      <div class="lv">拳击派对</div>
+                      <div class="meta"><span class="chip">约 40 秒</span><span class="chip">轻度</span></div>
+                    </div>
+                    <img class="joy" src="img/joy/joy-coach-charge.png" alt="Joy 打拳">
+                  </div>
+                  <div class="cta-wrap">
+                    <button class="cta" style="background:linear-gradient(180deg,#00A3FF,#0086D6);" onclick="jump('拳击派对')">陪 Joy 打两拳 <span class="arr">→</span></button>
+                    <button class="cta-sub" onclick="later()">待会儿再说</button>
+                  </div>
+                  <div class="streak-tail"><span class="fire">🔥</span> 你已经连续 <b>&nbsp;7&nbsp;</b> 天没低头,别断呀</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 卡2 · 下午肩背 -->
+          <div class="msg">
+            <div class="ts">下午 3:00</div>
+            <div class="row">
+              <img class="ava" src="img/joy-app-icon.png" alt="">
+              <div style="flex:1;">
+                <div class="wholine">今天不低头 · Joy <span class="robot">机器人</span></div>
+                <div class="rcard">
+                  <div class="htitle">
+                    <div class="t">🙆 肩膀该舒展一下</div>
+                    <div class="kick" style="color:var(--shoulder-deep);">下午充电提醒 · 肩背场</div>
+                  </div>
+                  <div class="rbody">
+                    <p>下午三点啦,肩膀是不是又硬又沉、人也开始犯困?</p>
+                    <p>举起手,跟我摘颗星星吧 —— <b>30 秒</b>把含胸缩着的肩背拉开,一下就精神起来。</p>
+                    <span class="pin">📍 坐着就能做 · 举手够到高处的星星就行</span>
+                  </div>
+                  <div class="hero" style="background:linear-gradient(120deg,#3A2F7A,#5A3FCC 50%,#8A6BFF);">
+                    <div class="stars" id="stars2"></div>
+                    <div class="txt">
+                      <div class="zone">肩部训练营</div>
+                      <div class="lv">举臂摘星</div>
+                      <div class="meta"><span class="chip">约 30 秒</span><span class="chip">轻度</span></div>
+                    </div>
+                    <img class="joy" src="img/joy/joy-coach-happy.png" alt="Joy 举手" style="height:160px;right:0;bottom:-8px;">
+                  </div>
+                  <div class="cta-wrap">
+                    <button class="cta" style="background:linear-gradient(180deg,#7C5AFF,#5A3FCC);" onclick="jump('举臂摘星')">举手摘颗星 <span class="arr">→</span></button>
+                    <button class="cta-sub" onclick="later()">待会儿再说</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="daysep"><span>周四 · 你有两天没来了</span></div>
+
+          <!-- 卡3 · 召回 -->
+          <div class="msg">
+            <div class="ts">上午 10:20</div>
+            <div class="row">
+              <img class="ava" src="img/joy-app-icon.png" alt="">
+              <div style="flex:1;">
+                <div class="wholine">今天不低头 · Joy <span class="robot">机器人</span></div>
+                <div class="rcard">
+                  <div class="htitle">
+                    <div class="t">💛 好几天没见你啦</div>
+                    <div class="kick" style="color:var(--coral-deep);">Joy 在工位这头等你</div>
+                  </div>
+                  <div class="rbody">
+                    <p>嘿,最近是不是忙疯了?忘了没关系的,我一直趴在这儿。</p>
+                    <p>可你的脖子肩膀一直惦记着你呢。要不要现在就花 <b>40 秒</b>,跟我松一松?</p>
+                    <p style="color:var(--ink-3);font-size:12.5px;margin-top:9px;">你之前连着 <b style="color:#9A5B00;">12 天</b>的最好成绩,我都替你记着呢 ✨</p>
+                  </div>
+                  <div class="hero" style="background:linear-gradient(120deg,#FFB24A,#FF8A5B 60%,#FF7A52);">
+                    <div class="txt">
+                      <div class="zone" style="color:rgba(255,255,255,.95);">随便挑一个</div>
+                      <div class="lv">回来动一动</div>
+                      <div class="meta"><span class="chip">40 秒就好</span></div>
+                    </div>
+                    <img class="joy" src="img/joy/joy-coach-cheer.png" alt="Joy 招手" style="height:150px;right:4px;">
+                  </div>
+                  <div class="cta-wrap">
+                    <button class="cta" style="background:linear-gradient(180deg,#FF8A5B,#E85B32);" onclick="jump('今日推荐')">回来陪陪 Joy <span class="arr">→</span></button>
+                    <button class="cta-sub" onclick="later()">明天再说吧</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="daysep"><span>周日</span></div>
+
+          <!-- 卡4 · 周报里程碑 -->
+          <div class="msg">
+            <div class="ts">晚上 8:00</div>
+            <div class="row">
+              <img class="ava" src="img/joy-app-icon.png" alt="">
+              <div style="flex:1;">
+                <div class="wholine">今天不低头 · Joy <span class="robot">机器人</span></div>
+                <div class="rcard">
+                  <div class="htitle">
+                    <div class="t">🏆 本周战报出炉</div>
+                    <div class="kick" style="color:#9A5B00;">周日复盘 · 你这周很挺拔</div>
+                  </div>
+                  <div class="rbody">
+                    <p>这周你陪我练了 <b>5 天</b>,颈椎活动度比上周好了一截,肩膀也松开不少!</p>
+                  </div>
+                  <div class="rep-stats">
+                    <div class="s"><div class="v">5<small> 天</small></div><div class="l">本周打卡</div></div>
+                    <div class="s up"><div class="v">+12<small>°</small></div><div class="l">颈椎活动度</div></div>
+                    <div class="s"><div class="v">18<small> 局</small></div><div class="l">累计训练</div></div>
+                  </div>
+                  <div class="medal">🎖 解锁新称号 · 抬头挺胸周冠军</div>
+                  <div class="cta-wrap" style="padding-top:14px;">
+                    <button class="cta" style="background:linear-gradient(180deg,#FFA726,#FB8C00);" onclick="jump('身体周报')">查看本周身体周报 <span class="arr">→</span></button>
+                    <button class="cta-sub" onclick="share()">把战报分享给同事</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 仿京ME底部菜单 -->
+        <div class="jm-menu">
+          <div class="mi">🏠 进训练营</div>
+          <div class="mi">📊 我的周报</div>
+          <div class="mi">⚙️ 提醒设置</div>
+        </div>
+      </div>
+
+      <div class="lab-hint" style="margin-top:2px;"><span class="d" style="background:var(--shoulder);"></span>点任意主按钮看「提醒即入口」的跳转示意</div>
+    </div>
+
+  </div>
+
+  <div class="footnote">
+    示意稿用于方案汇报,不含真实推送逻辑。Joy 形象、部位配色(颈椎明蓝 / 肩背紫)、Streak 火苗均沿用「今天不低头」既有设计系统。
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+  // 星空点缀(肩部卡)
+  (function(){
+    const box=document.getElementById('stars2');
+    if(!box) return;
+    const pts=[[15,30,3],[28,55,2],[42,25,2.5],[8,68,2],[35,78,3],[20,45,1.8],[48,60,2.2]];
+    pts.forEach(([x,y,r])=>{
+      const s=document.createElement('div');
+      s.style.cssText=`position:absolute;left:${x}%;top:${y}%;width:${r}px;height:${r}px;border-radius:50%;background:#fff;opacity:${0.5+Math.min(r/6,0.4)};box-shadow:0 0 ${r*2}px #fff;`;
+      box.appendChild(s);
+    });
+  })();
+
+  const toast=document.getElementById('toast');
+  let tt=null;
+  function showToast(msg){
+    toast.textContent=msg;
+    toast.classList.add('show');
+    clearTimeout(tt);
+    tt=setTimeout(()=>toast.classList.remove('show'),2400);
+  }
+  function jump(lv){ showToast('（示意）点一下就进「'+lv+'」，不用去找 —— 提醒即入口'); }
+  function later(){ showToast('好的，待会儿 Joy 再喊你 ~'); }
+  function share(){ showToast('（示意）生成一张战报卡片，分享到部门群'); }
+</script>
+</body>
+</html>

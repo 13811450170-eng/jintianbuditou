@@ -144,6 +144,78 @@ strong { color: var(--ink); font-weight: 700; }
 .ins-label { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 10px; }
 .ins-list { font-size: 13px; line-height: 1.9; }
 
+/* Retention framework (Section 01) */
+.spine { display:flex; align-items:stretch; margin-bottom:16px; }
+.spine-block { flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+.spine-block.mid { flex:1.5; border-color:rgba(255,107,74,0.4); }
+.spine-tag { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--ink-4); text-transform:uppercase; }
+.spine-name { font-size:16px; font-weight:800; color:var(--ink); margin:6px 0; }
+.spine-what { font-size:12.5px; color:var(--ink-3); line-height:1.6; margin-bottom:10px; }
+.spine-freq { display:inline-block; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:10px; }
+.freq-once { background:#EEF2FF; color:#4338CA; }
+.freq-loop { background:#FEF0EC; color:#C2410C; }
+.freq-break { background:#FEF9C3; color:#854D0E; }
+.spine-role { font-size:12px; color:var(--ink-3); line-height:1.55; }
+.spine-arrow { flex:0 0 60px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; }
+.spine-arrow .sym { color:var(--fire); font-size:22px; font-weight:800; }
+.spine-arrow .cap { font-size:10px; color:var(--ink-4); text-align:center; line-height:1.3; }
+
+.loop-wrap { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px; }
+.loop-hd { font-size:13px; font-weight:800; color:var(--ink-2); margin-bottom:16px; }
+.loop { display:flex; align-items:stretch; }
+.loop-stage { flex:1; padding:0 16px; position:relative; }
+.loop-stage:first-child { padding-left:0; }
+.loop-stage:last-child { padding-right:0; }
+.loop-stage + .loop-stage::before { content:"→"; position:absolute; left:-7px; top:20px; color:var(--fire); font-size:15px; font-weight:800; }
+.loop-num { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--ink-4); text-transform:uppercase; }
+.loop-name { font-size:16px; font-weight:800; color:var(--ink); margin:5px 0 2px; }
+.loop-role { font-size:12px; font-weight:700; color:var(--fire); margin-bottom:10px; }
+.loop-item { font-size:12px; color:var(--ink-3); line-height:1.5; padding:6px 0; border-top:1px solid var(--line); }
+.loop-item:first-of-type { border-top:none; }
+.loop-item b { display:block; color:var(--ink); font-weight:700; font-size:11px; margin-bottom:1px; }
+.loop-return { margin-top:18px; border:1px dashed rgba(255,107,74,0.5); border-radius:12px; padding:12px 16px; background:rgba(255,107,74,0.06); display:flex; align-items:center; gap:12px; }
+.loop-return .ar { color:var(--fire); font-size:20px; font-weight:800; flex-shrink:0; }
+.loop-return .tx { font-size:12.5px; color:var(--ink-2); line-height:1.55; }
+.loop-return .tx b { color:var(--fire); }
+
+/* Ring diagram — frosted glass */
+.ring-hero { display:flex; justify-content:center; margin:10px 0 2px;
+  background:radial-gradient(circle at 50% 42%, #FFFFFF 0%, #FBFAF7 45%, #F4F2EC 100%);
+  border-radius:20px; padding:20px 10px 10px; }
+:root:not([data-theme="light"]) .ring-hero,
+:root[data-theme="dark"] .ring-hero { background:radial-gradient(circle at 50% 42%, #232327 0%, #1A1A1D 60%, #141416 100%); }
+.ring-hero svg { width:100%; max-width:600px; height:auto;
+  filter: drop-shadow(0 18px 30px rgba(80,70,120,0.12)); }
+.rg-en { font:700 11px var(--font); letter-spacing:2px; text-anchor:middle; }
+.rg-name { font:900 21px var(--font); text-anchor:middle; }
+.rg-role { font:700 12.5px var(--font); text-anchor:middle; }
+.rg-arc-return { fill:none; stroke:#FF7A45; stroke-width:5; stroke-linecap:round; }
+.rg-ahf-m { fill:#FF7A45; }
+.rg-center { font:900 26px var(--font); fill:var(--ink); text-anchor:middle; }
+.rg-sub { font:800 14px var(--font); fill:#F0662E; text-anchor:middle; }
+.rg-sub2 { font:600 12px var(--font); fill:var(--ink-3); text-anchor:middle; }
+.rg-chip { fill:rgba(255,122,69,0.14); stroke:rgba(255,122,69,0.5); }
+.rg-chiptx { font:800 12px var(--font); fill:#F0662E; text-anchor:middle; }
+.ring-cap { font-size:12px; color:var(--ink-3); text-align:center; line-height:1.65; max-width:560px; margin:14px auto 0; }
+.loop-sub { font-size:12px; font-weight:800; color:var(--ink-2); margin:20px 0 10px; padding-top:16px; border-top:1px solid var(--line); }
+
+.mini-note { background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+.mini-hd { font-size:12px; font-weight:800; color:var(--ink); margin-bottom:10px; }
+.mini-body { font-size:12px; color:var(--ink-3); line-height:1.6; }
+.mini-body b { color:var(--ink-2); font-weight:700; }
+.axis-line { display:flex; justify-content:space-between; font-size:10px; font-weight:700; color:var(--ink-4); }
+.axis-track { display:flex; justify-content:space-between; align-items:center; gap:6px; margin:6px 0 10px; padding-top:8px; border-top:1px solid var(--line); }
+.axis-chip { font-size:11px; font-weight:700; color:var(--ink-2); background:var(--card); border:1px solid var(--line); border-radius:16px; padding:4px 10px; }
+.axis-chip.hot { color:var(--fire); border-color:rgba(255,107,74,0.4); }
+
+.shots { margin-top:20px; padding-top:20px; border-top:1px solid var(--line); }
+.shots-hd { font-size:11px; font-weight:800; letter-spacing:1.5px; color:var(--ink-4); text-transform:uppercase; margin-bottom:12px; }
+.shots-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+.shot { border:1px dashed var(--line); border-radius:10px; padding:12px 14px; }
+.shot-stage { font-size:12.5px; font-weight:800; color:var(--ink); margin-bottom:3px; }
+.shot-slot { font-size:11.5px; color:var(--ink-3); }
+.wip { font-size:9px; font-weight:700; color:var(--fire); background:rgba(255,107,74,0.12); padding:1px 6px; border-radius:10px; margin-left:4px; vertical-align:middle; }
+
 /* Footer */
 footer {
   border-top: 1px solid var(--line); padding-top: 24px; margin-top: 40px;
@@ -167,39 +239,209 @@ footer {
   </div>
 </header>
 
-<!-- Section 1: Hook Model -->
+<!-- Section 1: Retention Framework -->
 <section>
-  <div class="sec-label">01 · Hook Model</div>
-  <h2>四个环节，让用户反复回来</h2>
-  <p class="sec-lead">Nir Eyal 的 Hook Model 解释了为什么用户会形成习惯。我们对照四环节，找出每个位置的设计落点。</p>
-  <div class="hook-row">
-    <div class="hook-step">
-      <div class="hook-num">TRIGGER</div>
-      <div class="hook-name">触发</div>
-      <div class="hook-item">外部：久坐提醒 / Joy 推送</div>
-      <div class="hook-item">内部：脖子酸了自己想起来</div>
-      <div class="hook-item" style="color:var(--fire);font-weight:700;">目标：让内部触发成主路</div>
+  <div class="sec-label">01 · 长期留存框架</div>
+  <h2>我们如何让用户反复回来</h2>
+  <p class="sec-lead">核心是 Nir Eyal 的 Hook Model 循环，但真正的长期留存 = <strong>一个循环 + 两头</strong>：用户先<strong>冷启动</strong>进圈，在<strong>四环节循环</strong>里养成习惯，循环一旦断裂靠<strong>召回</strong>拉回来。这张图是下方流程图的母版。</p>
+
+  <!-- Spine: cold start → loop → recall -->
+  <div class="spine">
+    <div class="spine-block">
+      <div class="spine-tag">Onboarding</div>
+      <div class="spine-name">冷启动</div>
+      <div class="spine-what">首次自查建立 ROM baseline，用户还没进循环，谈不上「断了心疼」。</div>
+      <span class="spine-freq freq-once">一次性 · 入圈</span>
+      <div class="spine-role">给循环装上「属于我的数据」起点，为日后自证进步埋点。</div>
     </div>
-    <div class="hook-step">
-      <div class="hook-num">ACTION</div>
-      <div class="hook-name">行动</div>
-      <div class="hook-item">摩擦极低：一键进关卡</div>
-      <div class="hook-item">最短 30 秒可完成一局</div>
-      <div class="hook-item" style="color:var(--fire);font-weight:700;">目标：比刷微博还容易启动</div>
+    <div class="spine-arrow"><span class="sym">→</span><span class="cap">进圈</span></div>
+    <div class="spine-block mid">
+      <div class="spine-tag" style="color:var(--fire);">Hook Loop · 核心</div>
+      <div class="spine-name">四环节循环</div>
+      <div class="spine-what">触发 → 行动 → 奖励 → 投入，投入又加载下一次触发，形成习惯回路。</div>
+      <span class="spine-freq freq-loop">每天反复 · 主战场</span>
+      <div class="spine-role">详见下方展开。这里是留存的引擎，也是配图的主体。</div>
     </div>
-    <div class="hook-step">
-      <div class="hook-num">REWARD</div>
-      <div class="hook-name">奖励</div>
-      <div class="hook-item">即时：打完脖子真的松了</div>
-      <div class="hook-item">可变：彩蛋 / Joy 毒舌台词</div>
-      <div class="hook-item" style="color:var(--fire);font-weight:700;">独家：生理反馈闭环</div>
+    <div class="spine-arrow"><span class="sym">⤵</span><span class="cap">断了？</span></div>
+    <div class="spine-block">
+      <div class="spine-tag">Recovery</div>
+      <div class="spine-name">召回</div>
+      <div class="spine-what">保护卡顶一天、冻结期挽留、归零期亮历史最长徽章重新邀请。</div>
+      <span class="spine-freq freq-break">断裂时 · 防流失</span>
+      <div class="spine-role">修补环的裂缝，把断线用户拉回循环——长期留存最防流失的一环。</div>
     </div>
-    <div class="hook-step">
-      <div class="hook-num">INVESTMENT</div>
-      <div class="hook-name">投入</div>
-      <div class="hook-item">Streak 天数：断了心疼</div>
-      <div class="hook-item">ROM 基线：属于我的数据</div>
-      <div class="hook-item" style="color:var(--fire);font-weight:700;">Joy 记得我：熟人化 5 阶段</div>
+  </div>
+
+  <!-- The loop expanded -->
+  <div class="loop-wrap">
+    <div class="loop-hd">核心循环 · 画成环，不是四列</div>
+
+    <div class="ring-hero">
+      <svg viewBox="0 0 620 520" role="img" aria-label="Hook Model 四环节循环图">
+        <defs>
+          <linearGradient id="gTrig" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#FF9270"/><stop offset="1" stop-color="#FFC2A3"/>
+          </linearGradient>
+          <linearGradient id="gAct" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFCE7A"/><stop offset="1" stop-color="#FFE6B0"/>
+          </linearGradient>
+          <linearGradient id="gRew" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#8FE6C6"/><stop offset="1" stop-color="#C6F2E0"/>
+          </linearGradient>
+          <linearGradient id="gInv" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#A2BCF7"/><stop offset="1" stop-color="#CCDBFB"/>
+          </linearGradient>
+          <filter id="segShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <feDropShadow dx="0" dy="7" stdDeviation="9" flood-color="#7A6B9E" flood-opacity="0.18"/>
+          </filter>
+          <filter id="joyShadow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="9" stdDeviation="8" flood-color="#5B7BC4" flood-opacity="0.25"/>
+          </filter>
+          <marker id="ahReturn" markerWidth="9" markerHeight="9" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 L2.5,4 Z" class="rg-ahf-m"/>
+          </marker>
+        </defs>
+
+        <!-- 4 frosted-glass arc segments (clockwise: 触发→行动→奖励→投入) -->
+        <g filter="url(#segShadow)">
+          <path d="M188.1 75.0 A230 230 0 0 1 457.8 93.8 L406.4 155.1 A150 150 0 0 0 230.5 142.8 Z" fill="url(#gTrig)" fill-opacity="0.92"/>
+          <path d="M486.2 122.2 A230 230 0 0 1 486.2 417.8 L424.9 366.4 A150 150 0 0 0 424.9 173.6 Z" fill="url(#gAct)" fill-opacity="0.92"/>
+          <path d="M457.8 446.2 A230 230 0 0 1 162.2 446.2 L213.6 384.9 A150 150 0 0 0 406.4 384.9 Z" fill="url(#gRew)" fill-opacity="0.92"/>
+          <path d="M128.8 411.7 A230 230 0 0 1 115.0 148.1 L182.8 190.5 A150 150 0 0 0 191.8 362.4 Z" fill="url(#gInv)" fill-opacity="0.92"/>
+        </g>
+        <!-- glossy highlights -->
+        <g fill="none" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round">
+          <path d="M222.1 72.7 A216 216 0 0 1 424.5 86.8"/>
+          <path d="M493.2 155.5 A216 216 0 0 1 493.2 384.5"/>
+          <path d="M424.5 453.2 A216 216 0 0 1 195.5 453.2"/>
+          <path d="M122.9 378 A216 216 0 0 1 112.7 182.1"/>
+        </g>
+
+        <!-- return arc: 投入 → 触发 (loop closes here) -->
+        <path class="rg-arc-return" marker-end="url(#ahReturn)" d="M168 150 A205 205 0 0 1 214 116"/>
+        <g transform="translate(150,110)">
+          <rect class="rg-chip" x="-36" y="-14" width="72" height="27" rx="13.5"/>
+          <text class="rg-chiptx" y="4.5">↺ 回环</text>
+        </g>
+
+        <!-- center: Joy + 项目话术 -->
+        <image href="img/joy-pet-companion.png" x="256" y="168" width="108" height="108" filter="url(#joyShadow)"/>
+        <text class="rg-center" x="310" y="312">养成习惯</text>
+        <text class="rg-sub" x="310" y="337">今天不低头</text>
+        <text class="rg-sub2" x="310" y="358">投入 → 加载下一次触发</text>
+
+        <!-- segment labels -->
+        <g>
+          <text class="rg-en" x="317" y="66" fill="#D2551F">TRIGGER</text>
+          <text class="rg-name" x="317" y="93" fill="var(--ink)">触发</text>
+          <text class="rg-role" x="317" y="111" fill="#B45309">让用户想起来</text>
+        </g>
+        <g>
+          <text class="rg-en" x="498" y="256" fill="#A66A00">ACTION</text>
+          <text class="rg-name" x="498" y="283" fill="var(--ink)">行动</text>
+          <text class="rg-role" x="498" y="301" fill="#9A6A00">让启动无摩擦</text>
+        </g>
+        <g>
+          <text class="rg-en" x="310" y="446" fill="#158A5D">REWARD</text>
+          <text class="rg-name" x="310" y="473" fill="var(--ink)">奖励</text>
+          <text class="rg-role" x="310" y="491" fill="#158A5D">让这次值得</text>
+        </g>
+        <g>
+          <text class="rg-en" x="120" y="256" fill="#3E5FC8">INVESTMENT</text>
+          <text class="rg-name" x="120" y="283" fill="var(--ink)">投入</text>
+          <text class="rg-role" x="120" y="301" fill="#3E5FC8">让离开有成本</text>
+        </g>
+      </svg>
+    </div>
+    <p class="ring-cap">顺时针一圈：<strong>触发→行动→奖励→投入</strong>。关键是左上橙色那段——<strong>投入并不是终点，它加载下一次触发</strong>（Streak 断了心疼、Joy 越记得我、脖子一酸就更想起来），循环因此闭合、反复回来。<br>两头的「冷启动 / 召回」见上方骨架图。</p>
+
+    <div class="loop-sub">四环节展开 · 每个环节我们放了什么</div>
+    <div class="loop">
+      <div class="loop-stage">
+        <div class="loop-num">Trigger</div>
+        <div class="loop-name">触发</div>
+        <div class="loop-role">让用户想起来</div>
+        <div class="loop-item"><b>外部 · 自有触发</b>京Me推送 / 手机小组件 / 桌宠</div>
+        <div class="loop-item"><b>外部 · 时段生理钟</b>9点醒脑 / 3点解乏 / 睡前拉伸</div>
+        <div class="loop-item"><b>内部（目标主路）</b>脖子酸了自己想起来</div>
+      </div>
+      <div class="loop-stage">
+        <div class="loop-num">Action</div>
+        <div class="loop-name">行动</div>
+        <div class="loop-role">让启动无摩擦</div>
+        <div class="loop-item"><b>一键进关卡</b>比刷微博还容易启动</div>
+        <div class="loop-item"><b>30 秒一局</b>最短一局即可完成</div>
+      </div>
+      <div class="loop-stage">
+        <div class="loop-num">Reward</div>
+        <div class="loop-name">奖励</div>
+        <div class="loop-role">让这次值得</div>
+        <div class="loop-item"><b>即时 · 生理闭环（独家）</b>打完脖子真的松了</div>
+        <div class="loop-item"><b>可变 · 彩蛋 5 类</b>发现 &gt; 随机</div>
+        <div class="loop-item"><b>情感 · Joy 毒舌台词</b>愿意再来挨一次骂</div>
+        <div class="loop-item"><b>符号 · 里程碑 / 送礼</b>纯符号，不标价</div>
+      </div>
+      <div class="loop-stage">
+        <div class="loop-num">Investment</div>
+        <div class="loop-name">投入</div>
+        <div class="loop-role">让离开有成本</div>
+        <div class="loop-item"><b>打卡 · Streak 天数</b>断了心疼（损失回避）</div>
+        <div class="loop-item"><b>ROM 数据积累</b>你当初 vs 现在</div>
+        <div class="loop-item"><b>Joy 熟人化 5 阶段</b>它越来越记得我</div>
+      </div>
+    </div>
+    <div class="loop-return">
+      <div class="ar">↺</div>
+      <div class="tx"><b>回环 = 留存机关：</b>投入会加载下一次触发——Streak 断了心疼，明天脖子一酸就更想起来；Joy 越记得我，推送越懂我。<b>配图务必画成环，不是四列。</b></div>
+    </div>
+  </div>
+
+  <!-- Two design notes -->
+  <div class="grid2" style="margin-top:12px;">
+    <div class="mini-note">
+      <div class="mini-hd">触发这一环：三个外部提醒摆在一条轴上</div>
+      <div class="axis-line"><span>打断 · 推送式</span><span>常驻 · 环境式</span></div>
+      <div class="axis-track">
+        <span class="axis-chip">京Me 推送</span>
+        <span class="axis-chip hot">桌宠（工位现场）</span>
+        <span class="axis-chip">手机小组件</span>
+      </div>
+      <div class="mini-body">三个都是<b>自有触发</b>（唯一能养习惯的一类）。<b>桌宠赢在活在工位上——久坐痛点发生的地方。</b>三个别同时响，否则会被集体静音：桌宠常驻做氛围，京Me 按时段补一次。</div>
+    </div>
+    <div class="mini-note">
+      <div class="mini-hd">外部提醒的终点：把用户「毕业」到内部触发</div>
+      <div class="mini-body" style="margin-top:2px;">京Me / 小组件 / 桌宠都是<b>脚手架</b>。它们响够多次 + 每次真的松了，最终让用户脖子一酸自己想起来、不再依赖推送。<b>流程图里这三个应有一根箭头汇向「内部触发」，表示毕业，而非永久并列。</b>这正是我们从「工具」变「习惯」的证据。</div>
+    </div>
+  </div>
+
+  <!-- Screenshot placement guide -->
+  <div class="shots">
+    <div class="shots-hd">配图对号入座 · 每环节可贴的项目截图</div>
+    <div class="shots-grid">
+      <div class="shot">
+        <div class="shot-stage">触发</div>
+        <div class="shot-slot">桌宠陪伴屏 / 京Me 推送卡 / 手机小组件<span class="wip">做中</span></div>
+      </div>
+      <div class="shot">
+        <div class="shot-stage">行动</div>
+        <div class="shot-slot">首页今日推荐 → 一键进关卡</div>
+      </div>
+      <div class="shot">
+        <div class="shot-stage">奖励</div>
+        <div class="shot-slot">单次报告「脖子松了」/ 彩蛋 / Joy 台词</div>
+      </div>
+      <div class="shot">
+        <div class="shot-stage">投入</div>
+        <div class="shot-slot">首页 Streak 5 态 pill / 周报 ROM 曲线</div>
+      </div>
+      <div class="shot">
+        <div class="shot-stage">冷启动</div>
+        <div class="shot-slot">首次自查 ROM baseline</div>
+      </div>
+      <div class="shot">
+        <div class="shot-stage">召回</div>
+        <div class="shot-slot">保护卡消耗动画 / 冻结期 / 归零期徽章</div>
+      </div>
     </div>
   </div>
 </section>
@@ -277,6 +519,29 @@ footer {
       <div>
         <div class="driver-name">XP 等级 / League 联赛 / 好友系统<span class="driver-hat bh">黑帽</span></div>
         <div class="driver-desc">多邻国做得太重导致焦虑与卸载。我们是免费工具，不做冗余竞争与课金墙。</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:32px;padding-top:26px;border-top:1px solid var(--line);">
+    <div style="font-size:17px;font-weight:800;color:var(--ink);letter-spacing:-0.01em;margin-bottom:8px;">正在议的两件事，落在哪一环</div>
+    <p style="font-size:14px;color:var(--ink-3);line-height:1.7;margin-bottom:18px;max-width:740px;">「打卡送礼」和「排行榜」都在<strong>外驱侧</strong>。能不能做，只看两条线——<strong>礼有没有价签，榜有多大圈层。</strong></p>
+    <div class="grid2">
+      <div class="card" style="border-left:3px solid var(--fire-2);">
+        <div class="card-label">正在议 01 · 打卡送礼</div>
+        <div class="card-title">拆成两半：打卡是王牌，送礼看价签</div>
+        <div class="card-body" style="margin-top:8px;">
+          <div style="margin-bottom:10px;"><strong>打卡</strong> = 投入 INVESTMENT + 损失回避<span class="driver-hat wh">白帽</span><br>就是已落地的 Streak，最强钩子，继续押注。</div>
+          <div><strong>送礼</strong> = 奖励 REWARD，成败全在价签：<br>符号（徽章 / 称号 / Joy 专属台词）可做；<span style="color:var(--red);font-weight:700;">京豆 / 实物直接踩红线</span>——标价即内驱归零。</div>
+        </div>
+      </div>
+      <div class="card" style="border-left:3px solid var(--fire-2);">
+        <div class="card-label">正在议 02 · 排行榜</div>
+        <div class="card-title">做办公室小圈层，不做全站大榜</div>
+        <div class="card-body" style="margin-top:8px;">
+          <div style="margin-bottom:10px;">环节 = 社交影响（⑤ 仅 4 分 = 我们的短板）+ 成就进展<span class="driver-hat bh">黑帽</span></div>
+          <div><strong>小圈层</strong>「同事一起护颈」放大白帽氛围、正好补短板；<strong>全站 League 大榜</strong>就是上方我们不抄的那条——太重会焦虑、卸载。</div>
+        </div>
       </div>
     </div>
   </div>

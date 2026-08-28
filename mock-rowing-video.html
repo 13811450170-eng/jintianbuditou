@@ -28,6 +28,11 @@
     --glass-bg:rgba(11,45,64,.4);
     --overlay-bg:radial-gradient(circle at 50% 42%, rgba(13,60,88,.74), rgba(3,14,22,.94));
     --title-txt:#0b3b52;
+
+    /* 判定三态(借拳击) */
+    --perfect:#6bff9d;
+    --good:#ffd66b;
+    --miss:#8a8f99;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-user-select:none;user-select:none;}
   html,body{height:100%;overflow:hidden;font-family:var(--font);background:#8fd4ff;color:#fff;-webkit-font-smoothing:antialiased;}
@@ -75,86 +80,109 @@
   .ico{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;
     stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 
-  /* ==================== HUD ==================== */
-  .hud-title{
-    position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:30;
-    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
-    color:var(--title-txt);
-    padding:10px 32px;border-radius:var(--r-pill);
-    font-size:18px;font-weight:800;letter-spacing:1.5px;
-    box-shadow:var(--shadow-1);
+  /* ==================== HUD(复用拳击最新规范:信息英雄化)==================== */
+  /* ==================== 顶部动作队列(预告+当前+汇总 三合一,替代标题)==================== */
+  /* 主旨「不低头」:核心信息全部上移到屏幕顶部 */
+  .action-queue{
+    position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:30;
     display:flex;align-items:center;gap:10px;
+    padding:12px 20px;border-radius:var(--r-pill);
   }
-  .hud-title .ico{stroke:var(--title-txt);width:19px;height:19px;}
+  .aq-chip{
+    position:relative;width:58px;height:58px;border-radius:15px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.07);border:2px solid rgba(255,255,255,.14);
+    color:rgba(255,255,255,.5);font-size:26px;font-weight:900;line-height:1;
+    transition:transform .2s, background .25s, border-color .25s, color .25s, box-shadow .25s;
+  }
+  .aq-chip .ico{width:30px;height:30px;stroke-width:2.2;}
+  .aq-chip.upcoming{opacity:.55;}
+  .aq-chip.active{
+    opacity:1;color:var(--title-txt);
+    background:linear-gradient(135deg,var(--gold-bright),var(--gold));
+    border-color:var(--gold-bright);
+    box-shadow:0 0 18px rgba(255,214,107,.55);
+    transform:scale(1.26);
+    animation:aqBreath .6s ease-in-out infinite alternate;
+  }
+  .aq-chip.active .ico{stroke:var(--title-txt);}
+  @keyframes aqBreath{from{transform:scale(1.2);}to{transform:scale(1.34);}}
+  .aq-chip.perfect{opacity:1;color:#0a2b18;background:var(--perfect);border-color:#eafff2;box-shadow:0 0 10px var(--perfect);}
+  .aq-chip.perfect .ico{stroke:#0a2b18;}
+  .aq-chip.good{opacity:1;color:var(--title-txt);background:var(--good);border-color:#fff6de;box-shadow:0 0 9px var(--good);}
+  .aq-chip.good .ico{stroke:var(--title-txt);}
+  .aq-chip.miss{opacity:.5;color:rgba(255,255,255,.6);background:rgba(120,124,132,.35);border-color:rgba(255,255,255,.18);}
+  .aq-chip.miss .ico{stroke:rgba(255,255,255,.6);}
 
-  .hud-left{position:absolute;top:16px;left:16px;z-index:30;
-    display:flex;flex-direction:column;gap:9px;}
+  /* ===== 左上英雄:大号扩胸次数(参考 Active Arcade,信息当主角不当角标)===== */
+  .hud-left{position:absolute;top:20px;left:20px;z-index:30;
+    display:flex;flex-direction:column;gap:12px;align-items:flex-start;}
+  .score-hero{
+    display:flex;flex-direction:column;align-items:flex-start;gap:4px;
+    padding:14px 32px 18px;border-radius:var(--r-lg);min-width:186px;
+  }
+  .score-hero .sh-label{
+    display:flex;align-items:center;gap:8px;
+    font-size:17px;font-weight:800;letter-spacing:2px;color:var(--gold-bright);opacity:.9;
+  }
+  .score-hero .sh-label .ico{width:20px;height:20px;}
+  .score-hero .sh-num{
+    font-size:82px;font-weight:900;line-height:1;color:#fff;letter-spacing:1px;
+    text-shadow:0 2px 10px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;
+  }
+  .score-hero .sh-num.bump{animation:scoreBump .42s cubic-bezier(.34,1.56,.64,1);}
+  @keyframes scoreBump{0%{transform:scale(1);}42%{transform:scale(1.26);color:var(--gold-bright);}100%{transform:scale(1);}}
+  /* 连击小胶囊(副信息) */
   .chip{
-    display:flex;align-items:center;gap:11px;
-    padding:11px 19px;border-radius:var(--r-pill);
-    color:var(--gold-bright);font-size:16px;font-weight:700;letter-spacing:.5px;
+    display:flex;align-items:center;gap:10px;
+    padding:11px 22px;border-radius:var(--r-pill);
+    color:var(--gold-bright);font-size:18px;font-weight:800;letter-spacing:.5px;
   }
-  .chip .ico{width:20px;height:20px;}
+  .chip .ico{width:22px;height:22px;}
   .chip .lb{opacity:.9;}
-  .chip .val{color:#fff;font-size:22px;font-weight:900;min-width:22px;text-align:center;}
-  .chip .unit{font-size:13px;opacity:.7;font-weight:700;}
+  .chip .val{color:#fff;font-size:26px;font-weight:900;min-width:26px;text-align:center;}
+  .chip .unit{font-size:15px;opacity:.7;font-weight:700;}
+  .combo-chip.hot{border-color:rgba(255,214,107,.4);box-shadow:inset 0 1px 1px rgba(255,255,255,.45),0 0 14px rgba(255,214,107,.35),var(--shadow-2);}
+  .combo-chip.hot .val{color:var(--gold-bright);}
 
-  .progress-wrap{
-    position:absolute;top:16px;right:16px;z-index:30;width:205px;
-    border-radius:var(--r-md);padding:14px 18px;
+  /* ===== 右上英雄:大号剩余次数(量级照搬拳击倒计时;划船是计次玩法,不施加时间压力)===== */
+  .timer-hero{
+    position:absolute;top:20px;right:20px;z-index:30;
+    display:flex;flex-direction:column;align-items:flex-end;gap:4px;
+    padding:14px 32px 18px;border-radius:var(--r-lg);min-width:186px;
   }
-  .progress-label{display:flex;justify-content:space-between;align-items:center;
-    font-size:13px;color:var(--gold-bright);font-weight:800;letter-spacing:1px;
-    margin-bottom:10px;}
-  .progress-label .pct{color:#fff;font-size:15px;font-weight:900;}
-  .progress-track{height:10px;background:rgba(255,255,255,.16);border-radius:var(--r-pill);overflow:hidden;}
-  .progress-fill{height:100%;width:0%;border-radius:var(--r-pill);
-    background:linear-gradient(90deg,var(--brand),var(--gold));transition:width .5s;}
-
-  .metronome{
-    position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:30;
-    display:flex;align-items:center;gap:18px;
-    padding:13px 32px;border-radius:var(--r-pill);
+  .timer-hero .th-label{
+    display:flex;align-items:center;gap:8px;
+    font-size:17px;font-weight:800;letter-spacing:2px;color:var(--gold-bright);opacity:.9;
   }
-  .metronome .beat{font-size:20px;font-weight:800;letter-spacing:3px;
-    color:var(--gold-bright);min-width:68px;text-align:center;}
-  .metronome .pulse{width:18px;height:18px;border-radius:50%;
-    background:var(--brand);box-shadow:0 0 12px var(--brand);}
+  .timer-hero .th-label .ico{width:20px;height:20px;}
+  .timer-hero .th-num{
+    font-size:76px;font-weight:900;line-height:1;color:#fff;letter-spacing:1px;
+    text-shadow:0 2px 10px rgba(0,0,0,.5);font-variant-numeric:tabular-nums;transition:color .3s;
+  }
+  .timer-hero .th-num .th-unit{font-size:30px;font-weight:800;opacity:.7;margin-left:2px;}
+  /* 最后一次转暖金提醒(克制,守治愈基调) */
+  .timer-hero.ending .th-num{color:var(--gold-bright);}
 
-  /* 判定飘字 · 击打感 */
+  /* 判定飘字 · 击打感(屏幕正中,做大做干脆——判语的主舞台)*/
   .floater{
-    position:absolute;left:50%;top:26%;transform:translateX(-50%);z-index:28;
+    position:absolute;left:50%;top:40%;transform:translateX(-50%);z-index:28;
     text-align:center;pointer-events:none;font-weight:900;
   }
   .floater .big{
-    font-size:60px;letter-spacing:2px;
+    font-size:150px;letter-spacing:3px;line-height:.9;
     background:linear-gradient(135deg,#fff,var(--gold-bright));
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    filter:drop-shadow(0 2px 10px rgba(0,0,0,.6)) drop-shadow(0 0 18px var(--brand));
+    filter:drop-shadow(0 4px 18px rgba(0,0,0,.8)) drop-shadow(0 0 30px var(--brand));
   }
-  .floater .sub{font-size:18px;color:#fff;margin-top:4px;font-weight:800;text-shadow:0 1px 6px rgba(0,0,0,.75);}
-  .floater.play{animation:floatHit 1.3s cubic-bezier(.2,.8,.2,1) forwards;}
+  .floater .sub{font-size:30px;color:#fff;margin-top:8px;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.85);}
+  .floater.play{animation:floatHit 1s cubic-bezier(.15,.9,.2,1) forwards;}
   @keyframes floatHit{
-    0%{opacity:0;transform:translateX(-50%) translateY(6px) scale(.5);}
-    12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.42);}
-    26%{transform:translateX(-50%) translateY(-3px) scale(1.05);}
-    100%{opacity:0;transform:translateX(-50%) translateY(-52px) scale(1);}
-  }
-
-  /* 保持事件圈 */
-  .hold-ring{
-    position:absolute;left:50%;top:12%;transform:translateX(-50%);
-    width:140px;height:140px;z-index:29;opacity:0;transition:opacity .4s;
-  }
-  .hold-ring.show{opacity:1;}
-  .hold-ring svg{transform:rotate(-90deg);}
-  .hold-ring .track{fill:none;stroke:rgba(255,255,255,.3);stroke-width:9;}
-  .hold-ring .prog{fill:none;stroke:var(--gold);stroke-width:9;stroke-linecap:round;
-    stroke-dasharray:396;stroke-dashoffset:396;filter:drop-shadow(0 0 7px var(--gold-bright));}
-  .hold-ring .hold-txt{
-    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-    font-size:13px;font-weight:800;color:var(--gold-bright);text-align:center;
-    text-shadow:0 1px 3px rgba(0,0,0,.6);width:120px;
+    0%{opacity:0;transform:translateX(-50%) scale(.4);}
+    14%{opacity:1;transform:translateX(-50%) scale(1.5);}
+    28%{transform:translateX(-50%) scale(1);}
+    72%{opacity:1;transform:translateX(-50%) scale(1);}
+    100%{opacity:0;transform:translateX(-50%) scale(1.02);}
   }
 
   /* 右下角 · 真人点阵脸小窗(与拳击关统一) */
@@ -333,7 +361,121 @@
     100%{transform:scale(.82);opacity:0;}
   }
 
-  /* ---- 结算页 streak 火苗 +1(多邻国式成就动画) ---- */
+  /* ============================================================
+     扩胸运动 · 真玩层:左右【目标圈】+ 双肘准星 + 判定
+     借拳击「硬币目标圈 + 径向读秒环 + 准星锁定」那套视觉,
+     动作换成扩胸:肘部向两侧打开,够到该侧的金色目标圈。
+  ============================================================ */
+  .goal-field{position:absolute;inset:0;z-index:26;pointer-events:none;}
+  /* 目标圈:一枚扁平金盘 + 一圈够粗白色径向读秒环(读成"一枚硬币") */
+  .goal-orb{
+    position:absolute;width:118px;height:118px;
+    transform:translate(-50%,-50%);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .goal-orb.left{left:14%;top:47%;}
+  .goal-orb.right{right:14%;top:47%;left:auto;transform:translate(50%,-50%);}
+  .orb-timer{position:absolute;inset:0;transform:rotate(-90deg);overflow:visible;}
+  .orb-timer .ot-track{fill:none;stroke:rgba(4,25,40,.28);stroke-width:11;}
+  .orb-timer .ot-prog{fill:none;stroke:#fff;stroke-width:11;stroke-linecap:round;}
+  .orb-core{
+    position:relative;width:92px;height:92px;border-radius:50%;
+    background:linear-gradient(180deg,#ffe08a 0%,#ffc63f 55%,#f2ab26 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 12px rgba(0,0,0,.4);transition:box-shadow .15s;
+  }
+  .orb-core .arrow{font-size:46px;font-weight:900;line-height:1;color:var(--title-txt);}
+  .goal-orb .tag{
+    position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);white-space:nowrap;
+    font-size:15px;font-weight:900;letter-spacing:1px;color:#fff;
+    padding:3px 12px;border-radius:var(--r-pill);background:rgba(4,25,40,.55);
+    text-shadow:0 1px 3px rgba(0,0,0,.7);
+  }
+  .goal-orb.active .orb-core{animation:orbBreath .7s ease-in-out infinite alternate;}
+  .goal-orb:not(.active) .orb-core{opacity:.5;}
+  .goal-orb:not(.active) .orb-timer{opacity:.4;}
+  @keyframes orbBreath{from{transform:scale(1);}to{transform:scale(1.06);}}
+  /* 肘部够到该侧圈:金→绿,读秒环也转绿 */
+  .goal-orb.locked .orb-core{box-shadow:0 0 24px var(--perfect),0 3px 12px rgba(0,0,0,.4);}
+  .goal-orb.locked .orb-timer .ot-prog{stroke:var(--perfect);}
+  /* 命中三态 */
+  .goal-orb.hit-perfect .orb-core{
+    background:linear-gradient(180deg,#9dffc2,#6bff9d 60%,#3fe07f);
+    box-shadow:0 0 24px rgba(107,255,157,.65),0 3px 12px rgba(0,0,0,.4);
+    animation:orbBounce .5s ease-out both;
+  }
+  .goal-orb.hit-perfect .orb-core .arrow{color:#0a2b18;}
+  .goal-orb.hit-good .orb-core{
+    background:linear-gradient(180deg,#ffe08a,#ffc63f 60%,#f2ab26);
+    box-shadow:0 0 20px rgba(255,214,107,.55),0 3px 12px rgba(0,0,0,.4);
+    animation:orbBounce .5s ease-out both;
+  }
+  .goal-orb.hit-miss{opacity:.5;}
+  .goal-orb.hit-miss .orb-core{background:linear-gradient(180deg,#b6bac2,#8a8f99);box-shadow:none;animation:orbMissShake .4s ease-in-out both;}
+  .goal-orb.hit-miss .orb-core .arrow{color:rgba(255,255,255,.75);}
+  .goal-orb.hit-perfect .orb-timer,.goal-orb.hit-good .orb-timer,.goal-orb.hit-miss .orb-timer{opacity:0;transition:opacity .3s;}
+  @keyframes orbBounce{0%{transform:scale(1);}42%{transform:scale(1.3);}100%{transform:scale(1);}}
+  @keyframes orbMissShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-4px);}75%{transform:translateX(4px);}}
+
+  /* ===== 双肘准星:你两个肘部的替身,全场"你在哪"的线索 ===== */
+  .elbow-ret{
+    position:absolute;left:50%;top:50%;width:60px;height:60px;z-index:27;
+    transform:translate(-50%,-50%);pointer-events:none;
+    transition:opacity .3s,border-color .2s;will-change:transform;
+  }
+  .elbow-ret .er-halo{position:absolute;inset:-6px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.14) 0%,rgba(255,255,255,0) 68%);}
+  .elbow-ret .er-ring{position:absolute;inset:0;border-radius:50%;border:3px solid #fff;
+    box-shadow:0 0 12px rgba(0,0,0,.55),0 0 6px rgba(255,255,255,.5),inset 0 0 8px rgba(255,255,255,.35);}
+  .elbow-ret .er-dot{position:absolute;top:50%;left:50%;width:7px;height:7px;border-radius:50%;
+    background:#fff;transform:translate(-50%,-50%);box-shadow:0 0 8px rgba(0,0,0,.55);}
+  .elbow-ret .er-lb{position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);
+    font-size:10px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 3px rgba(0,0,0,.8);opacity:.85;}
+  .elbow-ret.locked{transform:translate(-50%,-50%) scale(1.14);}
+  .elbow-ret.locked .er-ring{border-color:var(--perfect);box-shadow:0 0 22px var(--perfect),0 0 8px var(--perfect);}
+  .elbow-ret.locked .er-dot{background:var(--perfect);}
+  .elbow-ret.locked .er-halo{background:radial-gradient(circle,rgba(107,255,157,.28) 0%,rgba(107,255,157,0) 68%);}
+  .elbow-ret.lost{opacity:.28;}
+
+  /* 命中冲击波 */
+  .shockwave{position:absolute;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;
+    border:2px solid;pointer-events:none;z-index:26;animation:shockwaveExpand .5s ease-out both;}
+  .shockwave.perfect{border-color:var(--perfect);}
+  .shockwave.good{border-color:var(--good);}
+  @keyframes shockwaveExpand{0%{width:20px;height:20px;opacity:.9;}100%{width:190px;height:190px;opacity:0;}}
+
+  /* 旁白提示(底部教练语,信息上移不诱导低头 → 放在中上部) */
+  .coach-tip{
+    position:absolute;left:50%;top:63%;transform:translateX(-50%);z-index:29;
+    display:inline-flex;align-items:center;gap:9px;
+    padding:10px 22px;border-radius:var(--r-pill);
+    color:var(--gold-bright);font-size:16px;font-weight:800;letter-spacing:.5px;
+    opacity:0;transition:opacity .3s;white-space:nowrap;
+  }
+  .coach-tip .ico{width:19px;height:19px;}
+
+  /* 扩胸幅度条(判定同源反馈:借摘星高度条,横向表示两肘打开程度) */
+  .open-meter{
+    position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:30;
+    width:56px;padding:14px 10px;border-radius:var(--r-md);
+    display:flex;flex-direction:column;align-items:center;gap:9px;
+    opacity:0;transition:opacity .4s;
+  }
+  .open-meter.show{opacity:1;}
+  .open-meter .om-top{width:20px;height:20px;color:var(--gold-bright);}
+  .open-meter .om-track{position:relative;width:14px;height:150px;border-radius:var(--r-pill);
+    background:rgba(255,255,255,.16);overflow:hidden;}
+  .open-meter .om-fill{position:absolute;left:0;right:0;bottom:0;height:0%;border-radius:var(--r-pill);
+    background:linear-gradient(0deg,var(--brand),var(--gold));transition:height .1s linear;}
+  .open-meter .om-mark{position:absolute;left:-3px;right:-3px;height:2px;background:var(--gold-bright);
+    box-shadow:0 0 6px var(--gold-bright);}
+  .open-meter .om-mark::after{content:"";position:absolute;right:-5px;top:-2px;width:0;height:0;
+    border:3px solid transparent;border-right-color:var(--gold-bright);}
+  .open-meter.reached .om-fill{background:linear-gradient(0deg,var(--gold),var(--gold-bright));}
+  .open-meter .om-cap{font-size:11px;font-weight:800;color:rgba(255,255,255,.7);letter-spacing:.5px;text-align:center;}
+  .open-meter.reached .om-cap{color:var(--gold-bright);}
+
+
   .streak-win{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:4px;}
   .flame-stage{position:relative;width:120px;height:130px;display:flex;align-items:flex-end;justify-content:center;}
   .flame{width:78px;height:96px;transform-origin:50% 100%;
@@ -368,39 +510,67 @@
     <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 3c1 3-1 4-1 6a3 3 0 0 0 3 3c1-1 1-2 1-3 2 2 3 4 3 6a6 6 0 1 1-12 0c0-3 2-5 3-7 .8 1 1 2 3 2z"/></symbol>
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
     <symbol id="i-body-row" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.3"/><path d="M12 7v6M12 9l-5 2M12 9l5 2M12 13l-3 6M12 13l3 6"/></symbol>
+    <symbol id="i-arms-open" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.2v7M12 10l-6-2M12 10l6-2M12 14.2l-3 5.8M12 14.2l3 5.8"/></symbol>
   </svg>
 
   <!-- 底层视频 -->
   <video id="bgvid" src="img/rowing.mp4" muted loop playsinline></video>
   <div class="vignette"></div>
 
-  <!-- HUD -->
-  <div class="hud-title"><svg class="ico"><use href="#i-wave"/></svg>今天不低头 · 河道划船</div>
+  <!-- HUD(复用拳击最新规范:信息英雄化)-->
+  <!-- 顶部动作队列:预告+当前+汇总三合一,替代标题(主旨「不低头」信息全上移) -->
+  <div class="action-queue glass" id="actionQueue"></div>
+  <!-- 左上英雄:大号扩胸次数;连击作副信息 -->
   <div class="hud-left">
-    <div class="chip glass"><svg class="ico"><use href="#i-chest"/></svg><span class="lb">扩胸</span><span class="val" id="repVal">0</span><span class="unit">次</span></div>
-    <div class="chip glass"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
+    <div class="score-hero glass">
+      <span class="sh-label"><svg class="ico"><use href="#i-arms-open"/></svg>扩胸</span>
+      <span class="sh-num" id="repVal">0</span>
+    </div>
+    <div class="chip combo-chip glass" id="comboChip"><svg class="ico"><use href="#i-fire"/></svg><span class="lb">连击</span><span class="val" id="comboVal">0</span></div>
   </div>
-  <div class="progress-wrap glass">
-    <div class="progress-label"><span>河程</span><span class="pct" id="progPct">0%</span></div>
-    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
-  </div>
-
-  <div class="metronome glass">
-    <div class="beat" id="beatTxt">拉</div>
-    <div class="pulse" id="beatPulse"></div>
-  </div>
-
-  <!-- 保持圈 -->
-  <div class="hold-ring" id="holdRing">
-    <svg width="140" height="140" viewBox="0 0 140 140">
-      <circle class="track" cx="70" cy="70" r="63"/>
-      <circle class="prog" id="holdProg" cx="70" cy="70" r="63"/>
-    </svg>
-    <div class="hold-txt">双桨拉满<br>保持挺胸</div>
+  <!-- 右上英雄:大号剩余次数(量级照搬拳击倒计时;划船计次玩法,不施加时间压力)-->
+  <div class="timer-hero glass" id="timerHero">
+    <span class="th-label"><svg class="ico"><use href="#i-body-row"/></svg>剩余</span>
+    <span class="th-num" id="remainVal">8<span class="th-unit">次</span></span>
   </div>
 
-  <!-- 右下角 · 真人点阵脸小窗 -->
-  <div class="you-cam" data-track="pose-row">
+  <!-- 扩胸幅度条(判定同源:两肘打开程度) -->
+  <div class="open-meter glass" id="openMeter">
+    <svg class="om-top"><use href="#i-arms-open"/></svg>
+    <div class="om-track">
+      <div class="om-mark" id="omMark"></div>
+      <div class="om-fill" id="omFill"></div>
+    </div>
+    <div class="om-cap" id="omCap">扩胸</div>
+  </div>
+
+  <!-- 左右目标圈 + 双肘准星 -->
+  <div class="goal-field" id="goalField">
+    <div class="goal-orb left" id="orbLeft">
+      <svg class="orb-timer" viewBox="0 0 150 150">
+        <circle class="ot-track" cx="75" cy="75" r="66"/>
+        <circle class="ot-prog" id="progLeft" cx="75" cy="75" r="66"/>
+      </svg>
+      <div class="orb-core"><span class="arrow">◀</span></div>
+      <div class="tag">左肘外展</div>
+    </div>
+    <div class="goal-orb right" id="orbRight">
+      <svg class="orb-timer" viewBox="0 0 150 150">
+        <circle class="ot-track" cx="75" cy="75" r="66"/>
+        <circle class="ot-prog" id="progRight" cx="75" cy="75" r="66"/>
+      </svg>
+      <div class="orb-core"><span class="arrow">▶</span></div>
+      <div class="tag">右肘外展</div>
+    </div>
+    <div class="elbow-ret lost" id="retLeft"><div class="er-halo"></div><div class="er-ring"></div><div class="er-dot"></div><div class="er-lb">左肘</div></div>
+    <div class="elbow-ret lost" id="retRight"><div class="er-halo"></div><div class="er-ring"></div><div class="er-dot"></div><div class="er-lb">右肘</div></div>
+  </div>
+
+  <!-- 旁白教练语 -->
+  <div class="coach-tip glass" id="coachTip"><svg class="ico"><use href="#i-arms-open"/></svg>肘部向两侧打开,够到金圈</div>
+
+  <!-- 右下角 · 真人上肢骨架小窗(与摘星关统一) -->
+  <div class="you-cam" data-track="pose-row" data-mask>
     <video autoplay playsinline muted></video>
     <canvas class="you-mesh" width="336" height="252"></canvas>
     <div class="you-label"><span class="you-dot"></span>YOU</div>
@@ -410,13 +580,13 @@
   <div class="overlay" id="intro">
     <div class="brand"><svg class="ico"><use href="#i-wave"/></svg>JOY · 河道划船</div>
     <div class="big-title">Joy 想去划船</div>
-    <div class="subtitle">坐直、挺胸，双桨对称往后拉<br>一拉一放，舒展你的肩膀，赶走圆肩驼背</div>
+    <div class="subtitle">坐直挺胸,双臂弯肘打开——像划桨一样<br><b>把两个肘部向身体两侧展开</b>,够到左右的金色目标圈</div>
     <div class="how-grid">
-      <div class="how-item"><svg class="ico"><use href="#i-body-row"/></svg><div class="lb">双桨后拉</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-chest"/></svg><div class="lb">肩胛后收</div></div>
-      <div class="how-item"><svg class="ico"><use href="#i-wave"/></svg><div class="lb">保持挺胸</div></div>
+      <div class="how-item"><svg class="ico"><use href="#i-arms-open"/></svg><div class="lb">屈肘扩胸</div><div class="sub2">双肘向两侧打开</div></div>
+      <div class="how-item"><svg class="ico"><use href="#i-body-row"/></svg><div class="lb">够到金圈</div><div class="sub2">左肘够左·右肘够右</div></div>
+      <div class="how-item"><svg class="ico"><use href="#i-chest"/></svg><div class="lb">肩胛后收</div><div class="sub2">胸口打开挺起</div></div>
     </div>
-    <button class="btn" id="startBtn"><svg class="ico"><use href="#i-wave"/></svg>开始划船 · ROW TIME!</button>
+    <button class="btn" id="startBtn"><svg class="ico"><use href="#i-arms-open"/></svg>开始扩胸 · ROW TIME!</button>
     <div class="privacy-note">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       画面只在本机处理，<b>绝不上传</b>
@@ -462,7 +632,7 @@
     <div class="result-card glass">
       <div class="result-stat">
         <div class="item"><div class="num" id="rStrokes">0</div><div class="lb">扩胸次数</div></div>
-        <div class="item"><div class="num" id="rHold">0</div><div class="lb">末端保持</div></div>
+        <div class="item"><div class="num" id="rHold">0</div><div class="lb">最高连击</div></div>
         <div class="item"><div class="num">+5°</div><div class="lb">肩部活动度</div></div>
       </div>
       <div class="result-up"><svg class="ico"><use href="#i-spark"/></svg>比上周舒展 5°，圆肩缓解中</div>
@@ -490,32 +660,111 @@
 
   <!-- 3秒倒计时 -->
   <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+
+  <!-- 调试读数(?debug=1 显示,真机核对扩胸角用) -->
+  <div id="dbgAngle" style="position:absolute;left:10px;bottom:10px;z-index:80;font:12px monospace;color:#6bff9d;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;display:none;"></div>
 </div>
 
-<script>
+<script type="module">
+import { createPoseBodyKernel } from "./js/pose-body-kernel.js";
+import { track } from "./js/telemetry.js";
+
 const vid=document.getElementById('bgvid');
 const repVal=document.getElementById('repVal');
 const comboVal=document.getElementById('comboVal');
-const progFill=document.getElementById('progFill');
-const progPct=document.getElementById('progPct');
-const beatTxt=document.getElementById('beatTxt');
-const beatPulse=document.getElementById('beatPulse');
+const comboChip=document.getElementById('comboChip');
+const remainVal=document.getElementById('remainVal');
+const timerHero=document.getElementById('timerHero');
+const actionQueue=document.getElementById('actionQueue');
 const toast=document.getElementById('toast');
-const holdRing=document.getElementById('holdRing');
-const holdProg=document.getElementById('holdProg');
 const intro=document.getElementById('intro');
 const result=document.getElementById('result');
+const orbLeft=document.getElementById('orbLeft');
+const orbRight=document.getElementById('orbRight');
+const progLeft=document.getElementById('progLeft');
+const progRight=document.getElementById('progRight');
+const retLeft=document.getElementById('retLeft');
+const retRight=document.getElementById('retRight');
+const goalField=document.getElementById('goalField');
+const tipEl=document.getElementById('coachTip');
+const meterEl=document.getElementById('openMeter');
+const omFill=document.getElementById('omFill');
+const omCap=document.getElementById('omCap');
+const omMark=document.getElementById('omMark');
+const dbgEl=document.getElementById('dbgAngle');
 
-let reps=0, combo=0, holds=0, playing=false;
-let timers=[];
+function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 function T(fn,ms){const id=setTimeout(fn,ms);timers.push(id);return id;}
 function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+let timers=[];
 
-const STROKE_MS=3000;   // 一桨 3 秒（舒缓，贴合视频节奏 + 医学慢节奏）
-const TOTAL_STROKES=8;  // 演示划 8 桨
-const GATE_AT=5;        // 第 5 桨后触发水闸保持事件
+/* ============ URL 旋钮(真机标定):?open=&perfect=&sm=&lock=&debug=&film=&auto=&end= ============ */
+const Q=new URLSearchParams(location.search);
+const qn=(k,d)=>{ const v=parseFloat(Q.get(k)); return isFinite(v)?v:d; };
+const OPEN     = qn('open',62);       // 肘外展达标角(度):上臂 vs 躯干竖直,侧平举≈90°
+const PERFECT_MARGIN = qn('perfect',15);  // 再多开这么多度 = Perfect(打得更开)
+const SM       = qn('sm',0.35);       // 外展角 EMA 平滑
+const LOCKR    = qn('lock',16);       // 准星距圈心多近算够到(%)
+const DEBUG    = Q.has('debug');
+const FILM     = Q.get('film')==='1' || Q.get('auto')==='1';
+if(DEBUG && dbgEl) dbgEl.style.display='block';
 
-function showToast(txt,dur=2200){
+const TOTAL_REPS = 8;        // 本局扩胸次数
+const STROKE_MS  = 3400;     // 一次扩胸的节拍(舒缓,贴医学慢节奏)
+const COIN = { left:{x:14,y:47}, right:{x:86,y:47} };   // 两个目标圈屏幕位置(与 CSS 对齐)
+
+/* ============ 判定参数(借拳击,阈值放宽贴合康复慢节奏) ============ */
+const JUDGE = { windowPerfect:650, windowGood:1300 };
+const MAX_ABD = 155;   // 护栏:别耸肩夹到耳朵
+
+/* ============================================================
+ * 上肢姿态桥接:直接从 landmarks 算「肘外展角」+ 按屏幕左右分桶
+ * (不改共享内核;摘星用 elevation,本关用 shoulder→elbow 外展)
+ * ============================================================ */
+let kernel=null, camOK=false, playing=false;
+let pose={ present:false, landmarks:null };
+let keyHeldUp=false, keyHeldLeft=false, keyHeldRight=false;   // ↑=双肘 ←=左肘 →=右肘
+let smOpen={ left:0, right:0 };     // 平滑后的两侧外展角(判定/准星/幅度条同源)
+let retPos={ l:{x:42,y:47}, r:{x:58,y:47} };
+
+function syncPose(p){ if(p) pose={ present:p.present, landmarks:p.landmarks }; }
+function vis(p){ return p && (p.visibility==null?1:p.visibility); }
+function pt(lm,i){ const p=lm&&lm[i]; return (p&&vis(p)>=0.3)?{x:p.x,y:p.y}:null; }
+
+// 肘外展角(度):上臂向量(肩→肘)与躯干竖直向下的夹角。垂放≈0°,侧平举≈90°。
+function abduction(sh,el){
+  if(!sh||!el) return 0;
+  const ax=el.x-sh.x, ay=el.y-sh.y, mag=Math.hypot(ax,ay);
+  if(mag<1e-4) return 0;
+  const cos=clamp(ay/mag,-1,1);
+  return Math.acos(cos)*180/Math.PI;
+}
+// 只从画面(不含键盘)算两侧外展角,按【屏幕左右侧】分桶(镜像后 screenX = 1 - 原始x)
+function computeOpenRaw(){
+  const lm=pose.landmarks; let left=0,right=0;
+  if(camOK && pose.present && lm){
+    const arms=[ {sh:pt(lm,11),el:pt(lm,13)}, {sh:pt(lm,12),el:pt(lm,14)} ];
+    for(const a of arms){
+      if(!a.sh||!a.el) continue;
+      const ang=abduction(a.sh,a.el);
+      const screenX=1-a.el.x;
+      if(screenX<0.5) left=Math.max(left,ang); else right=Math.max(right,ang);
+    }
+  }
+  return { left, right };
+}
+// 含键盘兜底的该侧外展角(判定/准星共用)
+function openSide(side){
+  let v=side==='left'?smOpen.left:smOpen.right;
+  if(keyHeldUp) v=Math.max(v,OPEN+25);
+  if(side==='left'&&keyHeldLeft) v=Math.max(v,OPEN+25);
+  if(side==='right'&&keyHeldRight) v=Math.max(v,OPEN+25);
+  return v;
+}
+function anyInput(){ return (camOK&&pose.present) || keyHeldUp||keyHeldLeft||keyHeldRight; }
+
+/* ============ 通用飘字/提示 ============ */
+function showToast(txt,dur=2400){
   toast.innerHTML=`<svg class="ico"><use href="#i-wave"/></svg>${txt}`;toast.classList.add('show');
   T(()=>toast.classList.remove('show'),dur);
 }
@@ -526,81 +775,277 @@ function floatBig(big,sub){
   document.getElementById('app').appendChild(f);
   T(()=>f.remove(),1300);
 }
+function say(txt,icon){ tipEl.innerHTML=`<svg class="ico"><use href="#${icon||'i-arms-open'}"/></svg>${txt}`; tipEl.style.opacity='1'; }
+function hush(){ tipEl.style.opacity='0'; }
 
-/* 节拍脉冲：拉—放 */
-function beatPulseAnim(){
-  beatPulse.animate([
-    {transform:'scale(.7)',opacity:.6},
-    {transform:'scale(1.5)',opacity:1,offset:.3},
-    {transform:'scale(.9)',opacity:.7}
-  ],{duration:STROKE_MS,easing:'ease-in-out'});
-}
-
-function doStroke(idx){
-  beatTxt.textContent='拉';
-  beatPulseAnim();
-  T(()=>{beatTxt.textContent='放';},STROKE_MS*0.42);
-  // 后拉发力点：计数 + PERFECT
-  T(()=>{
-    reps++;combo++;
-    repVal.textContent=reps;
-    comboVal.textContent=combo;
-    const pct=Math.min(100,Math.round((idx+1)/TOTAL_STROKES*100));
-    progFill.style.width=pct+'%';progPct.textContent=pct+'%';
-    floatBig('PERFECT','扩胸 +1 · 肩胛后收');
-  },STROKE_MS*0.32);
-}
-
-function startHoldEvent(onDone){
-  showToast('前方水闸 · 双桨拉满保持 2 秒！',2400);
-  beatTxt.textContent='保持';
-  holdRing.classList.add('show');
-  const DUR=2000,C=396,t0=performance.now();
-  function tick(now){
-    const p=Math.min(1,(now-t0)/DUR);
-    holdProg.style.strokeDashoffset=C*(1-p);
-    if(p<1)requestAnimationFrame(tick);
-    else{
-      floatBig('保持达标！','末端扩胸 +10° 活动度');
-      holdRing.classList.remove('show');
-      holdProg.style.strokeDashoffset=C;
-      holds++;
-      onDone&&onDone();
-    }
+/* ===== 顶部动作队列(照搬拳击):一次扩胸一个 chip,预告/当前/判定三态 ===== */
+function buildQueue(){
+  if(!actionQueue) return;
+  actionQueue.innerHTML='';
+  for(let i=0;i<TOTAL_REPS;i++){
+    const c=document.createElement('div');
+    c.className='aq-chip upcoming';
+    c.innerHTML='<svg class="ico"><use href="#i-arms-open"/></svg>';
+    actionQueue.appendChild(c);
   }
-  requestAnimationFrame(tick);
+}
+function setActiveChip(idx){
+  if(!actionQueue) return;
+  [...actionQueue.children].forEach((c,i)=>{
+    if(c.classList.contains('perfect')||c.classList.contains('good')||c.classList.contains('miss')) return;
+    c.classList.toggle('active', i===idx);
+    c.classList.toggle('upcoming', i!==idx);
+  });
+}
+function markChip(idx,kind){
+  if(!actionQueue) return;
+  const c=actionQueue.children[idx];
+  if(c){ c.className='aq-chip '+kind; c.innerHTML='<svg class="ico"><use href="#i-arms-open"/></svg>'; }
+}
+/* 右上英雄:剩余次数(计次玩法,量级照搬拳击倒计时)*/
+function updateRemain(){
+  const left=Math.max(0,TOTAL_REPS-resolvedCount);
+  remainVal.innerHTML=left+'<span class="th-unit">次</span>';
+  timerHero.classList.toggle('ending', left<=1);
+}
+function spawnShockwave(xPct,yPct,kind){
+  const sw=document.createElement('div');
+  sw.className='shockwave '+kind;
+  sw.style.left=xPct+'%'; sw.style.top=yPct+'%';
+  goalField.appendChild(sw);
+  T(()=>sw.remove(),520);
 }
 
+/* ============ 幅度条(判定同源:两肘都要打开,取较小的一侧) ============ */
+if(omMark) omMark.style.bottom=clamp(OPEN/120*100,0,100)+'%';
+function updateMeter(){
+  const present=anyInput();
+  const raw=Math.min(openSide('left'),openSide('right'));
+  const pct=clamp((present?raw:0)/120*100,0,100);
+  omFill.style.height=pct+'%';
+  const reached=present && raw>=OPEN;
+  meterEl.classList.toggle('reached',reached);
+  if(!present) omCap.textContent = camOK?'找不到人':'扩胸';
+  else if(reached) omCap.textContent='够到了';
+  else omCap.textContent='再打开';
+}
+
+/* ============ 双肘准星:外展角 → 屏幕横向偏移(向两侧打开)。同源:到 OPEN 即压中圈心 ============ */
+function updateReticles(){
+  const live=anyInput();
+  if(!live){
+    retPos.l.x+=(50-retPos.l.x)*0.15; retPos.l.y+=(47-retPos.l.y)*0.15;
+    retPos.r.x+=(50-retPos.r.x)*0.15; retPos.r.y+=(47-retPos.r.y)*0.15;
+    retLeft.classList.add('lost'); retRight.classList.add('lost');
+    retLeft.classList.remove('locked'); retRight.classList.remove('locked');
+    orbLeft.classList.remove('locked'); orbRight.classList.remove('locked');
+    applyRet(); return;
+  }
+  retLeft.classList.remove('lost'); retRight.classList.remove('lost');
+  const oL=openSide('left'), oR=openSide('right');
+  // 左肘:静止 42% → 打开到 OPEN 时 14%(左圈心);右肘:58% → 86%(右圈心)
+  const txL=42-(42-COIN.left.x)*clamp(oL/OPEN,0,1.1);
+  const txR=58+(COIN.right.x-58)*clamp(oR/OPEN,0,1.1);
+  retPos.l.x+=(clamp(txL,10,48)-retPos.l.x)*0.28; retPos.l.y+=(COIN.left.y-retPos.l.y)*0.28;
+  retPos.r.x+=(clamp(txR,52,90)-retPos.r.x)*0.28; retPos.r.y+=(COIN.right.y-retPos.r.y)*0.28;
+  applyRet();
+  const lockL=Math.abs(retPos.l.x-COIN.left.x)<=LOCKR;
+  const lockR=Math.abs(retPos.r.x-COIN.right.x)<=LOCKR;
+  retLeft.classList.toggle('locked',lockL); orbLeft.classList.toggle('locked',lockL && orbLeft.classList.contains('active'));
+  retRight.classList.toggle('locked',lockR); orbRight.classList.toggle('locked',lockR && orbRight.classList.contains('active'));
+}
+function applyRet(){
+  retLeft.style.left=retPos.l.x+'%'; retLeft.style.top=retPos.l.y+'%';
+  retRight.style.left=retPos.r.x+'%'; retRight.style.top=retPos.r.y+'%';
+}
+
+/* ============ 右下角小窗:真人上肢骨架 / Joy 面具(内联自摘星关) ============ */
+const meshCanvas=document.querySelector('.you-cam .you-mesh');
+const meshCtx=meshCanvas?meshCanvas.getContext('2d'):null;
+const GOLD_DOT='rgba(255,204,0,0.55)', GOLD_LINE='rgba(255,230,120,0.9)', WHITE='rgba(255,255,255,0.95)';
+function mkRnd(seed){ let s=(seed>>>0)||1; return ()=>{ s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff; }; }
+function fillQuad(dots,a,b,c,d,n,rnd){ if(!a||!b||!c||!d)return; for(let i=0;i<n;i++){ const u=rnd(),v=rnd(); const tx=a.x+(b.x-a.x)*u,ty=a.y+(b.y-a.y)*u, bx=d.x+(c.x-d.x)*u,by=d.y+(c.y-d.y)*u; dots.push([tx+(bx-tx)*v, ty+(by-ty)*v]); } }
+function fillDisc(dots,cx,cy,r,n,rnd){ for(let i=0;i<n;i++){ const t=rnd()*Math.PI*2,rr=Math.sqrt(rnd())*r; dots.push([cx+Math.cos(t)*rr,cy+Math.sin(t)*rr]); } }
+function addArc(dots,cx,cy,r,n){ n=n||30; for(let i=0;i<n;i++){const t=i/n*Math.PI*2;dots.push([cx+Math.cos(t)*r,cy+Math.sin(t)*r]);} }
+function meshBg(){ const W=meshCanvas.width,H=meshCanvas.height; meshCtx.clearRect(0,0,W,H); meshCtx.fillStyle='rgba(255,204,0,0.03)'; meshCtx.fillRect(0,0,W,H); }
+function meshHint(text){ meshBg(); meshCtx.fillStyle='rgba(255,204,0,0.4)'; meshCtx.font='12px -apple-system, sans-serif'; meshCtx.textAlign='center'; meshCtx.fillText(text, meshCanvas.width/2, meshCanvas.height/2); }
+function drawSkeleton(J){
+  meshBg();
+  const rnd=mkRnd(20240816);
+  const perp=(a,b,w)=>{ const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1; return {x:-dy/L*w,y:dx/L*w}; };
+  const cloud=[];
+  const limb=(a,b,w,n)=>{ if(!a||!b)return; const p=perp(a,b,w); fillQuad(cloud,{x:a.x+p.x,y:a.y+p.y},{x:b.x+p.x,y:b.y+p.y},{x:b.x-p.x,y:b.y-p.y},{x:a.x-p.x,y:a.y-p.y},n,rnd); };
+  if(J.shL&&J.shR&&J.hipL&&J.hipR) fillQuad(cloud,J.shL,J.shR,J.hipR,J.hipL,210,rnd);
+  limb(J.shL,J.elL,7.5,52); limb(J.elL,J.wrL,6,44);
+  limb(J.shR,J.elR,7.5,52); limb(J.elR,J.wrR,6,44);
+  let mid=null, neck=null;
+  if(J.shL&&J.shR){ mid={x:(J.shL.x+J.shR.x)/2,y:(J.shL.y+J.shR.y)/2}; if(J.nose) neck=[mid,J.nose]; }
+  if(neck) limb(neck[0],neck[1],5,24);
+  if(J.nose&&J.headR){ fillDisc(cloud,J.nose.x,J.nose.y,J.headR*0.92,150,rnd); addArc(cloud,J.nose.x,J.nose.y,J.headR,48); }
+  if(J.wrL) fillDisc(cloud,J.wrL.x,J.wrL.y,7.5,36,rnd);
+  if(J.wrR) fillDisc(cloud,J.wrR.x,J.wrR.y,7.5,36,rnd);
+  meshCtx.fillStyle=GOLD_DOT;
+  for(let i=0;i<cloud.length;i++){ meshCtx.fillRect(cloud[i][0]-0.5,cloud[i][1]-0.5,1.4,1.4); }
+  const bones=[]; const B=(a,b)=>{ if(J[a]&&J[b]) bones.push([J[a],J[b]]); };
+  B('shL','shR'); B('shL','elL'); B('elL','wrL'); B('shR','elR'); B('elR','wrR'); B('shL','hipL'); B('shR','hipR'); B('hipL','hipR');
+  meshCtx.strokeStyle=GOLD_LINE; meshCtx.lineWidth=0.9;
+  for(const [a,b] of bones){ meshCtx.beginPath(); meshCtx.moveTo(a.x,a.y); meshCtx.lineTo(b.x,b.y); meshCtx.stroke(); }
+  if(neck){ meshCtx.beginPath(); meshCtx.moveTo(neck[0].x,neck[0].y); meshCtx.lineTo(neck[1].x,neck[1].y); meshCtx.stroke(); }
+  if(J.nose&&J.headR){ meshCtx.beginPath(); meshCtx.arc(J.nose.x,J.nose.y,J.headR,0,Math.PI*2); meshCtx.stroke(); }
+  meshCtx.fillStyle=WHITE;
+  for(const k of ['shL','shR','wrL','wrR']){ if(J[k]){ meshCtx.beginPath(); meshCtx.arc(J[k].x,J[k].y,2.4,0,Math.PI*2); meshCtx.fill(); } }
+  meshCtx.fillStyle='rgba(255,255,255,0.6)';
+  for(const k of ['elL','elR']){ if(J[k]){ meshCtx.beginPath(); meshCtx.arc(J[k].x,J[k].y,1.7,0,Math.PI*2); meshCtx.fill(); } }
+}
+function drawPoseReal(lm){
+  const W=meshCanvas.width,H=meshCanvas.height;
+  const IDX=[0,11,12,13,14,15,16,23,24];
+  let minX=1,minY=1,maxX=0,maxY=0,any=false;
+  const v=p=>(p.visibility==null?1:p.visibility);
+  for(const i of IDX){ const p=lm[i]; if(!p||v(p)<0.3)continue; const x=1-p.x,y=p.y; any=true; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+  if(!any){ meshHint('SEARCHING…'); return; }
+  const bw=Math.max(0.001,maxX-minX), bh=Math.max(0.001,maxY-minY), PAD=22;
+  let scale=Math.min((W-2*PAD)/(bw*W),(H-2*PAD)/(bh*H)); scale=Math.min(scale,2.6);
+  const offX=(W-bw*W*scale)/2-minX*W*scale, offY=(H-bh*H*scale)/2-minY*H*scale;
+  const g=i=>{ const p=lm[i]; if(!p||v(p)<0.3)return null; return { x:(1-p.x)*W*scale+offX, y:p.y*H*scale+offY }; };
+  const shL=g(11),shR=g(12);
+  let headR=16; if(shL&&shR) headR=Math.max(12,Math.hypot(shR.x-shL.x,shR.y-shL.y)*0.34);
+  drawSkeleton({ nose:g(0), shL, shR, elL:g(13), elR:g(14), wrL:g(15), wrR:g(16), hipL:g(23), hipR:g(24), headR });
+}
+const MASK_MODE=(location.search.indexOf('mesh=1')<0);
+function drawJoyMaskPose(lm){
+  const W=meshCanvas.width,H=meshCanvas.height;
+  const v=p=>(p.visibility==null?1:p.visibility);
+  const proj=i=>{ const p=lm[i]; if(!p||v(p)<0.3)return null; return { x:(1-p.x)*W, y:p.y*H }; };
+  const nose=proj(0), earR=proj(7), earL=proj(8);
+  if(window.JoyMask && earL && earR){ JoyMask.drawByPoints(meshCtx,{nose,earL,earR}); }
+  else meshHint('SEARCHING…');
+}
+function drawYou(){
+  if(!meshCtx) return;
+  const camBox=meshCanvas.closest('.you-cam');
+  const maskMode=(!camBox || camBox.dataset.faceMode!=='mesh') && MASK_MODE;
+  if(camOK && pose.landmarks){
+    if(maskMode){ meshBg(); drawJoyMaskPose(pose.landmarks); }
+    else drawPoseReal(pose.landmarks);
+  } else meshHint(camOK ? 'SEARCHING…' : '键盘模式 · 按住 ↑ 扩胸');
+}
+
+/* ============================================================
+ * 真玩:定拍扩胸 · 一拍两肘同开 · 双侧达标才算一次(借拳击节奏)
+ * ============================================================ */
+const ORB_R=66, ORB_C=2*Math.PI*ORB_R;
+[progLeft,progRight].forEach(p=>{ p.setAttribute('stroke-dasharray',ORB_C); p.style.strokeDashoffset='0'; });
+
+let beats=[], resolvedCount=0, reps=0, combo=0, maxCombo=0, sessionStart=0;
+
+function coinsActive(on){
+  [orbLeft,orbRight].forEach(o=>{
+    o.classList.remove('hit-perfect','hit-good','hit-miss');
+    o.classList.toggle('active',on);
+    if(!on) o.classList.remove('locked');
+  });
+}
+function beatStart(beat){
+  coinsActive(true);
+  setActiveChip(beat.idx);
+  const dur=Math.max(400, beat.hitTime-(performance.now()-sessionStart));
+  [progLeft,progRight].forEach(p=>{
+    p.getAnimations&&p.getAnimations().forEach(a=>a.cancel());
+    p.animate([{strokeDashoffset:'0'},{strokeDashoffset:String(ORB_C)}],{duration:dur,easing:'linear',fill:'forwards'});
+  });
+  say('双肘向两侧打开 · 够到金圈','i-arms-open');
+}
+function stampBoth(kind){
+  [orbLeft,orbRight].forEach(o=>{ o.classList.remove('active','locked'); o.classList.add('hit-'+kind); });
+  [retLeft,retRight].forEach(r=>r.classList.remove('locked'));
+  if(kind!=='miss'){ spawnShockwave(COIN.left.x,COIN.left.y,kind); spawnShockwave(COIN.right.x,COIN.right.y,kind); }
+  T(()=>{ [orbLeft,orbRight].forEach(o=>o.classList.remove('hit-perfect','hit-good','hit-miss')); },900);
+}
+
+// 判定:双肘都够 OPEN → good;时机准 + 打得更开 → perfect;超时 = miss(治愈不惩罚,只断连击)
+function tickJudge(now){
+  const t=now-sessionStart;
+  const oL=openSide('left'), oR=openSide('right');
+  for(const beat of beats){
+    if(beat._judged) continue;
+    const dt=t-beat.hitTime;
+    if(dt < -JUDGE.windowGood) continue;
+    if(dt >  JUDGE.windowGood){ beat._reason='timeout'; resolve(beat,'miss'); continue; }
+    const bothOpen = oL>=OPEN && oR>=OPEN;
+    if(!bothOpen) continue;
+    const depth=Math.min(oL,oR);
+    // 护栏:别耸到过头(医学安全),超限当没到位继续等
+    if(depth>MAX_ABD) continue;
+    const inPerfectWin=Math.abs(dt)<=JUDGE.windowPerfect;
+    const isPerfectDepth=depth>=OPEN+PERFECT_MARGIN;
+    resolve(beat,(inPerfectWin&&isPerfectDepth)?'perfect':'good');
+  }
+}
+function resolve(beat,kind){
+  if(beat._judged) return;
+  beat._judged=kind; resolvedCount++;
+  if(kind==='perfect'||kind==='good'){
+    reps++; combo++; maxCombo=Math.max(maxCombo,combo);
+    repVal.textContent=reps; comboVal.textContent=combo;
+    repVal.classList.remove('bump'); void repVal.offsetWidth; repVal.classList.add('bump');
+    comboChip.classList.toggle('hot', combo>=3);
+    floatBig(kind==='perfect'?'PERFECT':'GOOD', kind==='perfect'?'扩胸到位 · 肩胛后收':'扩胸 +1 · 挺胸打开');
+  } else {
+    combo=0; comboVal.textContent=0; comboChip.classList.remove('hot');
+    floatBig('跟上','没关系 · 下一次再打开');
+  }
+  markChip(beat.idx,kind);
+  updateRemain();
+  stampBoth(kind);
+}
+
+/* ============ 主循环(全程常驻) ============ */
+function loop(now){
+  requestAnimationFrame(loop);
+  now=now||performance.now();
+  if(kernel && kernel.ready()) syncPose(kernel.tick(now));
+  const raw=computeOpenRaw();
+  smOpen.left  += (raw.left  - smOpen.left )*SM;
+  smOpen.right += (raw.right - smOpen.right)*SM;
+  drawYou();
+  updateReticles();
+  updateMeter();
+  if(playing) tickJudge(now);
+  if(DEBUG && dbgEl){
+    dbgEl.textContent=`左肘:${openSide('left').toFixed(0)}° 右肘:${openSide('right').toFixed(0)}° open:${OPEN} present:${anyInput()?1:0} cam:${camOK?1:0} retL:${retPos.l.x.toFixed(0)} retR:${retPos.r.x.toFixed(0)}`;
+  }
+}
+requestAnimationFrame(loop);
+
+/* ============ 一局流程 ============ */
 function runShow(){
   playing=true;
-  reps=0;combo=0;holds=0;
-  repVal.textContent=0;comboVal.textContent=0;
-  progFill.style.width='0%';progPct.textContent='0%';
+  reps=0; combo=0; maxCombo=0; resolvedCount=0;
+  repVal.textContent=0; comboVal.textContent=0;
+  comboChip.classList.remove('hot');
+  buildQueue(); updateRemain();
+  showToast(camOK?'读秒环缩满时,把两肘打开到金圈':'摄像头没就绪 · 按住 ↑ 扩胸',2800);
 
-  T(()=>showToast('坐直挺胸，跟着节拍一拉一放'),400);
-
-  let clock=1500;
-  // 第一段：GATE_AT 桨
-  for(let i=0;i<GATE_AT;i++){
-    T(()=>doStroke(i),clock+i*STROKE_MS);
+  sessionStart=performance.now();
+  const clock=1500;
+  beats=[];
+  for(let i=0;i<TOTAL_REPS;i++){
+    const appearAt=clock+i*STROKE_MS;
+    const hitTime=appearAt+STROKE_MS*0.5;
+    const beat={ idx:i, hitTime, _judged:null, _reason:null };
+    beats.push(beat);
+    T(()=>beatStart(beat), appearAt);
+    // 演示/录屏:用键盘兜底自动"扩胸",复用真判定路径
+    if(FILM){
+      T(()=>{ keyHeldUp=true; }, appearAt+STROKE_MS*0.34);
+      T(()=>{ keyHeldUp=false; }, hitTime+320);
+    }
   }
-  clock+=GATE_AT*STROKE_MS;
-
-  // 水闸保持
-  T(()=>{
-    startHoldEvent(()=>{
-      // 继续划到结束
-      let c=400;
-      for(let i=GATE_AT;i<TOTAL_STROKES;i++){
-        T(()=>doStroke(i),c+(i-GATE_AT)*STROKE_MS);
-      }
-      T(()=>endShow(),c+(TOTAL_STROKES-GATE_AT)*STROKE_MS+900);
-    });
-  },clock+300);
+  T(()=>endShow(), clock+TOTAL_REPS*STROKE_MS+900);
 }
 
-
-/* ============ 结算页 streak 火苗 +1(数据出现后延迟触发) ============ */
+/* ============ 结算 streak 火苗 +1 ============ */
 function playStreakFlame(){
   const win=document.getElementById('streakWin');
   if(!win) return;
@@ -610,40 +1055,38 @@ function playStreakFlame(){
   win.classList.add('go');
 }
 
-/* ============ 本局评级(扩胸次数比例 → 星星数 + 判语) ============ */
-const RANK_TABLE = [
-  { min:0.9,  stars:3, verdict:'整条河都是你的' },
-  { min:0.6,  stars:3, verdict:'肩膀彻底打开了' },
-  { min:0.3,  stars:2, verdict:'还有几桨没拉满' },
-  { min:0,    stars:1, verdict:'先热个身也不错' },
+/* ============ 本局评级(扩胸次数比例 → 星星 + 判语) ============ */
+const RANK_TABLE=[
+  { min:0.9, stars:3, verdict:'整条河都是你的' },
+  { min:0.6, stars:3, verdict:'肩膀彻底打开了' },
+  { min:0.3, stars:2, verdict:'还有几下没打开' },
+  { min:0,   stars:1, verdict:'先热个身也不错' },
 ];
-function gradeRun(){
-  const ratio = TOTAL_STROKES ? reps/TOTAL_STROKES : 0;
-  return RANK_TABLE.find(t=>ratio>=t.min) || RANK_TABLE[RANK_TABLE.length-1];
-}
-function pickFeel(el){
-  document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-}
-window.pickFeel = pickFeel;
+function gradeRun(){ const ratio=TOTAL_REPS?reps/TOTAL_REPS:0; return RANK_TABLE.find(t=>ratio>=t.min)||RANK_TABLE[RANK_TABLE.length-1]; }
+function pickFeel(el){ document.querySelectorAll('.feel-btn').forEach(b=>b.classList.remove('on')); el.classList.add('on'); }
+window.pickFeel=pickFeel;
 
 function endShow(){
   playing=false;
+  clearTimers();
+  if(kernel) kernel.stopCamera();   // 隐私红线:结束立即释放摄像头
+  camOK=false; pose={ present:false, landmarks:null };
+  keyHeldUp=keyHeldLeft=keyHeldRight=false;
+  coinsActive(false);
+  meterEl.classList.remove('show'); hush();
   document.getElementById('rStrokes').textContent=reps;
-  document.getElementById('rHold').textContent=holds+' 次';
+  document.getElementById('rHold').textContent=maxCombo;
 
-  // 判语 + 星级:按扩胸次数比例点亮
-  const g = gradeRun();
-  document.getElementById('rVerdict').textContent = g.verdict;
+  const g=gradeRun();
+  document.getElementById('rVerdict').textContent=g.verdict;
   document.querySelectorAll('#resStars svg').forEach((s,i)=>{
-    s.classList.remove('lit','dim');
-    s.classList.add(i<g.stars ? 'lit' : 'dim');
+    s.classList.remove('lit','dim'); s.classList.add(i<g.stars?'lit':'dim');
   });
+  track('level_finish',{ level:'rowing', reps, combo:maxCombo, stars:g.stars });
 
   result.classList.remove('hide');
-  setTimeout(playStreakFlame,800);   // 数据出现后再点燃火苗
+  setTimeout(playStreakFlame,800);
 }
-
 
 /* ============ 3秒倒计时(三关统一) ============ */
 function runCountdown(done){
@@ -660,32 +1103,63 @@ function runCountdown(done){
   })();
 }
 
-function start(){
+/* ============ 开始 ============ */
+async function start(){
   intro.classList.add('hide');
   result.classList.add('hide');
   clearTimers();
-  vid.currentTime=0;
-  vid.play().catch(()=>{});
-  runCountdown(runShow);   // 先 3 秒倒计时,再开始
+  coinsActive(false);
+  playing=false;
+  if(vid){ vid.currentTime=0; vid.play().catch(()=>{}); }
+
+  // 演示/录屏:不接摄像头,纯键盘脚本自动扩胸
+  if(FILM){
+    meterEl.classList.add('show');
+    runCountdown(runShow);
+    return;
+  }
+
+  // 真玩:唤起摄像头 + 上肢检测(失败降级键盘,不阻断)
+  camOK=false;
+  const statusEl=document.querySelector('#intro .status');
+  try{
+    if(!kernel){
+      kernel=createPoseBodyKernel({ video:document.querySelector('.you-cam video'), smooth:0.3 });
+      await kernel.loadModel(txt=>{ if(statusEl && txt) statusEl.textContent=txt; });
+    }
+    await kernel.startCamera();
+    camOK=true;
+  }catch(e){ camOK=false; }
+  meterEl.classList.add('show');
+  runCountdown(()=>runShow());
 }
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();start();}});
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){ e.preventDefault(); if(!playing) start(); return; }
+  if(e.code==='ArrowUp'){ e.preventDefault(); keyHeldUp=true; }
+  if(e.code==='ArrowLeft'){ e.preventDefault(); keyHeldLeft=true; }
+  if(e.code==='ArrowRight'){ e.preventDefault(); keyHeldRight=true; }
+});
+document.addEventListener('keyup',e=>{
+  if(e.code==='ArrowUp') keyHeldUp=false;
+  if(e.code==='ArrowLeft') keyHeldLeft=false;
+  if(e.code==='ArrowRight') keyHeldRight=false;
+});
 
-/* 截图/自动演示 */
-if(location.search.indexOf('auto=1')>=0){ T(start,300); }
-// end=1 调试入口:直接看结算页(满分演示,走 endShow 填判语+星星)
+/* 演示 ?film=1 / ?auto=1:进入即自动开始 */
+if(FILM){ setTimeout(start,300); }
+/* end=1 调试:直接看结算页(满分,走 endShow) */
 if(location.search.indexOf('end=1')>=0){
   intro.classList.add('hide'); intro.style.display='none';
-  reps=TOTAL_STROKES; holds=6;
+  reps=TOTAL_REPS; maxCombo=TOTAL_REPS;
   endShow();
   result.style.transition='none'; result.style.opacity='1';
 }
 
 </script>
-<!-- 右下角「● YOU」点阵脸小窗:载入即装饰脸保底,摄像头就绪后自动升级为真脸点云 -->
-<script src="js/you-facecam.js"></script>
-<!-- 右下角小窗:实写⇄点阵开关(默认实写,悬停黑蒙版,点击切点阵) -->
+<script src="js/joy-mask.js"></script>
+<!-- 右下角小窗:实写⇄骨架开关(默认实写,悬停黑蒙版,点击切骨架) -->
 <script src="js/facecam-toggle.js"></script>
 </body>
 </html>
