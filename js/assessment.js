@@ -17,6 +17,7 @@
 import { createPoseKernel } from './pose-kernel.js';
 import { createPoseBodyKernel } from './pose-body-kernel.js';
 import { recordAssessment, recordZoneRating, getTodayFatigue, saveTodayFatigue } from './health-store.js';
+import { postJSONSafe } from './services/api.js';
 
 // 红旗项(命中任一 → 转介线下,不进游戏)。按部位分流,取不到用通用兜底。
 const RED_FLAGS_NECK = [
@@ -260,29 +261,24 @@ export { mask };
 function introStep(c) {
   return new Promise(async resolve => {
     let data = null;
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 6000);
-      const res = await fetch('/api/intro', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: {} }), signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      data = await res.json();
-    } catch (e) { data = null; }
+    data = await postJSONSafe('/api/intro', { profile: {} }, { timeout: 6000 });
     if (!data || data.degraded || !data.questions || !data.questions.length) { resolve({}); return; }
 
     const answers = {};
     c.innerHTML = `
       <div class="asmt-kicker">AI 问诊 · Joy</div>
-      <div class="asmt-title">${data.greeting || '先聊两句~'}</div>
+      <div class="asmt-title" id="asmtIntroGreeting"></div>
       <div id="asmtIntroQs"></div>
       <button class="asmt-btn" id="asmtIntroNext" disabled>下一步 →</button>
     `;
+    c.querySelector('#asmtIntroGreeting').textContent = data.greeting || '先聊两句~';
     const box = c.querySelector('#asmtIntroQs');
     data.questions.forEach(q => {
       const wrap = document.createElement('div'); wrap.style.margin = '14px 0';
-      wrap.innerHTML = `<div style="text-align:left;font-size:14px;font-weight:700;color:#3A3A45;margin-bottom:8px;">${q.q}</div>`;
+      const question = document.createElement('div');
+      question.style.cssText = 'text-align:left;font-size:14px;font-weight:700;color:#3A3A45;margin-bottom:8px;';
+      question.textContent = q.q || '';
+      wrap.appendChild(question);
       const opts = document.createElement('div'); opts.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;justify-content:center;';
       (q.options || []).forEach(opt => {
         const b = document.createElement('button');
@@ -467,6 +463,37 @@ function referView(c) {
   });
 }
 
+// 评估能力不可用时不再静默放行。用户可明确选择返回，或在知情前提下
+// 进入低强度体验；调用方可通过 safetyMode 限制强度。
+function degradedView(c, reason = '暂时无法完成活动度测量') {
+  return new Promise(resolve => {
+    c.innerHTML = `
+      <div class="asmt-kicker" style="background:#FFF3D6;color:#A86500;">评估未完成</div>
+      <div class="asmt-title">先别按正常强度开始</div>
+      <div class="asmt-desc" id="asmtDegradedReason"></div>
+      <div class="asmt-desc">你可以返回重试，或只进入低强度体验。体验时保持无痛范围、慢而稳；出现眩晕、麻木、无力或疼痛加重请立即停止。</div>
+      <button class="asmt-btn" id="asmtRetryBack">返回，稍后重试</button>
+      <button class="asmt-btn ghost" id="asmtLightContinue">我已了解，低强度体验</button>
+    `;
+    c.querySelector('#asmtDegradedReason').textContent = reason;
+    c.querySelector('#asmtRetryBack').addEventListener('click', () => resolve(false));
+    c.querySelector('#asmtLightContinue').addEventListener('click', () => resolve(true));
+  });
+}
+
+async function finishDegraded(c, close, reason, extra = {}) {
+  let target = c, closeTarget = close;
+  if (!c.isConnected) {
+    const fallbackMask = mask();
+    target = fallbackMask.c; closeTarget = fallbackMask.close;
+  }
+  const proceed = await degradedView(target, reason);
+  closeTarget();
+  return proceed
+    ? { pass: true, degraded: true, safetyMode: 'light', ...extra }
+    : { pass: false, degraded: true, cancelled: true, ...extra };
+}
+
 // ——— 评估后指导页(gate=pass 才显示):颈部分析 + 今日方案 + 开始 ———
 const AXIS_CN = { flexion: '低头', extension: '抬头', lateralL: '左侧屈', lateralR: '右侧屈', rotationL: '左转', rotationR: '右转' };
 function coachView(c, coach, result) {
@@ -527,8 +554,10 @@ export async function runAssessment(zone = 'neck') {
     if (zone === 'shoulder') {
       // 肩部:采集左右臂最大上举角
       const romShoulder = await romStepShoulder(c);
+      if (!romShoulder || romShoulder === 'SKIP') {
+        return finishDegraded(c, close, romShoulder === 'SKIP' ? '你跳过了肩部活动度测量。' : '摄像头或肩部识别暂时不可用。', { skipped: romShoulder === 'SKIP' });
+      }
       close();
-      if (!romShoulder || romShoulder === 'SKIP') return { pass: true, degraded: true, skipped: romShoulder === 'SKIP' };
       // 折算肩部评分(左右均值 / 目标 120° → 0-100):存健康档案供档案页展示
       const elevL = romShoulder.elevL ? romShoulder.elevL.value : 0;
       const elevR = romShoulder.elevR ? romShoulder.elevR.value : 0;
@@ -540,8 +569,7 @@ export async function runAssessment(zone = 'neck') {
 
     if (zone !== 'neck') {
       // 其他部位(眼部等)暂无 ROM,直接放行
-      close();
-      return { pass: true, degraded: true };
+      return finishDegraded(c, close, '这个部位暂时没有可用的活动度测量。');
     }
 
     // 2. ROM 采集(需要一个 video 元素给内核)—— 仅颈部
@@ -559,38 +587,28 @@ export async function runAssessment(zone = 'neck') {
 
     // 用户点了"跳过评估" → 直接放行进关卡(等同降级,不发后端)
     if (romNeck === 'SKIP') {
-      close();
-      return { pass: true, degraded: true, skipped: true };
+      return finishDegraded(c, close, '你跳过了颈部活动度测量。', { skipped: true });
     }
 
     // 3. 降级:采集失败(无摄像头等)→ 直接放行
     if (!romNeck) {
-      close();
-      return { pass: true, degraded: true };
+      return finishDegraded(c, close, '摄像头、模型或颈部识别暂时不可用。');
     }
 
     // 4. POST /api/screen
-    let screen = null;
-    try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-      const res = await fetch('/api/screen', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          redFlags: { neck: [] },
-          pain: { level: 0, region: 'neck' },
-          calib: { keypointQuality: 0.85, shoulderLine: true, trunkRef: true },
-          romNeck,
-        }), signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      screen = await res.json();
-    } catch (e) { screen = null; }
+    const screen = await postJSONSafe('/api/screen', {
+      redFlags: { neck: [] },
+      pain: { level: 0, region: 'neck' },
+      calib: { keypointQuality: 0.85, shoulderLine: true, trunkRef: true },
+      romNeck,
+    }, { timeout: 8000 });
+
+    // 后端挂 → 明示降级，由用户选择是否只做低强度体验
+    if (!screen || screen.degraded) {
+      return finishDegraded(c, close, '健康评估服务暂时不可用，无法确认本次活动度结果。', { romNeck });
+    }
 
     close();
-
-    // 后端挂 → 降级放行
-    if (!screen || screen.degraded) return { pass: true, degraded: true, romNeck };
 
     // 存评估结论给关卡消费
     const result = {
@@ -612,15 +630,9 @@ export async function runAssessment(zone = 'neck') {
 
     // gate=pass → 评估后、进关卡前:调 /api/coach 出"颈部分析+今日指导",用户看完点开始
     try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-      const res = await fetch('/api/coach', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ flow: result.flow, baseline: result.baseline, answers: introAnswers || {} }),
-        signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      const coach = await res.json();
+      const coach = await postJSONSafe('/api/coach', {
+        flow: result.flow, baseline: result.baseline, answers: introAnswers || {},
+      }, { timeout: 8000 });
       if (coach && !coach.degraded) {
         const { c: c3, close: close3 } = mask();
         await coachView(c3, coach, result);
@@ -631,8 +643,7 @@ export async function runAssessment(zone = 'neck') {
     return result;
 
   } catch (e) {
-    close();
-    return { pass: true, degraded: true };  // 任何意外 → 不阻断
+    return finishDegraded(c, close, '评估过程中出现异常，未能形成可靠结论。');
   }
 }
 

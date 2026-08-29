@@ -19,6 +19,8 @@ import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { getProvider } from './adapters/provider.js';
+import { deviceStore } from './device/store.js';
+import { startDeviceGatewayFromEnv } from './device/gateway.js';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -41,6 +43,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const ROOT = normalize(join(__dirname, '..'));   // 项目根(静态文件在这)
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -132,6 +135,15 @@ async function handleApi(req, res, path) {
       const data = await provider.gameReport(payload);
       return sendJSON(res, 200, { provider: provider.name, ...data });
     }
+    if (path === '/api/device/status') {
+      return sendJSON(res, 200, deviceStore.snapshot());
+    }
+    if (path === '/api/device/coach-summary') {
+      const session = payload.session || deviceStore.snapshot().latestSession;
+      if (!session) return sendJSON(res, 200, { degraded: true, reason: 'no_device_session' });
+      const data = await provider.analyzeDeviceSession({ session, profile: payload.profile || {} });
+      return sendJSON(res, 200, { provider: provider.name, sessionId: session.sessionId, ...data });
+    }
     return sendJSON(res, 404, { error: 'no such api' });
   } catch (e) {
     // provider 未配置 / 网关报错等 —— 不让前端 hard-fail,返回可降级标记
@@ -142,10 +154,18 @@ async function handleApi(req, res, path) {
 
 // ——— 静态文件 ———
 async function handleStatic(req, res, path) {
-  let rel = decodeURIComponent(path.split('?')[0]);
+  let rel;
+  try { rel = decodeURIComponent(path.split('?')[0]); }
+  catch { res.writeHead(400); return res.end('bad path'); }
   if (rel === '/') rel = '/index.html';
+  // Never expose credentials, repository metadata, or backend source through
+  // the static-file server. In particular, /server/.env contains the LLM key.
+  const segments = rel.split('/').filter(Boolean);
+  if (segments.includes('server') || segments.some(s => s.startsWith('.'))) {
+    res.writeHead(404); return res.end('not found');
+  }
   const full = normalize(join(ROOT, rel));
-  if (!full.startsWith(ROOT)) { res.writeHead(403); return res.end('forbidden'); }  // 防目录穿越
+  if (full !== ROOT && !full.startsWith(ROOT + '/')) { res.writeHead(403); return res.end('forbidden'); }  // 防目录穿越/前缀碰撞
   if (!existsSync(full)) { res.writeHead(404); return res.end('not found'); }
   try {
     const buf = await readFile(full);
@@ -165,8 +185,10 @@ const server = http.createServer((req, res) => {
   return handleStatic(req, res, path);
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, HOST, () => {
   const p = getProvider();
-  console.log(`今天不低头 后端 · http://localhost:${PORT}  (LLM provider: ${p.name})`);
-  console.log(`打开游戏: http://localhost:${PORT}/index.html`);
+  console.log(`今天不低头 后端 · http://${HOST}:${PORT}  (LLM provider: ${p.name})`);
+  console.log(`打开游戏: http://${HOST}:${PORT}/index.html`);
 });
+
+startDeviceGatewayFromEnv();

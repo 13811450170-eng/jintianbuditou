@@ -262,6 +262,11 @@ body::before {
 .soon-title { font-size: 20px; font-weight: 800; }
 .soon-desc { font-size: 14px; color: var(--ink-3); line-height: 1.7; max-width: 420px; }
 </style>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/mobile.css">
+<link rel="stylesheet" href="styles/device-coach.css">
+<script type="module" src="js/core/app-shell.js"></script>
+<script type="module" src="js/components/device-coach-card.js"></script>
 </head>
 <body>
 <div class="page">
@@ -425,13 +430,22 @@ if (z.plays.length === 0) {
 
 // 进关卡:需评估的先跑健康评估闸门(assessment.js 挂在 window.runAssessment)。
 // gate=pass 才放行;refer 则 runAssessment 内部已提示、这里不跳。
-// 降级:评估模块没加载好 / 返回 degraded → 直接进关卡,绝不阻断。
+// 降级必须由评估模块向用户明示；模块本身加载失败时不允许静默绕过。
 async function enterPlay(url, needAssess, zone) {
-  if (needAssess && typeof window.runAssessment === 'function') {
+  if (needAssess && typeof window.runAssessment !== 'function') {
+    alert('健康评估模块暂时没有加载成功，请刷新页面后重试。');
+    return;
+  }
+  if (needAssess) {
     try {
       const r = await window.runAssessment(zone || 'neck');
       if (r && r.pass === false) return;   // 转介,不进游戏
-    } catch (e) { /* 评估异常 → 降级放行 */ }
+      if (r && r.safetyMode) sessionStorage.setItem('safetyMode', r.safetyMode);
+      else sessionStorage.removeItem('safetyMode');
+    } catch (e) {
+      alert('健康评估未完成，请刷新页面后重试。');
+      return;
+    }
   }
   location.href = url;
 }
@@ -440,7 +454,10 @@ async function enterPlay(url, needAssess, zone) {
   // 评估闸门(ES module)挂到 window,供上面非 module 脚本的 enterPlay 调用
   import('./js/assessment.js')
     .then(m => { window.runAssessment = m.runAssessment; })
-    .catch(() => { /* 加载失败 → enterPlay 走降级直接进关卡 */ });
+    .catch((e) => {
+      window.assessmentLoadError = e && e.message ? e.message : 'unknown';
+      console.error('[assessment] 模块加载失败:', e);
+    });
 </script>
 </body>
 </html>

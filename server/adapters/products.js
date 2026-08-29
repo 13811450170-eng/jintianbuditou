@@ -45,7 +45,9 @@ function pickCategories({ analysis, session, profile, level } = {}) {
   const cats = [];
   const add = k => { if (k && !cats.includes(k)) cats.push(k); };
 
-  const p = profile || {};
+  // New reports send the complete health record under profile.basics; keep flat
+  // payload compatibility for older clients.
+  const p = profile?.basics || profile || {};
   const complaint = p.chiefComplaint;               // neck | shoulder | eye
   const sit = Number(p.sitHoursPerDay) || 0;
   const screen = Number(p.screenHoursPerDay) || 0;

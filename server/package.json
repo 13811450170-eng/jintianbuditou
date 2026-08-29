@@ -5,7 +5,9 @@
   "type": "module",
   "description": "今天不低头 · 本地后端代理(持有 LLM key + /api/* 端点 + 同源静态托管)。零依赖,node >=18。",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "node --test test/*.test.js",
+    "simulate:maixcam": "node scripts/simulate-maixcam.mjs"
   },
   "engines": { "node": ">=18" }
 }

@@ -511,6 +511,9 @@ body { overflow-y: scroll; }
   margin: 0 8px;
 }
 </style>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/mobile.css">
+<script type="module" src="js/core/app-shell.js"></script>
 </head>
 <body>
 
@@ -524,12 +527,12 @@ body { overflow-y: scroll; }
     </div>
     <div class="topbar-title">我的身体档案</div>
     <div class="topbar-right">
-      <button class="icon-btn" title="档案历史">
+      <button class="icon-btn" id="privacyInfoBtn" title="数据与隐私">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 8v4l3 3M12 21a9 9 0 1 1 0-18 9 9 0 0 1 0 18z"/>
         </svg>
       </button>
-      <button class="icon-btn" title="下载档案">
+      <button class="icon-btn" id="exportHealthBtn" title="下载档案">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
@@ -616,6 +619,13 @@ body { overflow-y: scroll; }
       <button id="personalEditBtn" style="background:var(--card-alt);border:1px solid var(--line);color:var(--ink-2);padding:8px 16px;border-radius:100px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">编辑</button>
     </div>
     <div id="personalBody"><!-- 展示态 / 编辑态 由 JS 渲染 --></div>
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:12px;line-height:1.6;color:var(--ink-3);">资料只保存在当前浏览器；AI 分析时仅发送结构化文字和数值，不发送摄像头画面。</div>
+      <div style="display:flex;gap:8px;">
+        <button id="exportHealthInlineBtn" style="background:var(--card-alt);border:1px solid var(--line);color:var(--ink-2);padding:7px 13px;border-radius:100px;cursor:pointer;">导出数据</button>
+        <button id="clearHealthBtn" style="background:#FFF1EF;border:1px solid #FFD4CE;color:#C33B2D;padding:7px 13px;border-radius:100px;cursor:pointer;">清除数据</button>
+      </div>
+    </div>
   </section>
 
   <!-- 3 部位状态卡 -->
@@ -817,9 +827,30 @@ body { overflow-y: scroll; }
 <script type="module">
 // 档案页:读统一健康档案(health-store)填真实数据,并调后端 /api/profile 出 AI 画像。
 // 降级:无真实数据→保留页面原有 mock 展示;后端挂→AI 画像卡隐藏。均不报错。
-import { loadProfile, saveProfileBasics } from './js/health-store.js';
+import { loadProfile, saveProfileBasics, exportHealthData, clearHealthData } from './js/health-store.js';
+import { postJSONSafe } from './js/services/api.js';
 
 const p = loadProfile();
+
+function downloadHealthData() {
+  const blob = new Blob([JSON.stringify(exportHealthData(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `今天不低头-健康档案-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+document.getElementById('exportHealthBtn')?.addEventListener('click', downloadHealthData);
+document.getElementById('exportHealthInlineBtn')?.addEventListener('click', downloadHealthData);
+document.getElementById('privacyInfoBtn')?.addEventListener('click', () => {
+  alert('健康档案仅保存在当前浏览器。调用 AI 时只发送你填写的资料、活动度角度、评分和训练统计，不发送摄像头画面。你可以随时导出或清除。');
+});
+document.getElementById('clearHealthBtn')?.addEventListener('click', () => {
+  if (!confirm('确定清除当前浏览器里的全部健康档案和评估结果吗？此操作无法撤销，建议先导出备份。')) return;
+  clearHealthData();
+  location.replace('mock-onboarding.html');
+});
 
 // ① 颈部真值回填(有评估数据才覆盖 mock)
 const rom = p.zones?.neck?.romNeck;
@@ -849,14 +880,7 @@ if (hasRealData) {
   };
   (async () => {
     try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 9000);
-      const res = await fetch('/api/profile', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: profilePayload }), signal: ctrl.signal,
-      });
-      clearTimeout(timer);
-      const data = await res.json();
+      const data = await postJSONSafe('/api/profile', { profile: profilePayload }, { timeout: 9000 });
       if (!data || data.degraded || !data.insights?.length) return;
       document.getElementById('apHeadline').textContent = data.headline || '';
       const ul = document.getElementById('apInsights');
@@ -865,7 +889,10 @@ if (hasRealData) {
       for (const ins of data.insights) {
         const li = document.createElement('li');
         li.style.cssText = 'display:flex;gap:10px;font-size:13px;line-height:1.55;color:#3A3A45;';
-        li.innerHTML = `<span style="flex-shrink:0;width:3px;border-radius:2px;background:${barColor[ins.level] || '#9AA4B2'};"></span><span>${ins.text || ''}</span>`;
+        const bar = document.createElement('span');
+        bar.style.cssText = `flex-shrink:0;width:3px;border-radius:2px;background:${barColor[ins.level] || '#9AA4B2'};`;
+        const text = document.createElement('span'); text.textContent = ins.text || '';
+        li.appendChild(bar); li.appendChild(text);
         ul.appendChild(li);
       }
       document.getElementById('apAdvice').textContent = data.advice || '';

@@ -1141,6 +1141,9 @@ body::before {
 
 
 </style>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/mobile.css">
+<script type="module" src="js/core/app-shell.js"></script>
 </head>
 <body>
 
@@ -2213,6 +2216,7 @@ updateProgress();
 <!-- ========== AI 对话式录入逻辑(ES module:要 import health-store) ========== -->
 <script type="module">
 import { saveProfileBasics, loadProfile, markOnboarded } from './js/health-store.js';
+import { postJSONSafe } from './js/services/api.js';
 // 供普通脚本的 goDone() 调用:走到完成页即标记已 onboarded(之后首页不再强制引导)
 window.__markOnboarded = markOnboarded;
 
@@ -2326,7 +2330,10 @@ function playThinkChain(steps) {
       const s = steps[i];
       const row = document.createElement('div');
       row.className = 'think-row';
-      row.innerHTML = `<span class="think-ic"><span class="think-spin"></span></span><span class="think-tx">${s.text}</span>`;
+      const icon = document.createElement('span'); icon.className = 'think-ic';
+      const spinner = document.createElement('span'); spinner.className = 'think-spin'; icon.appendChild(spinner);
+      const text = document.createElement('span'); text.className = 'think-tx'; text.textContent = s.text || '';
+      row.appendChild(icon); row.appendChild(text);
       box.appendChild(row);
       // 上一条标记完成(打勾)
       if (i > 0) {
@@ -2361,18 +2368,9 @@ function fieldsToThinkSteps(fields) {
 async function submitIntake(text) {
   renderParsing();
   intakeRound += 1;
-  let data = null;
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    const res = await fetch('/api/intake', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, known: intakeFields, round: intakeRound }),
-      signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    data = await res.json();
-  } catch (e) { data = null; }
+  const data = await postJSONSafe('/api/intake', {
+    text, known: intakeFields, round: intakeRound,
+  }, { timeout: 8000 });
 
   // 后端挂/降级标记 → 直接进确认卡(已抽到的字段 or 空白手填)
   if (!data || data.degraded || !data.fields) {
@@ -2538,14 +2536,7 @@ async function maybeRenderPreview(f) {
               history: f.history || [], chiefComplaint: f.chiefComplaint },
   }};
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 9000);
-    const res = await fetch('/api/profile', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload), signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    const data = await res.json();
+    const data = await postJSONSafe('/api/profile', payload, { timeout: 9000 });
     if (!data || data.degraded || !(data.insights?.length || data.headline)) return;
     renderPreview(mount, data.headline, data.insights);
   } catch (e) { /* 后端挂 → 不显示预览,不报错 */ }
@@ -2555,12 +2546,13 @@ async function maybeRenderPreview(f) {
 function renderPreview(mount, headline, items) {
   if (!mount) return;
   const barColor = { good: '#4CAF88', warn: '#FFA726', todo: '#8B8B95' };
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch]);
   mount.innerHTML = `
     <div class="intake-preview">
       <div class="intake-preview-tag">JOY 的第一印象</div>
-      ${headline ? `<div class="intake-preview-head">${headline}</div>` : ''}
+      ${headline ? `<div class="intake-preview-head">${esc(headline)}</div>` : ''}
       <ul class="intake-preview-list">
-        ${(items||[]).slice(0,3).map(i => `<li><span class="bar" style="background:${barColor[i.level]||'#8B8B95'}"></span><span>${i.text||''}</span></li>`).join('')}
+        ${(items||[]).slice(0,3).map(i => `<li><span class="bar" style="background:${barColor[i.level]||'#8B8B95'}"></span><span>${esc(i.text)}</span></li>`).join('')}
       </ul>
     </div>`;
 }
@@ -2584,15 +2576,9 @@ async function personalizeDone() {
   const fallbackLevel = COMPLAINT_DEFAULT[p.chiefComplaint] || 'walk';
   applyReco(fallbackLevel);
   try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 7000);
-    const res = await fetch('/api/recommend', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ answers: { feel: p.chiefComplaint === 'neck' ? '发紧' : '还好', goal: '轻松放松', complaint: p.chiefComplaint } }),
-      signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    const data = await res.json();
+    const data = await postJSONSafe('/api/recommend', {
+      answers: { feel: p.chiefComplaint === 'neck' ? '发紧' : '还好', goal: '轻松放松', complaint: p.chiefComplaint },
+    }, { timeout: 7000 });
     if (data && !data.degraded && data.level && LEVEL_INFO[data.level]) applyReco(data.level, data.reason);
   } catch (e) { /* 保持兜底推荐 */ }
 }
@@ -2960,21 +2946,12 @@ $e('eyeSkipBtn').addEventListener('click', () => { eStop(); goStep(8); });
 <!-- ========== STEP8 AI 综合评估(串 /api/screen + /api/profile + /api/recommend) ========== -->
 <script type="module">
 import { loadProfile } from './js/health-store.js';
+import { postJSONSafe } from './js/services/api.js';
 
 const $a = id => document.getElementById(id);
 const ZONE_CN = { neck: '颈部', shoulder: '肩部', eye: '眼部' };
 const LEVEL_CN = { walk: '轻松散步', boxing: '拳击派对', lunch: '中午餐厅', fireworks: '星光派对' };
 let assessRan = false;
-
-async function postJSON(path, body, ms = 9000) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal });
-    clearTimeout(timer);
-    return await res.json();
-  } catch (e) { clearTimeout(timer); return null; }
-}
 
 function scoreTag(r) {
   if (r == null) return { t: '未测', c: 'var(--ink-4)' };
@@ -2992,8 +2969,6 @@ async function runAssessment() {
   // 汇总送评估的载荷
   const bmi = prof.bmi ?? null;
   const screenPayload = {
-    redFlags: { neck: [] },
-    pain: { level: 0, region: prof.chiefComplaint || 'neck' },
     calib: { keypointQuality: 0.85, shoulderLine: true, trunkRef: true },
     romNeck: zones.neck?.romNeck || null,
   };
@@ -3005,15 +2980,16 @@ async function runAssessment() {
 
   // 并行三端点
   const [screen, profile, reco] = await Promise.all([
-    postJSON('/api/screen', screenPayload),
-    postJSON('/api/profile', profilePayload),
-    postJSON('/api/recommend', { answers: { complaint: prof.chiefComplaint, feel: '发紧', goal: '放松' } }),
+    screenPayload.romNeck ? postJSONSafe('/api/screen', screenPayload, { timeout: 9000 }) : Promise.resolve({ incomplete: true, reason: 'missing_rom' }),
+    postJSONSafe('/api/profile', profilePayload, { timeout: 9000 }),
+    postJSONSafe('/api/recommend', { answers: { complaint: prof.chiefComplaint, feel: '发紧', goal: '放松' } }, { timeout: 9000 }),
   ]);
 
   renderReport({ prof, zones, screen, profile, reco });
 }
 
 function renderReport({ prof, zones, screen, profile, reco }) {
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[ch]);
   // 部位分数卡
   const zoneHtml = ['neck', 'shoulder', 'eye'].map(z => {
     const r = zones[z]?.rating;
@@ -3028,12 +3004,15 @@ function renderReport({ prof, zones, screen, profile, reco }) {
   const barColor = { good: '#4CAF88', warn: '#FFA726', todo: '#8B8B95' };
   let insights = (profile && !profile.degraded && profile.insights) ? profile.insights : localInsights(prof, zones);
   $a('arInsights').innerHTML = insights.slice(0, 4).map(i =>
-    `<div class="ar-insight"><span class="bar" style="background:${barColor[i.level] || '#8B8B95'}"></span><span>${i.text || ''}</span></div>`).join('');
+    `<div class="ar-insight"><span class="bar" style="background:${barColor[i.level] || '#8B8B95'}"></span><span>${esc(i.text)}</span></div>`).join('');
 
   // 安全提示(screen.gate=refer/stop 或 safetyMessage)
-  if (screen && !screen.degraded && (screen.gate === 'refer' || screen.gate === 'stop' || screen.safetyMessage)) {
+  if (screen && screen.incomplete) {
     $a('arSafety').style.display = '';
-    $a('arSafety').innerHTML = `⚠️ ${screen.safetyMessage || '你的部分情况建议先做线下评估,别用游戏代替就医哦。'}`;
+    $a('arSafety').textContent = '活动度尚未采集，本页只分析已填写的背景资料，不代表已完成安全筛查。';
+  } else if (screen && !screen.degraded && (screen.gate === 'refer' || screen.gate === 'stop' || screen.safetyMessage)) {
+    $a('arSafety').style.display = '';
+    $a('arSafety').textContent = `⚠️ ${screen.safetyMessage || '你的部分情况建议先做线下评估,别用游戏代替就医哦。'}`;
   }
 
   // 推荐关卡
@@ -3041,7 +3020,7 @@ function renderReport({ prof, zones, screen, profile, reco }) {
   $a('arReco').style.display = '';
   $a('arReco').innerHTML = `<div class="ar-reco-tag">JOY 推荐 · 从这个开始</div>
     <div class="ar-reco-name">${LEVEL_CN[lv] || '轻松散步'}</div>
-    <div class="ar-reco-desc">${(reco && reco.reason) || '循序渐进,先从轻松的开始,给身体一点适应时间。'}</div>`;
+    <div class="ar-reco-desc">${esc((reco && reco.reason) || '循序渐进,先从轻松的开始,给身体一点适应时间。')}</div>`;
 
   // 头部整体结论
   const headline = (profile && profile.headline) || 'Joy 已经了解你的身体状况';
