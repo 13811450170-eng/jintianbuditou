@@ -1127,7 +1127,23 @@ body::before {
   .dp-stats { gap: 8px; }
   .stat-num { font-size: 22px; }
 
-  .today-content { padding: 24px 22px; }
+  .today-content { padding: 24px 22px; gap: 28px; }
+  .today-header-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .today-tag { align-self: flex-start; white-space: nowrap; }
+  .today-actions-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+    gap: 8px;
+  }
+  .coach-device-entry {
+    min-width: 0;
+    justify-content: center;
+    white-space: nowrap;
+    padding-inline: 12px;
+  }
+  .coach-device-entry__dot { flex: 0 0 7px; }
+  .btn-white-ghost { white-space: nowrap; padding-inline: 13px; }
   .today-title { font-size: 30px; }
   .today-info { flex-direction: column; align-items: flex-start; gap: 18px; }
   .today-info-left { max-width: 100%; }
