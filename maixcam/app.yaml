@@ -1,10 +1,11 @@
 id: maixcoach
 name: MaixCoach
-version: 0.2.0
+version: 0.3.0
 author: jintianbuditou
 icon: app.png
 desc: Offline real-time squat coach with structured gateway events
 files:
   - main.py
   - realtime_coach.py
+  - squat_logic.py
   - app.png

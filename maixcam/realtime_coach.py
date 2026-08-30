@@ -11,6 +11,7 @@ import socket
 import time as pytime
 
 from maix import app, camera, display, image, nn
+from squat_logic import SquatMotionTracker
 
 CONFIG_PATH = "/root/maixcoach.json"
 DEFAULT_CONFIG = {
@@ -93,10 +94,6 @@ def average(values):
 
 
 class SquatCoach:
-    STANDING_ANGLE = 155
-    DOWN_ANGLE = 125
-    BOTTOM_ANGLE = 105
-
     def __init__(self, cfg):
         self.cfg = cfg
         self.session_id = "%s-%d" % (cfg["device_id"], int(pytime.time()))
@@ -119,14 +116,15 @@ class SquatCoach:
         self.set_valid_reps = 0
         self.last_command_poll = 0
         self.session_finished = False
+        self.motion = SquatMotionTracker()
 
     def base(self):
         return {
             "deviceId": self.cfg["device_id"],
             "name": self.cfg["device_name"],
             "model": "MaixCAM",
-            "firmware": "maixcoach-mvp-1",
-            "capabilities": ["pose17", "squat", "realtime_feedback"],
+            "firmware": "maixcoach-0.3.0",
+            "capabilities": ["pose17", "squat", "realtime_feedback", "calibration", "smoothed_counting"],
         }
 
     def heartbeat(self):
@@ -152,6 +150,8 @@ class SquatCoach:
         if kind == "CALIBRATE":
             self.active = False
             self.paused = False
+            self.motion.reset()
+            self.state = self.motion.state
             self.last_cue = "站到镜头前，让我看到你的全身"
         elif kind == "START_SESSION":
             self.session_id = payload.get("sessionId") or "%s-%d" % (self.cfg["device_id"], int(pytime.time()))
@@ -159,6 +159,7 @@ class SquatCoach:
             self.reps = self.valid_reps = self.set_valid_reps = 0
             self.warning_counts = {}
             self.session_finished = False
+            self.motion.reset()
             self.total_sets = int(payload.get("totalSets") or 3)
             self.target_reps = int(payload.get("targetReps") or 10)
             self.emit("SESSION_READY", "训练计划已收到，准备开始", "info", cooldown=0)
@@ -169,9 +170,10 @@ class SquatCoach:
             self.set_valid_reps = 0
             self.state = "standing"
             self.bottom_reached = False
+            self.motion.reset()
             self.paused = False
             self.active = True
-            self.emit("SET_STARTED", "第 %d 组开始" % self.current_set, "info", {
+            self.emit("SET_STARTED", "第 %d 组开始，保持站直完成校准" % self.current_set, "info", {
                 "set": self.current_set, "totalSets": self.total_sets, "targetReps": self.target_reps,
             }, cooldown=0)
         elif kind == "PAUSE":
@@ -204,38 +206,50 @@ class SquatCoach:
         # COCO pose indices: shoulders 5/6, hips 11/12, knees 13/14, ankles 15/16.
         left_knee = angle(point(points, 11), point(points, 13), point(points, 15))
         right_knee = angle(point(points, 12), point(points, 14), point(points, 16))
-        knee = average([left_knee, right_knee])
-        if knee is None:
+        motion = self.motion.update(left_knee, right_knee)
+        knee = motion["knee"]
+        self.state = motion["state"]
+        if not motion["visible"]:
             self.emit("BODY_NOT_VISIBLE", "请往后站一点，让我看到髋、膝和脚踝", "warning", cooldown=3)
             return
         self.angles.append(knee)
         self.angles = self.angles[-30:]
+        if motion["calibrated"]:
+            self.emit("CALIBRATED", "校准完成，可以开始深蹲", "info", {
+                "standingAngle": round(self.motion.standing_angle, 1),
+                "bottomAngle": round(self.motion.bottom_angle, 1),
+            }, cooldown=0)
+        if motion["bottom"]:
+            self.emit("BOTTOM_OK", "深度很好，稳一下再起身", "good", {
+                "kneeAngle": round(knee, 1), "set": self.current_set,
+            }, cooldown=2.5)
+        if not motion["rep"]:
+            return
 
+        self.reps += 1
+        if motion["rep"] == "valid":
+            self.valid_reps += 1
+            self.set_valid_reps += 1
+        # Build metrics after counters change so the UI never lags one rep behind.
         metrics = {"kneeAngle": round(knee, 1), "reps": self.reps, "validReps": self.valid_reps,
-                   "setValidReps": self.set_valid_reps, "set": self.current_set}
-        if self.state == "standing" and knee < self.DOWN_ANGLE:
-            self.state = "down"
-            self.bottom_reached = knee <= self.BOTTOM_ANGLE
-        elif self.state == "down":
-            if knee <= self.BOTTOM_ANGLE:
-                self.bottom_reached = True
-                self.emit("BOTTOM_OK", "深度很好，稳一下再起身", "good", metrics, cooldown=2.5)
-            elif knee > self.STANDING_ANGLE:
-                self.reps += 1
-                if self.bottom_reached:
-                    self.valid_reps += 1
-                    self.set_valid_reps += 1
-                    self.emit("GOOD_REP", "很好，第 %d 个" % self.valid_reps, "good", metrics, cooldown=0)
-                else:
-                    self.emit("TOO_SHALLOW", "这次稍浅，下一个再蹲深一点", "warning", metrics, cooldown=0)
-                self.state = "standing"
-                self.bottom_reached = False
-                if self.active and self.set_valid_reps >= self.target_reps:
-                    self.active = False
-                    self.emit("SET_COMPLETE", "第 %d 组完成，休息一下" % self.current_set, "good", {
-                        "set": self.current_set, "totalSets": self.total_sets,
-                        "setValidReps": self.set_valid_reps, "validReps": self.valid_reps,
-                    }, cooldown=0)
+                   "setValidReps": self.set_valid_reps, "set": self.current_set,
+                   "phase": 0 if self.state == "standing" else 1}
+        if motion["rep"] == "valid":
+            self.emit("GOOD_REP", "很好，第 %d 个" % self.set_valid_reps, "good", metrics, cooldown=0)
+        else:
+            self.emit("TOO_SHALLOW", "这次稍浅，下一个再蹲深一点", "warning", metrics, cooldown=0)
+        if self.active and self.set_valid_reps >= self.target_reps:
+            self.active = False
+            self.emit("SET_COMPLETE", "第 %d 组完成，休息一下" % self.current_set, "good", {
+                "set": self.current_set, "totalSets": self.total_sets,
+                "setValidReps": self.set_valid_reps, "validReps": self.valid_reps,
+            }, cooldown=0)
+
+    def person_missing(self):
+        reset = self.motion.missing()
+        self.state = self.motion.state
+        if reset:
+            self.last_cue = "重新站稳后再继续，刚才的动作不计数"
 
     def finish(self):
         if self.session_finished:
@@ -276,6 +290,7 @@ def main():
                 coach.update(person.points)
                 detector.draw_pose(img, person.points, 4, image.COLOR_GREEN)
             elif not people and coach.active:
+                coach.person_missing()
                 coach.emit("PERSON_MISSING", "我没看到你，站到镜头前吧", "warning", cooldown=3)
             elif people:
                 person = max(people, key=lambda obj: obj.w * obj.h)

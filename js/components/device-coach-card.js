@@ -51,6 +51,7 @@ function handleEvent(event, state) {
     TOO_SHALLOW: { key: 'form_warning', priority: 'normal', cooldown: 5000, rate: 0.98 },
     BODY_NOT_VISIBLE: { key: 'visibility', priority: 'urgent', cooldown: 7000, rate: 0.96 },
     PERSON_MISSING: { key: 'visibility', priority: 'urgent', cooldown: 7000, rate: 0.96 },
+    CALIBRATED: { key: 'calibrated', priority: 'urgent', cooldown: 0, rate: 0.98 },
     SET_COMPLETE: { key: 'set_complete', priority: 'urgent', cooldown: 0 },
   }[event.type];
   if (speech) voice.speak(event.cue, speech);
