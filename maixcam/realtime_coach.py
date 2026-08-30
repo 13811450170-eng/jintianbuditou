@@ -20,6 +20,7 @@ DEFAULT_CONFIG = {
     "gateway_port": 3180,
     "device_token": "change-me",
     "model": "/root/models/yolo11n_pose.mud",
+    "gateway_timeout_ms": 250,
 }
 
 
@@ -41,7 +42,8 @@ def post_json(cfg, path, payload):
     ).encode("utf-8") + body
     sock = socket.socket()
     try:
-        sock.settimeout(1.0)
+        # Network feedback must never stall the local real-time coaching loop.
+        sock.settimeout(max(0.05, float(cfg.get("gateway_timeout_ms", 250)) / 1000.0))
         sock.connect((cfg["gateway_host"], int(cfg["gateway_port"])))
         sock.sendall(request)
         response = sock.recv(96)
@@ -95,6 +97,7 @@ class SquatCoach:
         self.last_heartbeat = 0
         self.bottom_reached = False
         self.angles = []
+        self.connected = False
 
     def base(self):
         return {
@@ -108,7 +111,7 @@ class SquatCoach:
     def heartbeat(self):
         now = pytime.time()
         if now - self.last_heartbeat >= 5:
-            post_json(self.cfg, "/device/v1/heartbeat", self.base())
+            self.connected = post_json(self.cfg, "/device/v1/heartbeat", self.base())
             self.last_heartbeat = now
 
     def emit(self, event_type, cue, severity="info", metrics=None, cooldown=1.8):
@@ -177,7 +180,7 @@ def main():
     cam = camera.Camera(detector.input_width(), detector.input_height(), detector.input_format())
     disp = display.Display()
     coach = SquatCoach(cfg)
-    post_json(cfg, "/device/v1/register", coach.base())
+    coach.connected = post_json(cfg, "/device/v1/register", coach.base())
 
     try:
         while not app.need_exit():
@@ -193,9 +196,14 @@ def main():
                 coach.emit("PERSON_MISSING", "我没看到你，站到镜头前吧", "warning", cooldown=3)
             img.draw_string(10, 10, "Squat %d" % coach.valid_reps, color=image.COLOR_WHITE)
             img.draw_string(10, 38, coach.last_cue, color=image.COLOR_YELLOW)
+            status = "Gateway ONLINE" if coach.connected else "Gateway OFFLINE"
+            status_color = image.COLOR_GREEN if coach.connected else image.COLOR_RED
+            img.draw_string(10, 66, status, color=status_color)
             disp.show(img)
     finally:
         coach.finish()
+        cam.close()
 
 
-main()
+if __name__ == "__main__":
+    main()

@@ -50,10 +50,12 @@ DEVICE_TOKEN=与.env相同的token npm run simulate:maixcam
 
 1. 确认设备和电脑在同一 Wi-Fi，或通过 USB 模拟网络互通。
 2. 确认设备已有 `/root/models/yolo11n_pose.mud`；也可在配置中修改路径。
-3. 复制 `maixcam/realtime_coach.py` 到设备。
+3. 将 `maixcam/app.yaml`、`maixcam/main.py` 和 `maixcam/realtime_coach.py` 复制到设备的 `/maixapp/apps/maixcoach/`。
 4. 把 `maixcam/config.example.json` 复制为 `/root/maixcoach.json`。
 5. 修改电脑局域网 IP、端口和与服务端一致的 `device_token`。
-6. 在 MaixVision 中运行脚本。
+6. 在 MaixCAM 桌面启动 `MaixCoach`。运行前必须先退出 Camera、JIES1 等其他视觉应用；MaixCAM 的视频管线不支持多个应用同时占用。
+
+设备屏幕会显示 `Gateway ONLINE/OFFLINE`。网关离线不会停止本地姿态识别和动作计数。
 
 ## 设备接口
 

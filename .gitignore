@@ -24,6 +24,7 @@ _video_work/
 
 # 依赖（如果以后加）
 node_modules/
+maixcam/dist/
 
 # 后端密钥（LLM key 绝不进 git）
 .env
