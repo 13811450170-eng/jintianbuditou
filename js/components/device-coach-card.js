@@ -1,8 +1,10 @@
 import { postJSONSafe } from '../services/api.js';
 import { element } from '../core/dom.js';
+import { createCoachVoice } from '../services/coach-voice.js';
 
 const POLL_MS = 1500;
 const PLAN = { exercise: 'squat', totalSets: 3, targetReps: 10, restSeconds: 60 };
+const voice = createCoachVoice();
 
 function createCard() {
   const card = element('aside', { className: 'device-coach', attrs: { 'data-online': 'false', 'aria-live': 'polite' } });
@@ -34,12 +36,6 @@ function createTrainingPanel() {
     primary: panel.querySelector('.coach-training__primary'), pause: panel.querySelector('.coach-training__secondary'), stop: panel.querySelector('.coach-training__stop') };
 }
 
-function speak(text, interrupt = false) {
-  if (!text || !('speechSynthesis' in window)) return;
-  if (interrupt) window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text); utterance.lang = 'zh-CN'; utterance.rate = 1.05;
-  window.speechSynthesis.speak(utterance);
-}
 function command(deviceId, type, payload = {}) { return postJSONSafe('/api/device/command', { deviceId, type, payload }, { timeout: 2500 }); }
 
 function render(ui, snapshot, state) {
@@ -58,7 +54,14 @@ function render(ui, snapshot, state) {
 function handleEvent(event, state) {
   if (!state.running) return;
   state.panel.cue.textContent = event.cue || '';
-  if (['GOOD_REP', 'TOO_SHALLOW', 'BODY_NOT_VISIBLE', 'PERSON_MISSING', 'SET_COMPLETE'].includes(event.type)) speak(event.cue, event.severity === 'stop');
+  const speech = {
+    GOOD_REP: { key: 'good_rep', priority: 'low', cooldown: 900, pitch: 1.08 },
+    TOO_SHALLOW: { key: 'form_warning', priority: 'normal', cooldown: 5000, rate: 0.98 },
+    BODY_NOT_VISIBLE: { key: 'visibility', priority: 'urgent', cooldown: 7000, rate: 0.96 },
+    PERSON_MISSING: { key: 'visibility', priority: 'urgent', cooldown: 7000, rate: 0.96 },
+    SET_COMPLETE: { key: 'set_complete', priority: 'urgent', cooldown: 0 },
+  }[event.type];
+  if (speech) voice.speak(event.cue, speech);
   const reps = event.metrics?.setValidReps;
   if (reps != null) state.panel.count.textContent = `第 ${state.currentSet}/${PLAN.totalSets} 组 · ${reps}/${PLAN.targetReps} 次`;
   if (event.type === 'SET_COMPLETE') beginRest(state);
@@ -66,7 +69,8 @@ function handleEvent(event, state) {
 
 function beginRest(state) {
   state.running = false; let remaining = PLAN.restSeconds;
-  state.panel.progress.textContent = `第 ${state.currentSet} 组完成`; speak(`第${state.currentSet}组完成，休息${remaining}秒`, true);
+  state.panel.progress.textContent = `第 ${state.currentSet} 组完成`;
+  voice.speak(`第 ${state.currentSet} 组完成。做得不错，休息 ${remaining} 秒。放松呼吸。`, { key: 'rest', priority: 'urgent' });
   clearInterval(state.restTimer); state.restTimer = setInterval(async () => {
     remaining -= 1; state.panel.count.textContent = `休息 ${remaining} 秒`;
     if (remaining > 0) return;
@@ -74,7 +78,7 @@ function beginRest(state) {
     if (state.currentSet >= PLAN.totalSets) return finishTraining(state);
     state.currentSet += 1; state.running = true; state.panel.progress.textContent = `第 ${state.currentSet}/${PLAN.totalSets} 组`; state.panel.count.textContent = `0/${PLAN.targetReps} 次`;
     await command(state.device.deviceId, 'START_SET', { ...PLAN, set: state.currentSet, sessionId: state.sessionId });
-    speak(`休息结束，第${state.currentSet}组，三、二、一，开始`, true);
+    voice.speak(`休息结束。第 ${state.currentSet} 组，准备。三，二，一，开始。`, { key: 'countdown', priority: 'urgent', rate: 0.96 });
   }, 1000);
 }
 
@@ -83,7 +87,7 @@ async function finishTraining(state) {
   if (state.device) await command(state.device.deviceId, 'STOP', { sessionId: state.sessionId });
   state.panel.progress.textContent = '训练完成'; state.panel.count.textContent = '3 组训练已完成';
   state.panel.cue.textContent = '做得很好，正在生成本次训练总结。'; state.panel.primary.disabled = true;
-  speak('训练完成，做得很好。请慢慢放松呼吸。', true);
+  voice.speak('今天的训练完成了。做得很好，慢慢放松呼吸。', { key: 'finished', priority: 'urgent', rate: 0.96 });
 }
 
 function wireTraining(ui, panel, state) {
@@ -96,12 +100,13 @@ function wireTraining(ui, panel, state) {
     panel.progress.textContent = '第 1/3 组'; panel.count.textContent = '0/10 次'; panel.cue.textContent = '准备就绪，三、二、一，开始。'; panel.primary.disabled = true;
     await command(state.device.deviceId, 'START_SESSION', { ...PLAN, sessionId: state.sessionId });
     await command(state.device.deviceId, 'START_SET', { ...PLAN, set: 1, sessionId: state.sessionId });
-    speak('设备准备就绪。第一组深蹲，三、二、一，开始。', true);
+    voice.speak('设备准备好了。第一组深蹲，准备。三，二，一，开始。', { key: 'countdown', priority: 'urgent', rate: 0.96 });
   });
   panel.pause.addEventListener('click', async () => {
     if (!state.device || !state.running) return;
     state.paused = !state.paused; await command(state.device.deviceId, state.paused ? 'PAUSE' : 'RESUME', { sessionId: state.sessionId });
-    panel.pause.textContent = state.paused ? '继续' : '暂停'; speak(state.paused ? '训练已暂停' : '继续训练', true);
+    panel.pause.textContent = state.paused ? '继续' : '暂停';
+    voice.speak(state.paused ? '训练已暂停。' : '继续训练。', { key: 'status', priority: 'urgent' });
   });
   panel.stop.addEventListener('click', () => finishTraining(state));
 }
