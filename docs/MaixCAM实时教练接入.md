@@ -72,6 +72,17 @@ X-Device-Token: <DEVICE_TOKEN>
 - `POST /device/v1/heartbeat`：每 5 秒心跳。
 - `POST /device/v1/events`：实时、已去抖的动作事件。
 - `POST /device/v1/sessions`：一组结束后的结构化汇总。
+- `POST /device/v1/commands/poll`：设备轮询网页待执行指令。
+
+网页通过 `POST /api/device/command` 下发受控指令，当前支持：
+
+- `CALIBRATE`：进入站位校准。
+- `START_SESSION`：创建训练 Session 并下发计划。
+- `START_SET`：开始指定组数和目标次数。
+- `PAUSE` / `RESUME`：暂停或继续实时计数。
+- `STOP`：结束训练并上报本次汇总。
+
+首页和关卡页的 MaixCAM 状态卡可打开“3 组 × 10 次”深蹲训练控制面板。网页负责组间 60 秒休息、下一组指令和浏览器语音播报；MaixCAM 负责姿态、计数和动作纠错。
 
 网页通过主应用的 `POST /api/device/status` 读取安全快照，不直接连接设备网关。
 一组结束后可调用 `POST /api/device/coach-summary`；服务会读取指定 session（未指定则取最近一组），由 DeepSeek 或明确标记的 stub 生成组后总结。实时安全反馈仍以设备端规则为准。

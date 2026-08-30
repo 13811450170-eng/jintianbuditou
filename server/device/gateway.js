@@ -5,8 +5,13 @@ import { deviceStore } from './store.js';
 const MAX_BODY = 256 * 1024;
 
 function sendJSON(res, status, data) {
-  res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8' });
-  res.end(JSON.stringify(data));
+  const body = JSON.stringify(data);
+  res.writeHead(status, {
+    'Content-Type': 'application/json; charset=utf-8',
+    'Content-Length': Buffer.byteLength(body),
+    'Connection': 'close',
+  });
+  res.end(body);
 }
 
 function authorized(req, expectedToken) {
@@ -51,6 +56,7 @@ export function createDeviceGateway({ token, store = deviceStore } = {}) {
       if (path === '/device/v1/heartbeat') return sendJSON(res, 200, { ok: true, device: store.heartbeat(payload, remote) });
       if (path === '/device/v1/events') return sendJSON(res, 200, { ok: true, event: store.addEvent(payload, remote) });
       if (path === '/device/v1/sessions') return sendJSON(res, 200, { ok: true, session: store.addSession(payload, remote) });
+      if (path === '/device/v1/commands/poll') return sendJSON(res, 200, { ok: true, command: store.pollCommand(payload, remote) });
       return sendJSON(res, 404, { error: 'not_found' });
     } catch (e) {
       return sendJSON(res, 400, { error: e.code || 'invalid_payload' });

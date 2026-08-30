@@ -55,3 +55,17 @@ test('session summaries keep structured metrics without frames', async () => {
     assert.equal('frame' in session, false);
   });
 });
+
+test('web command is delivered once to the requested device', async () => {
+  await withGateway(async base => {
+    await send(base, '/device/v1/register', { deviceId: 'cam-1', name: 'Coach' });
+    const queued = deviceStore.enqueueCommand({
+      deviceId: 'cam-1', type: 'START_SET', payload: { set: 1, totalSets: 3, targetReps: 10 },
+    });
+    assert.equal(queued.type, 'START_SET');
+    const first = await (await send(base, '/device/v1/commands/poll', { deviceId: 'cam-1' })).json();
+    const second = await (await send(base, '/device/v1/commands/poll', { deviceId: 'cam-1' })).json();
+    assert.equal(first.command.payload.targetReps, 10);
+    assert.equal(second.command, null);
+  });
+});

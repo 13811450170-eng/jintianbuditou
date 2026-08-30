@@ -1,6 +1,6 @@
 id: maixcoach
 name: MaixCoach
-version: 0.1.0
+version: 0.2.0
 author: jintianbuditou
 icon: app.png
 desc: Offline real-time squat coach with structured gateway events

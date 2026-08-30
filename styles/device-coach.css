@@ -23,3 +23,24 @@
 @media (max-width: 768px) {
   .device-coach { left: 12px; right: 12px; bottom: max(12px, var(--app-safe-bottom)); width: auto; border-radius: 16px; }
 }
+.device-coach__start { width: 100%; margin-top: 12px; border: 0; border-radius: 12px; padding: 10px 14px; background: #111827; color: white; font-weight: 700; cursor: pointer; }
+.device-coach__start:disabled { opacity: .38; cursor: not-allowed; }
+.coach-training[hidden] { display: none; }
+.coach-training { position: fixed; inset: 0; z-index: 9999; display: grid; place-items: center; padding: 20px; background: rgba(15,23,42,.58); backdrop-filter: blur(12px); font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif; }
+.coach-training__sheet { position: relative; width: min(460px, 100%); border-radius: 28px; padding: 30px; background: linear-gradient(145deg,#fff,#f3f7f6); box-shadow: 0 30px 90px rgba(15,23,42,.28); color: #10231c; }
+.coach-training__close { position: absolute; top: 16px; right: 18px; border: 0; background: transparent; font-size: 28px; cursor: pointer; }
+.coach-training__eyebrow { color: #168763; font-size: 12px; font-weight: 800; letter-spacing: .12em; }
+.coach-training h2 { margin: 8px 0 10px; font-size: 30px; }
+.coach-training__guide { color: #52645e; line-height: 1.65; }
+.coach-training__progress { margin-top: 22px; color: #168763; font-weight: 800; }
+.coach-training__count { margin: 8px 0; font-size: 34px; font-weight: 850; }
+.coach-training__cue { min-height: 48px; color: #33443e; line-height: 1.5; }
+.coach-training__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+.coach-training__actions button { border: 0; border-radius: 14px; padding: 12px 14px; font-weight: 750; cursor: pointer; }
+.coach-training__primary { grid-column: 1 / -1; background: #168763; color: white; }
+.coach-training__secondary { background: #e5efeb; color: #173d30; }
+.coach-training__stop { background: #fee7e7; color: #a72626; }
+@media (max-width: 640px) {
+  .coach-training { padding: 0; align-items: end; }
+  .coach-training__sheet { border-radius: 28px 28px 0 0; padding: 26px 22px 30px; }
+}

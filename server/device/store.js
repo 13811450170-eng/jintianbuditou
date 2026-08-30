@@ -6,6 +6,7 @@ class DeviceStore {
     this.devices = new Map();
     this.events = [];
     this.sessions = [];
+    this.commands = new Map();
   }
 
   register(input = {}, remoteAddress = '') {
@@ -75,6 +76,40 @@ class DeviceStore {
     return session;
   }
 
+  enqueueCommand(input = {}) {
+    const deviceId = cleanId(input.deviceId);
+    const type = cleanId(input.type).toUpperCase();
+    const allowed = new Set(['CALIBRATE', 'START_SESSION', 'START_SET', 'PAUSE', 'RESUME', 'STOP']);
+    if (!deviceId || !this.devices.has(deviceId)) throw taggedError('UNKNOWN_DEVICE', 'known deviceId required');
+    if (!allowed.has(type)) throw taggedError('INVALID_COMMAND', 'unsupported command');
+    const command = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      deviceId,
+      type,
+      createdAt: Date.now(),
+      payload: {
+        sessionId: cleanId(input.payload?.sessionId) || null,
+        exercise: cleanId(input.payload?.exercise) || null,
+        set: finiteNumber(input.payload?.set),
+        totalSets: finiteNumber(input.payload?.totalSets),
+        targetReps: finiteNumber(input.payload?.targetReps),
+        restSeconds: finiteNumber(input.payload?.restSeconds),
+      },
+    };
+    const queue = this.commands.get(deviceId) || [];
+    queue.push(command);
+    this.commands.set(deviceId, queue.slice(-20));
+    return command;
+  }
+
+  pollCommand(input = {}, remoteAddress = '') {
+    const device = this.register(input, remoteAddress);
+    const queue = this.commands.get(device.deviceId) || [];
+    const command = queue.shift() || null;
+    this.commands.set(device.deviceId, queue);
+    return command;
+  }
+
   snapshot() {
     return {
       devices: [...this.devices.values()].map(d => this.publicDevice(d)),
@@ -92,7 +127,7 @@ class DeviceStore {
   }
 
   reset() {
-    this.devices.clear(); this.events = []; this.sessions = [];
+    this.devices.clear(); this.events = []; this.sessions = []; this.commands.clear();
   }
 }
 

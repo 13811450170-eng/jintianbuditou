@@ -138,6 +138,9 @@ async function handleApi(req, res, path) {
     if (path === '/api/device/status') {
       return sendJSON(res, 200, deviceStore.snapshot());
     }
+    if (path === '/api/device/command') {
+      return sendJSON(res, 200, { ok: true, command: deviceStore.enqueueCommand(payload) });
+    }
     if (path === '/api/device/coach-summary') {
       const session = payload.session || deviceStore.snapshot().latestSession;
       if (!session) return sendJSON(res, 200, { degraded: true, reason: 'no_device_session' });
