@@ -822,6 +822,34 @@ body::before {
 .today-actions-top {
   display: flex; gap: 8px;
 }
+
+.coach-device-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  background: rgba(10,10,15,.28);
+  color: rgba(255,255,255,.86);
+  backdrop-filter: blur(12px);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.coach-device-entry__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a8a8b3;
+  box-shadow: 0 0 0 4px rgba(168,168,179,.14);
+}
+.coach-device-entry[data-online="true"] .coach-device-entry__dot {
+  background: #47d79a;
+  box-shadow: 0 0 0 4px rgba(71,215,154,.16);
+}
 .btn-white-ghost {
   display: inline-flex;
   align-items: center;
@@ -932,6 +960,28 @@ body::before {
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
 .btn-primary svg { width: 16px; height: 16px; }
+.today-cta-stack { display: flex; flex-direction: column; align-items: stretch; gap: 9px; }
+.btn-coach {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px;
+  background: rgba(10,10,15,.32);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.btn-coach:hover { transform: translateY(-1px); background: rgba(10,10,15,.5); }
+.btn-coach svg { width: 16px; height: 16px; }
+.btn-coach[data-online="true"] { border-color: rgba(71,215,154,.48); }
 
 /* ========== 模块 3:底部数据栏 ========== */
 .mydata {
@@ -1083,6 +1133,8 @@ body::before {
   .today-info-left { max-width: 100%; }
   .today-info-right { align-items: flex-start; width: 100%; }
   .today-meta { justify-content: flex-start; }
+  .today-cta-stack { width: 100%; }
+  .today-cta-stack button { width: 100%; }
 
   .mydata { flex-direction: column; align-items: flex-start; gap: 18px; padding: 22px; }
   .mydata-stats { gap: 28px; flex-wrap: wrap; }
@@ -1267,6 +1319,10 @@ body::before {
             今日为你推荐
           </span>
           <div class="today-actions-top">
+            <button class="coach-device-entry" type="button" data-coach-launcher data-online="false" aria-label="查看 MaixCAM 外置教练状态">
+              <span class="coach-device-entry__dot"></span>
+              MaixCAM · <span data-coach-status>检测中</span>
+            </button>
             <button class="btn-white-ghost" id="btnRefresh">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 8 16 8"/></svg>
               换一个
@@ -1299,10 +1355,16 @@ body::before {
               </div>
               <div class="meta-chip">🌱 轻度</div>
             </div>
-            <button class="btn-primary" id="todayCta" onclick="location.href='mock-boxing-video.html'">
-              开始训练
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
+            <div class="today-cta-stack">
+              <button class="btn-primary" id="todayCta" onclick="location.href='mock-boxing-video.html'">
+                开始训练
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+              <button class="btn-coach" type="button" data-coach-launcher data-online="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="12" rx="3"/><path d="M9 21h6M12 17v4"/><circle cx="12" cy="11" r="2"/></svg>
+                <span data-coach-action>连接 MaixCAM 外置教练</span>
+              </button>
+            </div>
           </div>
         </div>
 

@@ -1,23 +1,17 @@
 import { postJSONSafe } from '../services/api.js';
-import { element } from '../core/dom.js';
 import { createCoachVoice } from '../services/coach-voice.js';
 
 const POLL_MS = 1500;
 const PLAN = { exercise: 'squat', totalSets: 3, targetReps: 10, restSeconds: 60 };
 const voice = createCoachVoice();
 
-function createCard() {
-  const card = element('aside', { className: 'device-coach', attrs: { 'data-online': 'false', 'aria-live': 'polite' } });
-  const head = element('div', { className: 'device-coach__head' });
-  const dot = element('span', { className: 'device-coach__dot' });
-  const title = element('div', { className: 'device-coach__title', text: 'MaixCAM 外置教练' });
-  const status = element('div', { className: 'device-coach__status', text: '未连接' });
-  const cue = element('div', { className: 'device-coach__cue', text: '设备连接后，Joy 会在这里同步动作反馈。' });
-  const meta = element('div', { className: 'device-coach__meta', text: '仅同步关键点指标，不上传视频画面' });
-  const startButton = element('button', { className: 'device-coach__start', text: '开始深蹲训练' });
-  startButton.type = 'button'; startButton.disabled = true;
-  head.append(dot, title, status); card.append(head, cue, meta, startButton); document.body.appendChild(card);
-  return { card, status, cue, meta, startButton };
+function findLaunchers() {
+  const launchers = [...document.querySelectorAll('[data-coach-launcher]')];
+  return launchers.length ? {
+    launchers,
+    statusLabels: [...document.querySelectorAll('[data-coach-status]')],
+    actionLabels: [...document.querySelectorAll('[data-coach-action]')],
+  } : null;
 }
 
 function createTrainingPanel() {
@@ -41,13 +35,11 @@ function command(deviceId, type, payload = {}) { return postJSONSafe('/api/devic
 function render(ui, snapshot, state) {
   const device = snapshot?.devices?.find(d => d.status === 'online') || snapshot?.devices?.[0];
   const online = device?.status === 'online'; state.device = device || null;
-  ui.card.dataset.online = online ? 'true' : 'false'; ui.status.textContent = online ? '在线' : device ? '离线' : '未连接'; ui.startButton.disabled = !online;
+  ui.launchers.forEach(node => { node.dataset.online = online ? 'true' : 'false'; });
+  ui.statusLabels.forEach(node => { node.textContent = online ? '在线' : device ? '离线' : '未连接'; });
+  ui.actionLabels.forEach(node => { node.textContent = online ? '使用 MaixCAM 训练' : '连接 MaixCAM 外置教练'; });
   if (!device) return;
   const event = snapshot.latestEvent?.deviceId === device.deviceId ? snapshot.latestEvent : null;
-  const session = snapshot.latestSession?.deviceId === device.deviceId ? snapshot.latestSession : null;
-  ui.cue.textContent = event?.cue || (online ? '设备已就绪，可以开始今天的训练。' : '设备最近离线，可检查网络。');
-  const reps = event?.metrics?.validReps ?? session?.metrics?.validReps;
-  ui.meta.textContent = [device.name || device.deviceId, event?.exercise || session?.exercise, reps != null ? `${reps} 次有效动作` : null].filter(Boolean).join(' · ');
   if (event && event.id !== state.lastEventId) { state.lastEventId = event.id; handleEvent(event, state); }
 }
 
@@ -92,7 +84,12 @@ async function finishTraining(state) {
 
 function wireTraining(ui, panel, state) {
   state.panel = panel;
-  ui.startButton.addEventListener('click', () => { panel.panel.hidden = false; panel.progress.textContent = state.device?.status === 'online' ? '设备在线 · 等待开始' : '设备未连接'; panel.primary.disabled = state.device?.status !== 'online'; });
+  ui.launchers.forEach(launcher => launcher.addEventListener('click', () => {
+    panel.panel.hidden = false;
+    panel.progress.textContent = state.device?.status === 'online' ? '设备在线 · 等待开始' : '设备未连接';
+    panel.cue.textContent = state.device?.status === 'online' ? '连接耳机后，点击准备就绪。' : '请先开启 MaixCAM，并确认设备和手机连接到同一网络。';
+    panel.primary.disabled = state.device?.status !== 'online';
+  }));
   panel.close.addEventListener('click', () => { panel.panel.hidden = true; });
   panel.primary.addEventListener('click', async () => {
     if (!state.device || state.running) return;
@@ -112,7 +109,9 @@ function wireTraining(ui, panel, state) {
 }
 
 async function start() {
-  const ui = createCard(); const panel = createTrainingPanel();
+  const ui = findLaunchers();
+  if (!ui) return;
+  const panel = createTrainingPanel();
   const state = { device: null, lastEventId: null, running: false, paused: false, currentSet: 0, restTimer: null }; wireTraining(ui, panel, state);
   let stopped = false;
   async function poll() { const data = await postJSONSafe('/api/device/status', {}, { timeout: 2500 }); if (!data.degraded) render(ui, data, state); if (!stopped) setTimeout(poll, POLL_MS); }
