@@ -666,6 +666,46 @@
     100%{transform:scale(.82);opacity:0;}
   }
 
+  /* ==================== 动作提示浮层(浮在真实游戏画面上,5秒后自动进倒计时)==================== */
+  .howto{
+    position:absolute;inset:0;z-index:68;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(ellipse at 50% 44%, rgba(10,14,44,.5), rgba(7,11,40,.16) 72%, rgba(7,11,40,0) 100%);
+    transition:opacity .4s;
+  }
+  .howto.hide{opacity:0;pointer-events:none;}
+  .howto-card{
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+    padding:22px 30px 24px;border-radius:var(--r-lg);
+    background:linear-gradient(180deg, rgba(24,30,78,.62), rgba(12,16,48,.68));
+    border:1px solid rgba(140,150,255,.26);
+    box-shadow:0 20px 56px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.10);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    animation:howtoPop .5s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes howtoPop{0%{transform:scale(.9);opacity:0;}100%{transform:none;opacity:1;}}
+  .demo-stage{width:min(400px,80vw);aspect-ratio:320/188;}
+  .demo-svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 10px 30px rgba(0,0,0,.6));}
+  .demo-svg .star{fill:rgba(255,255,255,.28);animation:starLight 2.8s ease-in-out infinite;}
+  @keyframes starLight{0%,42%{fill:rgba(255,255,255,.28);}54%,70%{fill:var(--gold-bright);}82%,100%{fill:rgba(255,255,255,.28);}}
+  .demo-svg .star-halo{fill:none;stroke:var(--gold-bright);stroke-width:2.5;opacity:0;transform-origin:210px 40px;animation:starHalo 2.8s ease-in-out infinite;}
+  @keyframes starHalo{0%,46%{opacity:0;transform:scale(.5);}56%,68%{opacity:.85;transform:scale(1);}80%,100%{opacity:0;transform:scale(1.3);}}
+  .demo-svg .star-lbl{fill:var(--gold-bright);font-size:11px;font-weight:800;letter-spacing:1px;text-anchor:middle;opacity:.9;}
+  .demo-svg .torso{fill:var(--brand);}
+  .demo-svg .head{fill:#eaf0ff;}
+  .demo-svg .arm{stroke:#eaf0ff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;fill:none;}
+  .demo-svg .hand{fill:var(--gold);stroke:#fff;stroke-width:2;}
+  .demo-svg .arm-grp{transform-origin:150px 108px;animation:reachUp 2.8s ease-in-out infinite;}
+  @keyframes reachUp{0%,14%{transform:rotate(0deg);}46%,70%{transform:rotate(-128deg);}88%,100%{transform:rotate(0deg);}}
+
+  .howto-cap{font-size:19px;font-weight:800;color:#fff;text-align:center;line-height:1.65;
+    text-shadow:0 2px 14px rgba(0,0,0,.75);animation:howtoPop .5s cubic-bezier(.2,.9,.3,1.3) .06s both;}
+  .howto-cap b{color:var(--gold-bright);}
+  .howto-timer{width:min(300px,64vw);height:4px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
+  .howto-timer i{display:block;height:100%;width:100%;transform-origin:left;
+    background:linear-gradient(90deg,var(--gold),var(--gold-bright));animation:howtoTimer 6s linear forwards;}
+  @keyframes howtoTimer{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+
   /* ---- 结算页 streak 火苗 +1(多邻国式成就动画) ---- */
   .streak-win{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:4px;visibility:hidden;}
   .streak-win.go{visibility:visible;}
@@ -822,6 +862,26 @@
 
   <!-- 3秒倒计时 -->
   <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+
+  <!-- 动作提示浮层:浮在真实游戏画面上,5秒后自动进倒计时 -->
+  <div class="howto hide" id="howto">
+    <div class="howto-card">
+      <div class="demo-stage">
+        <svg class="demo-svg" viewBox="0 0 320 188" aria-hidden="true">
+          <!-- 高处的星星:够到就点亮 -->
+          <circle class="star-halo" cx="210" cy="40" r="22"/>
+          <path class="star" d="M210 22 l6 13 14 1 -11 9 4 14 -13 -8 -13 8 4 -14 -11 -9 14 -1 z"/>
+          <text class="star-lbl" x="210" y="74">举高够到它</text>
+          <!-- 小人:手臂从垂放举高到星星 -->
+          <rect class="torso" x="136" y="104" width="28" height="60" rx="13"/>
+          <circle class="head" cx="150" cy="84" r="20"/>
+          <g class="arm-grp"><path class="arm" d="M150 110 L150 150"/><circle class="hand" cx="150" cy="152" r="7"/></g>
+        </svg>
+      </div>
+      <div class="howto-cap"><b>举起手臂够到夜空的星星</b><br>星星在左举左手、在右举右手,举得够高就点亮</div>
+      <div class="howto-timer"><i></i></div>
+    </div>
+  </div>
 
   <!-- 调试读数(?debug=1 显示,真机核对举臂角用) -->
   <div id="dbgAngle" style="position:absolute;left:10px;bottom:10px;z-index:80;font:12px monospace;color:#6bff9d;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;display:none;"></div>
@@ -1372,6 +1432,7 @@ function runCountdown(done){
 }
 
 /* ============ 开始 ============ */
+// 点「开始」:立刻进入真实游戏画面,浮动作提示 3 秒,期间并行加载摄像头,然后倒计时开打
 async function start(){
   document.getElementById('intro').classList.add('hide');
   document.getElementById('result').classList.add('hide');
@@ -1384,14 +1445,18 @@ async function start(){
   const v=document.getElementById('bgvid');
   if(v){ v.currentTime=0; v.play().catch(()=>{}); }
 
-  // 演示/录屏模式:不接摄像头,纯脚本自动播放
+  // 演示/录屏模式:不接摄像头,纯脚本自动播放(跳过动作提示)
   if(FILM){
+    document.getElementById('howto').classList.add('hide');
     meterEl.classList.remove('show');
     runCountdown(runAutoShow);
     return;
   }
 
-  // 真玩:唤起摄像头 + 上肢检测(失败则降级为键盘 ↑,不阻断)
+  // 真实游戏画面上浮动作提示浮层,6 秒后自动进倒计时
+  showHowtoThenCountdown();
+
+  // 并行:唤起摄像头 + 上肢检测(失败则降级为键盘 ↑,不阻断)——不阻塞提示浮层
   camOK=false;
   const statusEl=document.querySelector('#intro .status');
   try{
@@ -1404,8 +1469,21 @@ async function start(){
   }catch(e){
     camOK=false;   // 摄像头被拒/无设备 → 键盘兜底
   }
-  meterEl.classList.add('show');
-  runCountdown(()=>{ playReal(); });
+}
+
+/* 动作提示浮层:显示 6 秒(重播演示动画),然后隐藏 → 倒计时 → 开打 */
+let _howtoTimer=null;
+function showHowtoThenCountdown(){
+  const howto=document.getElementById('howto');
+  howto.classList.remove('hide');
+  const bar=howto.querySelector('.howto-timer i');
+  if(bar){ bar.style.animation='none'; void bar.offsetWidth; bar.style.animation=''; }
+  clearTimeout(_howtoTimer);
+  _howtoTimer=setTimeout(()=>{
+    howto.classList.add('hide');
+    meterEl.classList.add('show');
+    runCountdown(()=>{ playReal(); });
+  }, 6000);
 }
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);

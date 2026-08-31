@@ -361,6 +361,59 @@
     100%{transform:scale(.82);opacity:0;}
   }
 
+  /* ==================== 动作提示浮层(浮在真实游戏画面上,5秒后自动进倒计时)==================== */
+  .howto{
+    position:absolute;inset:0;z-index:68;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(ellipse at 50% 46%, rgba(3,16,26,.5), rgba(3,14,22,.16) 72%, rgba(3,14,22,0) 100%);
+    transition:opacity .4s;
+  }
+  .howto.hide{opacity:0;pointer-events:none;}
+  /* 半透明矩形容器:把演示+文案+进度条框起来 */
+  .howto-card{
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+    padding:22px 30px 24px;border-radius:var(--r-lg);
+    background:linear-gradient(180deg, rgba(14,40,56,.62), rgba(8,26,38,.68));
+    border:1px solid rgba(120,200,255,.24);
+    box-shadow:0 20px 56px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.10);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    animation:howtoPop .5s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes howtoPop{0%{transform:scale(.9);opacity:0;}100%{transform:none;opacity:1;}}
+
+  /* --- 动作演示动画:正面小人,双肘向两侧打开够金圈(与关内金圈+肘准星同源)--- */
+  .demo-stage{
+    width:min(400px,80vw);aspect-ratio:320/188;
+  }
+  .demo-svg{width:100%;height:100%;display:block;overflow:visible;
+    filter:drop-shadow(0 10px 30px rgba(0,0,0,.6));}
+  .demo-svg .ring{fill:none;stroke:var(--gold);stroke-width:3.4;stroke-dasharray:5 6;
+    animation:demoRing 2.6s ease-in-out infinite;}
+  .demo-svg .ring-lbl{fill:var(--gold-bright);font-size:11px;font-weight:800;letter-spacing:1px;
+    text-anchor:middle;opacity:.9;}
+  @keyframes demoRing{0%,32%{stroke:var(--gold);opacity:.55;}
+    48%,62%{stroke:#4ade80;opacity:1;}78%,100%{stroke:var(--gold);opacity:.55;}}
+  .demo-svg .head{fill:#eaf6ff;}
+  .demo-svg .torso{fill:#38b6ff;}
+  .demo-svg .arm{stroke:#eaf6ff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;fill:none;}
+  .demo-svg .elbow{fill:var(--gold);stroke:#fff;stroke-width:2;}
+  .demo-svg .arm-l{transform-origin:146px 78px;animation:demoOpenL 2.6s ease-in-out infinite;}
+  .demo-svg .arm-r{transform-origin:174px 78px;animation:demoOpenR 2.6s ease-in-out infinite;}
+  @keyframes demoOpenL{0%,15%{transform:rotate(0deg);}45%,62%{transform:rotate(-34deg);}88%,100%{transform:rotate(0deg);}}
+  @keyframes demoOpenR{0%,15%{transform:rotate(0deg);}45%,62%{transform:rotate(34deg);}88%,100%{transform:rotate(0deg);}}
+  .demo-svg .hit{opacity:0;animation:demoHit 2.6s ease-in-out infinite;}
+  @keyframes demoHit{0%,40%{opacity:0;transform:scale(.5);}52%,64%{opacity:1;transform:scale(1);}76%,100%{opacity:0;transform:scale(.5);}}
+
+  .howto-cap{font-size:19px;font-weight:800;color:#fff;text-align:center;line-height:1.65;
+    text-shadow:0 2px 14px rgba(0,0,0,.75);animation:howtoPop .5s cubic-bezier(.2,.9,.3,1.3) .06s both;}
+  .howto-cap b{color:var(--gold-bright);}
+  /* 6 秒自动开始:一条会走完的进度条 */
+  .howto-timer{width:min(300px,64vw);height:4px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
+  .howto-timer i{display:block;height:100%;width:100%;transform-origin:left;
+    background:linear-gradient(90deg,var(--gold),var(--gold-bright));
+    animation:howtoTimer 6s linear forwards;}
+  @keyframes howtoTimer{from{transform:scaleX(1);}to{transform:scaleX(0);}}
+
   /* ============================================================
      扩胸运动 · 真玩层:左右【目标圈】+ 双肘准星 + 判定
      借拳击「硬币目标圈 + 径向读秒环 + 准星锁定」那套视觉,
@@ -660,6 +713,30 @@
 
   <!-- 3秒倒计时 -->
   <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+
+  <!-- 动作提示浮层:浮在真实游戏画面上,5秒后自动进倒计时 -->
+  <div class="howto hide" id="howto">
+    <div class="howto-card">
+      <div class="demo-stage">
+        <svg class="demo-svg" viewBox="0 0 320 188" aria-hidden="true">
+          <g class="ring-group">
+            <circle class="ring" cx="60" cy="96" r="26"/>
+            <text class="ring-lbl" x="60" y="140">左肘够左</text>
+            <circle class="ring" cx="260" cy="96" r="26" style="animation-delay:.05s"/>
+            <text class="ring-lbl" x="260" y="140">右肘够右</text>
+          </g>
+          <circle class="hit" cx="60" cy="96" r="30" fill="none" stroke="#4ade80" stroke-width="3" style="transform-origin:60px 96px"/>
+          <circle class="hit" cx="260" cy="96" r="30" fill="none" stroke="#4ade80" stroke-width="3" style="transform-origin:260px 96px;animation-delay:.03s"/>
+          <rect class="torso" x="146" y="86" width="28" height="66" rx="13"/>
+          <circle class="head" cx="160" cy="60" r="21"/>
+          <g class="arm-l"><path class="arm" d="M146 82 L110 96"/><circle class="elbow" cx="108" cy="96" r="7"/></g>
+          <g class="arm-r"><path class="arm" d="M174 82 L210 96"/><circle class="elbow" cx="212" cy="96" r="7"/></g>
+        </svg>
+      </div>
+      <div class="howto-cap">坐直挺胸,<b>双肘向身体两侧打开</b><br>左肘够到左边金圈、右肘够到右边金圈</div>
+      <div class="howto-timer"><i></i></div>
+    </div>
+  </div>
 
   <!-- 调试读数(?debug=1 显示,真机核对扩胸角用) -->
   <div id="dbgAngle" style="position:absolute;left:10px;bottom:10px;z-index:80;font:12px monospace;color:#6bff9d;background:rgba(0,0,0,.55);padding:4px 8px;border-radius:6px;display:none;"></div>
@@ -1104,6 +1181,7 @@ function runCountdown(done){
 }
 
 /* ============ 开始 ============ */
+// 点「开始」:立刻进入真实游戏画面,浮动作提示 3 秒,期间并行加载摄像头,然后倒计时开打
 async function start(){
   intro.classList.add('hide');
   result.classList.add('hide');
@@ -1112,14 +1190,18 @@ async function start(){
   playing=false;
   if(vid){ vid.currentTime=0; vid.play().catch(()=>{}); }
 
-  // 演示/录屏:不接摄像头,纯键盘脚本自动扩胸
+  // 演示/录屏:不接摄像头,纯键盘脚本自动扩胸(跳过动作提示)
   if(FILM){
+    document.getElementById('howto').classList.add('hide');
     meterEl.classList.add('show');
     runCountdown(runShow);
     return;
   }
 
-  // 真玩:唤起摄像头 + 上肢检测(失败降级键盘,不阻断)
+  // 真实游戏画面上浮动作提示浮层(重播动画),6 秒后自动进倒计时
+  showHowtoThenCountdown();
+
+  // 并行:唤起摄像头 + 上肢检测(失败降级键盘,不阻断)——不阻塞提示浮层
   camOK=false;
   const statusEl=document.querySelector('#intro .status');
   try{
@@ -1130,8 +1212,22 @@ async function start(){
     await kernel.startCamera();
     camOK=true;
   }catch(e){ camOK=false; }
-  meterEl.classList.add('show');
-  runCountdown(()=>runShow());
+}
+
+/* 动作提示浮层:显示 6 秒(重播演示动画),然后隐藏 → 倒计时 → 开打 */
+let _howtoTimer=null;
+function showHowtoThenCountdown(){
+  const howto=document.getElementById('howto');
+  // 重置动画:移除再插回,让演示动画和进度条从头播
+  howto.classList.remove('hide');
+  const bar=howto.querySelector('.howto-timer i');
+  if(bar){ bar.style.animation='none'; void bar.offsetWidth; bar.style.animation=''; }
+  clearTimeout(_howtoTimer);
+  _howtoTimer=setTimeout(()=>{
+    howto.classList.add('hide');
+    meterEl.classList.add('show');
+    runCountdown(()=>runShow());
+  }, 6000);
 }
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);
