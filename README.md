@@ -73,6 +73,12 @@ node server/index.js
 ├── js/                              # pose-kernel.js(头姿检测内核) · you-facecam.js(小窗)
 ├── server/                          # 零依赖 Node 后端(LLM 代理 · 3 端点 · 同源托管)
 ├── skills/                          # 健康评估/指导 skill 规格文档
+├── styles/                          # 全局设计 token + 移动端适配契约
+├── js/core/                         # 页面壳、DOM 安全等基础能力
+├── js/services/                     # API 等跨页面服务
+├── docs/前端架构与移动端适配.md       # 分层、页面职责和后续迁移规则
+├── docs/MaixCAM实时教练接入.md        # 外置教练协议、部署与联调
+├── maixcam/                          # MaixCAM 实时姿态教练端代码与配置
 ├── assets/joy/                      # 已加工的 Joy 表情、素材(可直接引用)
 ├── img/                             # 关卡背景、Joy 立绘、视频底图(boxing/rowing/lunch.mp4)
 │

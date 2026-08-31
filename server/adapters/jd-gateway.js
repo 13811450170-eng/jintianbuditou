@@ -9,13 +9,26 @@
 // key/url/model 全走环境变量(server/.env,被 .gitignore 排除,绝不进 git)。
 // 内网域名本地连不上属正常 —— 调用失败抛错,由 provider 层降级到 stub。
 
-const GATEWAY_URL = process.env.JD_LLM_GATEWAY_URL || '';
-const GATEWAY_KEY = process.env.JD_LLM_GATEWAY_KEY || '';
-const MODEL = process.env.JD_LLM_MODEL || '';
-const TIMEOUT_MS = Number(process.env.JD_LLM_TIMEOUT_MS || 12000);
+// Do not snapshot env values at module-import time. server/index.js loads server/.env
+// after ESM imports have been evaluated, so import-time constants would stay empty
+// even when the file is configured correctly.
+function config() {
+  return {
+    url: process.env.JD_LLM_GATEWAY_URL || '',
+    key: process.env.JD_LLM_GATEWAY_KEY || '',
+    model: process.env.JD_LLM_MODEL || '',
+    timeoutMs: Number(process.env.JD_LLM_TIMEOUT_MS || 12000),
+  };
+}
 
 export function isConfigured() {
-  return !!(GATEWAY_URL && GATEWAY_KEY && MODEL);
+  const { url, key, model } = config();
+  return !!(url && key && model);
+}
+
+export function configStatus() {
+  const { url, key, model } = config();
+  return { configured: !!(url && key && model), hasUrl: !!url, hasKey: !!key, hasModel: !!model };
 }
 
 function assertConfigured() {
@@ -29,13 +42,14 @@ function assertConfigured() {
 // 单一收发点。非流式,超时用 AbortController。
 async function chat(messages) {
   assertConfigured();
+  const { url, key, model, timeoutMs } = config();
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(GATEWAY_URL, {
+    const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GATEWAY_KEY}` },
-      body: JSON.stringify({ model: MODEL, messages, stream: false }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+      body: JSON.stringify({ model, messages, stream: false }),
       signal: ctrl.signal,
     });
     if (!res.ok) throw new Error(`DeepSeek 网关 HTTP ${res.status}`);
@@ -71,6 +85,7 @@ const SYS_RECOMMEND = '你是 Joy。根据问诊回答推荐一个关卡。可�
 const SYS_SCREEN = '你是颈肩健康评估助手。根据红旗问卷、疼痛、颈部各向ROM判定能否练习。红旗命中任一→gate=refer不进游戏。严格只输出 JSON:{gate,flow,baseline,pain,referReasons,tone}。gate∈{pass,refer},flow∈{both,neckOnly,shoulderOnly,none}。不诊断,refer只提示线下评估。';
 const SYS_COACH = '你是颈肩练习指导教练。根据评估分流flow+基线baseline+问诊answers给今天的低负荷方案。不做绕圈/甩头/极限。严格只输出 JSON:{level,reason,suggestSensitivity,tone,plan:[{axis,targetRom,safetyCap,cues:[]}],breaks}。';
 const SYS_POSTCOACH = '你是颈肩练习指导教练 Joy(对应 skill: health-coaching 的练后数据整理)。输入是用户本次游戏的逐轴结果(转头yaw/抬头低头pitch/侧屈roll 的次数reps、峰值角peakMax、平均保持holdAvg、甩头次数flingCount)与可选健康档案。请给出练后指导:指出下一步该重点练哪个方向、每个推荐动作的安全要点。医学边界:不诊断、不宣称疗效、不给强制次数或极限幅度目标,只用"慢而稳、回中立位、无痛范围、不甩头"的低负荷口吻。若无逐轴数据就给通用低负荷方案。严格只输出 JSON:{focus, moves:[{name,cue,why}], breaks, safety, tone}。moves 不超过 3 个,name 用中文动作名(转头/抬头低头/侧屈等),tone∈{gentle,cheer}。';
+const SYS_DEVICE_COACH = '你是外置体感教练 Joy。输入是 MaixCAM 已在设备端完成规则判断的一组结构化运动数据，只做组后总结，不推翻设备端安全事件，不诊断、不承诺疗效。根据有效次数、深度/稳定性和 warning 事件，给一句鼓励、一个下一组重点。严格只输出 JSON:{headline,cue,focus,tone}，tone∈{gentle,cheer}。';
 const SYS_PROFILE = '你是颈肩健康画像分析师 Joy。输入的健康档案可能包含 basics(基础资料:年龄/性别/BMI/职业/日均久坐小时/每日屏幕小时/既往病史/主诉部位)和/或 zones(各部位活动度评级)、训练历史。若有 basics 就先据此给"第一印象"式画像(久坐/用屏/BMI/病史/主诉如何影响颈肩),若有 zones 再结合评级。指出薄弱维度、给下一步建议。不诊断、不宣称治疗。严格只输出 JSON:{headline, insights:[{dimension,level,text}], advice, tone}。level∈{good,warn,todo},insights 不超过 4 条,text 口吻轻松暖心。';
 const SYS_INTAKE = [
   '你是京东 IP 小狗 Joy,正在轻松地"认识"一位准备做颈肩康复的用户(对应 skill: health-intake)。',
@@ -103,6 +118,9 @@ export const jdGatewayAdapter = {
   },
   async coachFromSession({ session, profile } = {}) {
     return chatJSON(SYS_POSTCOACH, `本次逐轴结果:${JSON.stringify(session || {})}\n健康档案:${JSON.stringify(profile || {})}`);
+  },
+  async analyzeDeviceSession({ session, profile } = {}) {
+    return chatJSON(SYS_DEVICE_COACH, `外置设备本组数据:${JSON.stringify(session || {})}\n健康档案:${JSON.stringify(profile || {})}`);
   },
   async analyzeProfile({ profile } = {}) {
     return chatJSON(SYS_PROFILE, `健康档案:${JSON.stringify(profile || {})}`);

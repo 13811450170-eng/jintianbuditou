@@ -1,0 +1,9 @@
+{
+  "device_id": "maixcam-desk-01",
+  "device_name": "Joy 工位教练",
+  "gateway_host": "192.168.1.100",
+  "gateway_port": 3180,
+  "device_token": "replace-with-the-same-32-char-token-as-server",
+  "model": "/root/models/yolo11n_pose.mud",
+  "gateway_timeout_ms": 250
+}

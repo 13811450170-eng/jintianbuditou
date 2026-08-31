@@ -96,6 +96,8 @@ body::before {
 
 .topbar-user {
   display: flex; align-items: center; gap: 14px;
+  min-width: 0;
+  flex-shrink: 0;
 }
 .avatar-user {
   width: 48px; height: 48px;
@@ -113,6 +115,9 @@ body::before {
   font-size: 19px;
   font-weight: 700;
   color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .greeting .hello { color: var(--ink-3); font-weight: 500; }
 
@@ -129,6 +134,7 @@ body::before {
   transition: all 0.25s;
   position: relative;
   border: 1px solid transparent;
+  flex-shrink: 0;
 }
 .streak-pill:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
 
@@ -234,6 +240,7 @@ body::before {
   color: var(--ink);
   transition: color 0.3s;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 .streak-tip {
   font-size: 10px;
@@ -815,6 +822,34 @@ body::before {
 .today-actions-top {
   display: flex; gap: 8px;
 }
+
+.coach-device-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 999px;
+  background: rgba(10,10,15,.28);
+  color: rgba(255,255,255,.86);
+  backdrop-filter: blur(12px);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.coach-device-entry__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a8a8b3;
+  box-shadow: 0 0 0 4px rgba(168,168,179,.14);
+}
+.coach-device-entry[data-online="true"] .coach-device-entry__dot {
+  background: #47d79a;
+  box-shadow: 0 0 0 4px rgba(71,215,154,.16);
+}
 .btn-white-ghost {
   display: inline-flex;
   align-items: center;
@@ -925,6 +960,28 @@ body::before {
 }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
 .btn-primary svg { width: 16px; height: 16px; }
+.today-cta-stack { display: flex; flex-direction: column; align-items: stretch; gap: 9px; }
+.btn-coach {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 999px;
+  background: rgba(10,10,15,.32);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.btn-coach:hover { transform: translateY(-1px); background: rgba(10,10,15,.5); }
+.btn-coach svg { width: 16px; height: 16px; }
+.btn-coach[data-online="true"] { border-color: rgba(71,215,154,.48); }
 
 /* ========== 模块 3:底部数据栏 ========== */
 .mydata {
@@ -1036,29 +1093,75 @@ body::before {
 }
 
 /* 手机 / 极窄(~640px 及以下):元素缩小,顶栏与底栏换行 */
+@media (max-width: 720px) {
+  .topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) repeat(3, 44px);
+    align-items: center;
+    gap: 10px 8px;
+    width: 100%;
+    padding-inline: 0 !important;
+  }
+  .topbar-user { grid-column: 1; grid-row: 1; gap: 10px; min-width: 0; }
+  .avatar-user { width: 44px; height: 44px; flex: 0 0 44px; }
+  .greeting { min-width: 0; font-size: 17px; }
+  .topbar-spacer { display: none; }
+  .streak-pill {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    height: 52px;
+    box-sizing: border-box;
+    padding: 7px 14px 7px 10px;
+  }
+  .streak-arrow { margin-left: auto; }
+  .icon-btn { width: 44px; height: 44px; grid-row: 1; }
+}
+
 @media (max-width: 640px) {
   .page { padding: 14px 16px 28px; gap: 14px; }
-  .topbar { flex-wrap: wrap; gap: 12px; min-height: auto; }
-  .topbar-spacer { display: none; }
-  .greeting { font-size: 17px; }
+  .topbar { min-height: auto; }
 
   .data-panel { padding: 22px 20px; gap: 18px; }
   .dp-title { font-size: 20px; }
   .dp-stats { gap: 8px; }
   .stat-num { font-size: 22px; }
 
-  .today-content { padding: 24px 22px; }
+  .today-content { padding: 24px 22px; gap: 28px; }
+  .today-header-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .today-tag { align-self: flex-start; white-space: nowrap; }
+  .today-actions-top {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+    gap: 8px;
+  }
+  .coach-device-entry {
+    min-width: 0;
+    justify-content: center;
+    white-space: nowrap;
+    padding-inline: 12px;
+  }
+  .coach-device-entry__dot { flex: 0 0 7px; }
+  .btn-white-ghost { white-space: nowrap; padding-inline: 13px; }
   .today-title { font-size: 30px; }
   .today-info { flex-direction: column; align-items: flex-start; gap: 18px; }
   .today-info-left { max-width: 100%; }
   .today-info-right { align-items: flex-start; width: 100%; }
   .today-meta { justify-content: flex-start; }
+  .today-cta-stack { width: 100%; }
+  .today-cta-stack button { width: 100%; }
 
   .mydata { flex-direction: column; align-items: flex-start; gap: 18px; padding: 22px; }
   .mydata-stats { gap: 28px; flex-wrap: wrap; }
   .mydata-right { width: 100%; justify-content: space-between; }
 }
 </style>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/mobile.css">
+<link rel="stylesheet" href="styles/device-coach.css">
+<script type="module" src="js/core/app-shell.js"></script>
+<script type="module" src="js/components/device-coach-card.js"></script>
 </head>
 <body>
 
@@ -1232,6 +1335,10 @@ body::before {
             今日为你推荐
           </span>
           <div class="today-actions-top">
+            <button class="coach-device-entry" type="button" data-coach-launcher data-online="false" aria-label="查看 MaixCAM 外置教练状态">
+              <span class="coach-device-entry__dot"></span>
+              MaixCAM · <span data-coach-status>检测中</span>
+            </button>
             <button class="btn-white-ghost" id="btnRefresh">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 8 16 8"/></svg>
               换一个
@@ -1264,10 +1371,16 @@ body::before {
               </div>
               <div class="meta-chip">🌱 轻度</div>
             </div>
-            <button class="btn-primary" id="todayCta" onclick="location.href='mock-boxing-video.html'">
-              开始训练
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </button>
+            <div class="today-cta-stack">
+              <button class="btn-primary" id="todayCta" onclick="location.href='mock-boxing-video.html'">
+                开始训练
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+              <button class="btn-coach" type="button" data-coach-launcher data-online="false">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="12" rx="3"/><path d="M9 21h6M12 17v4"/><circle cx="12" cy="11" r="2"/></svg>
+                <span data-coach-action>连接 MaixCAM 外置教练</span>
+              </button>
+            </div>
           </div>
         </div>
 

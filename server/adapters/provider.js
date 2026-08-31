@@ -81,6 +81,19 @@ function profileStub({ profile } = {}) {
   };
 }
 
+function deviceSessionStub({ session } = {}) {
+  const metrics = session?.metrics || {};
+  const warnings = session?.events || [];
+  const reps = Number(metrics.validReps ?? metrics.reps ?? 0);
+  const shallow = warnings.find(e => e.type === 'TOO_SHALLOW')?.count || 0;
+  return {
+    headline: reps ? `这一组完成了 ${reps} 个有效动作` : '这组还没有记录到完整动作',
+    cue: shallow ? '整体节奏不错，下一组把下蹲深度做得更稳定。' : '动作完成度不错，保持慢而稳。',
+    focus: shallow ? '下一组优先稳定深度，不用刻意加快速度。' : '下一组维持当前节奏和动作质量。',
+    tone: shallow ? 'gentle' : 'cheer',
+  };
+}
+
 // 完整 stub 能力集:6 方法齐全,作为降级兜底与本地默认。
 const STUB = {
   intro:  (a) => stubAdapter.intro(a),
@@ -91,9 +104,10 @@ const STUB = {
   coachFromSession: (a) => stubAdapter.coachFromSession(a),   // 练后指导(post-game)
   analyzeProfile: (a) => profileStub(a),
   intake: (a) => healthIntakeStub.intake(a),
+  analyzeDeviceSession: (a) => deviceSessionStub(a),
 };
 
-const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'coachFromSession', 'analyzeProfile', 'intake'];
+const METHODS = ['intro', 'analyze', 'recommend', 'screen', 'coach', 'coachFromSession', 'analyzeProfile', 'intake', 'analyzeDeviceSession'];
 
 // 给 jd-gateway 包一层降级:调用失败自动回退 STUB 对应方法。
 function withFallback(primary, name) {
@@ -101,12 +115,22 @@ function withFallback(primary, name) {
   for (const m of METHODS) {
     wrapped[m] = async (arg) => {
       if (typeof primary[m] === 'function') {
-        try { return await primary[m](arg); }
+        try {
+          const data = await primary[m](arg);
+          return { ...data, llm: { requested: name, used: name, fallback: false } };
+        }
         catch (e) {
           console.warn(`[provider:${name}] ${m}() 失败,降级 stub:`, e.code || e.message);
+          const reason = typeof e.code === 'string' ? e.code : (e.name || 'provider_error');
+          const data = await STUB[m](arg);
+          return {
+            ...data,
+            llm: { requested: name, used: 'stub', fallback: true, reason },
+          };
         }
       }
-      return STUB[m](arg);   // 主 adapter 无此方法 或 调用失败 → stub
+      const data = await STUB[m](arg);
+      return { ...data, llm: { requested: name, used: 'stub', fallback: true, reason: 'method_unavailable' } };
     };
   }
   return wrapped;
@@ -122,7 +146,17 @@ function attachGameReport(provider) {
     try { plan = await provider.coachFromSession({ session, profile }); } catch (e) { /* 方案失败 → 隐藏方案卡 */ }
     try { recommend = await productsAdapter.recommend({ analysis: conclusion, session, profile, level }); }
     catch (e) { /* 推荐失败 → 隐藏推荐卡 */ }
-    return { conclusion, plan, recommend };
+    const aiParts = [conclusion, plan].filter(Boolean);
+    const fallback = aiParts.some(x => x.llm?.fallback);
+    return {
+      conclusion, plan, recommend,
+      llm: {
+        requested: provider.name,
+        used: fallback ? 'stub' : provider.name,
+        fallback,
+        parts: aiParts.map(x => x.llm).filter(Boolean),
+      },
+    };
   };
   return provider;
 }

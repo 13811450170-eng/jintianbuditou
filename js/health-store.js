@@ -39,6 +39,21 @@ export function loadProfile() {
   catch { return { ...DEFAULT_PROFILE }; }
 }
 
+// 给“数据与隐私”入口使用：导出一份可读 JSON，或彻底清除本地健康档案。
+// 不包含摄像头画面（项目从不存画面），也不触发任何网络请求。
+export function exportHealthData() {
+  return { schema: 'health_profile_v1', exportedAt: new Date().toISOString(), data: loadProfile() };
+}
+
+export function clearHealthData() {
+  try { localStorage.removeItem(KEY); } catch {}
+  try {
+    sessionStorage.removeItem('assessResult');
+    sessionStorage.removeItem('intakeHandoff');
+    sessionStorage.removeItem('safetyMode');
+  } catch {}
+}
+
 function save(p) {
   try { localStorage.setItem(KEY, JSON.stringify(p)); } catch {}
 }

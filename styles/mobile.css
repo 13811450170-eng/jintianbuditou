@@ -1,0 +1,67 @@
+/* Shared mobile contract. Page-specific art direction remains in each page. */
+@media (max-width: 768px) {
+  :root {
+    --app-gutter: 16px;
+    --app-section-gap: 24px;
+    --app-radius-lg: 18px;
+  }
+
+  body {
+    overflow-x: hidden;
+    padding-bottom: var(--app-safe-bottom);
+  }
+
+  .app-only-desktop { display: none !important; }
+  .app-only-mobile { display: initial !important; }
+
+  button,
+  [role="button"],
+  input:not([type="hidden"]),
+  select {
+    min-height: var(--app-touch-target);
+  }
+
+  input, textarea, select { font-size: 16px; }
+
+  .topbar {
+    min-height: calc(56px + var(--app-safe-top));
+    padding-top: var(--app-safe-top);
+    padding-inline: max(14px, var(--app-safe-left)) max(14px, var(--app-safe-right));
+  }
+
+  .topbar-title { max-width: 52vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .hero, .content, .page, .main, main {
+    max-width: 100%;
+  }
+
+  .asmt-mask {
+    align-items: flex-end !important;
+    padding: 12px max(12px, var(--app-safe-right)) max(12px, var(--app-safe-bottom)) max(12px, var(--app-safe-left));
+  }
+
+  .asmt-card {
+    width: 100% !important;
+    max-height: min(88vh, calc(var(--app-vh) * 88)) !important;
+    border-radius: 22px 22px 16px 16px !important;
+    padding: 22px 18px !important;
+  }
+
+  .asmt-cam { width: min(100%, 280px) !important; height: auto !important; aspect-ratio: 4 / 3; }
+
+  .play-grid, .shop-grid, .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .play-card, .shop-item { width: 100%; }
+}
+
+@media (max-width: 390px) {
+  :root { --app-gutter: 12px; }
+  .topbar-title { font-size: 14px !important; }
+  .asmt-card { padding-inline: 15px !important; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .play-card:hover, button:hover, a:hover { transform: none !important; }
+}

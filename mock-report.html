@@ -557,6 +557,9 @@ html, body {
 }
 .btn-ghost:hover { color: var(--ink); border-color: var(--ink); }
 </style>
+<link rel="stylesheet" href="styles/tokens.css">
+<link rel="stylesheet" href="styles/mobile.css">
+<script type="module" src="js/core/app-shell.js"></script>
 </head>
 <body>
 
@@ -788,7 +791,8 @@ html, body {
 
 </div>
 
-<script>
+<script type="module">
+import { postJSONSafe } from './js/services/api.js';
 // ========================================================================
 // BRANCH_CONFIG · 4 关分支色 + 关卡文案库
 // 分档吐槽话 = Joy 教练口吻;分支色遵循首页三入口(颈椎蓝),4 关靠辅助色区分
@@ -950,14 +954,7 @@ function applyBranch() {
 async function fetchGameReport(session, level, fillConclusion) {
   try {
     const profile = readProfile();
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 8000);
-    const res = await fetch('/api/game-report', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ session, level, profile }), signal: ctrl.signal,
-    });
-    clearTimeout(timer);
-    const data = await res.json();
+    const data = await postJSONSafe('/api/game-report', { session, level, profile }, { timeout: 8000 });
     if (data && data.degraded) { hideReportCards(fillConclusion); return; }
     if (fillConclusion) renderAI(data.conclusion || null);
     renderPlan(data.plan || null);
@@ -973,11 +970,19 @@ function hideReportCards(includeConclusion) {
   document.getElementById('shopCard').style.display = 'none';
 }
 
-// 读统一健康档案的基础资料(给后端做商品意图映射)。无 health-store / 无数据都安全降级为 {}。
+// 读统一健康档案。练后 AI 需要把基础资料、练前 ROM/部位评分、疲劳度和近期趋势一起看。
 function readProfile() {
   try {
     const p = JSON.parse(localStorage.getItem('health_profile_v1'));
-    return (p && p.profile) ? p.profile : {};
+    if (!p) return {};
+    return {
+      basics: p.profile || {},
+      zones: p.zones || {},
+      fatigue: p.fatigue || {},
+      totalSessions: p.totalSessions || 0,
+      recentSessions: p.recentSessions || [],
+      updatedAt: p.updatedAt || 0,
+    };
   } catch { return {}; }
 }
 
@@ -1088,6 +1093,10 @@ function replayLastLevel() {
   const cfg = BRANCH_CONFIG[run.branch] || BRANCH_CONFIG.boxing;
   location.href = cfg.levelUrl;
 }
+
+// Inline HTML handlers are retained during the incremental migration.
+window.pickFeel = pickFeel;
+window.replayLastLevel = replayLastLevel;
 
 applyBranch();
 </script>
