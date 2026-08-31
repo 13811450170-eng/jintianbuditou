@@ -54,7 +54,7 @@ node server/index.js
 │  【颈部关卡 · 在用】
 ├── mock-boxing-video.html           # 拳击派对(视频底图版,依赖 img/boxing.mp4)
 ├── mock-joy-boxing.html             # 拳击派对(CSS/canvas 可玩原型)
-├── mock-lunch-video.html            # 餐厅喂 Doga(视频底图版,依赖 img/lunch.mp4)
+├── mock-lunch-video.html            # 好好吃饭(视频底图版,依赖 img/lunch.mp4)
 ├── mock-walk.html                   # 森林公园散步(初赛真玩版,头姿驱动三车道跑酷)
 │
 │  【肩部关卡 · 在用】
@@ -91,7 +91,7 @@ node server/index.js
 | 颈部 | 森林公园散步 | 转头 / 抬头低头 / 侧屈 | `mock-walk.html` | ✅ 初赛真玩版 |
 | 颈部 | 拳击派对 | 4 拳型(左钩/右钩/上勾/下勾) | `mock-joy-boxing.html` | 🧪 可玩原型 |
 | 颈部 | 拳击派对(视频版) | 同上 · 视频底图演示 | `mock-boxing-video.html` | 🎬 画面演示 |
-| 颈部 | 餐厅喂 Doga(视频版) | 转头对准 · 金勺喂食 | `mock-lunch-video.html` | 🎬 画面演示 |
+| 颈部 | 好好吃饭(视频版) | 转头对准 · 金勺喂食 | `mock-lunch-video.html` | 🎬 画面演示 |
 | 肩部 | 河道划船(视频版) | 前倾→后仰扩胸 · 肩胛后收 | `mock-rowing-video.html` | 🎬 画面演示 |
 | 肩部 | 举臂摘星 | 抬臂上举够星星 | `mock-shoulder-star.html` | 🧪 可玩原型 |
 
