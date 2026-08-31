@@ -43,7 +43,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const ROOT = normalize(join(__dirname, '..'));   // 项目根(静态文件在这)
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.HOST || '127.0.0.1';
+const HOST = process.env.HOST || '0.0.0.0';   // 监听所有网卡:云平台健康检查从容器外探测,须 0.0.0.0(本地 localhost 访问不受影响)
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
@@ -190,8 +190,9 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, HOST, () => {
   const p = getProvider();
-  console.log(`今天不低头 后端 · http://${HOST}:${PORT}  (LLM provider: ${p.name})`);
-  console.log(`打开游戏: http://${HOST}:${PORT}/index.html`);
+  const shown = HOST === '0.0.0.0' ? 'localhost' : HOST;   // 监听 0.0.0.0,但日志给人看的地址用 localhost 更好点
+  console.log(`今天不低头 后端 · http://${shown}:${PORT}  (LLM provider: ${p.name})`);
+  console.log(`打开游戏: http://${shown}:${PORT}/index.html`);
 });
 
 startDeviceGatewayFromEnv();
