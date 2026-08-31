@@ -28,8 +28,8 @@ function loadCatalog() {
   return _catalog;
 }
 
-// 品类固定的 Joy 口吻推荐语(生活方式,非医疗)。%s 会被替换为商品短名。
-const CATEGORY_PITCH = {
+// 品类兜底推荐语(当本次没有可挂钩的数据信号时用)。生活方式口吻,非医疗。
+const CATEGORY_FALLBACK = {
   'neck-massager':     '久坐一天脖子发紧,靠一会儿放松放松也挺舒服的~',
   'shoulder-massager': '肩膀圆着扛了一天,给它一点热敷和揉捏,松快些。',
   'neck-pillow':       '睡觉时把颈椎托住,第二天不容易落枕。',
@@ -38,6 +38,49 @@ const CATEGORY_PITCH = {
   'eye-mask':          '盯屏幕一天,热敷一下眼睛,睡前放松的小仪式。',
   'eye-lamp':          '光线柔和些,看东西不那么费眼。',
 };
+
+// 从本次训练结果 + 档案里提取「可用于话术的信号」,一次算好给下面复用。
+function extractSignals({ analysis, session, profile } = {}) {
+  const p = profile || {};
+  const fling = session?.flingCount || 0;
+  const warnAxes = (analysis?.insights || []).filter(i => i.level === 'warn').map(i => i.text);
+  const sit = Number(p.sitHoursPerDay) || 0;
+  const screen = Number(p.screenHoursPerDay) || 0;
+  const office = /设计|程序|工程|运营|产品|财务|文案|编辑|客服|办公|白领/.test(p.occupation || '');
+  return { fling, warnAxes, sit, screen, office, complaint: p.chiefComplaint };
+}
+
+// 数据驱动推荐语:优先引用本次真实信号(甩头次数/久坐时长/主诉),讲清「为什么给你推它」。
+// 没有可挂钩信号时回退品类兜底句。全程生活方式口吻,不做任何医疗/疗效声明。
+function buildReason(key, s) {
+  switch (key) {
+    case 'neck-massager':
+      if (s.fling >= 3) return `这次检测到 ${s.fling} 次甩头,脖子还挺紧张的,练后靠一会儿放松放松挺舒服。`;
+      if (s.warnAxes.length) return '这次有几个方向还没太到位,颈部偏紧,热敷揉捏帮你松一松。';
+      return CATEGORY_FALLBACK[key];
+    case 'shoulder-massager':
+      return s.complaint === 'shoulder'
+        ? '你提到肩颈不舒服,圆肩扛了一天,给它点热敷揉捏松快些。'
+        : CATEGORY_FALLBACK[key];
+    case 'neck-pillow':
+      return CATEGORY_FALLBACK[key];
+    case 'laptop-stand':
+      if (s.sit >= 6) return `你每天坐 ${s.sit} 小时,把屏幕垫到平视就不用一直低头 —— 这才是治本。`;
+      if (s.office) return '办公久坐,把屏幕垫到平视高度,少低头才是治本。';
+      return CATEGORY_FALLBACK[key];
+    case 'ergonomic-chair':
+      if (s.sit >= 6) return `每天 ${s.sit} 小时的椅子,撑住腰背坐姿正了,脖子肩膀都轻松。`;
+      return CATEGORY_FALLBACK[key];
+    case 'eye-mask':
+      if (s.screen >= 6) return `每天盯屏幕 ${s.screen} 小时,热敷一下眼睛,睡前放松的小仪式。`;
+      if (s.complaint === 'eye') return '你提到眼睛容易累,热敷一下,睡前放松。';
+      return CATEGORY_FALLBACK[key];
+    case 'eye-lamp':
+      return s.screen >= 6 ? '用屏时间长,光线柔和些看东西不那么费眼。' : CATEGORY_FALLBACK[key];
+    default:
+      return CATEGORY_FALLBACK[key] || '';
+  }
+}
 
 // —— 意图映射:从游戏结果 + 档案推断该推哪些品类,带优先级。——
 // 返回品类 key 数组(去重、保序),前面的更相关。
@@ -86,10 +129,11 @@ function topOf(catalog, key) {
 export const productsAdapter = {
   name: 'products',
 
-  // 主入口。返回 { reason, products:[{...商品字段, category, categoryLabel, reason}] }
+  // 主入口。返回 { reason, products:[{...全部商品字段, category, categoryLabel, reason}] }
   async recommend({ analysis, session, profile, level, limit = 3 } = {}) {
     const catalog = loadCatalog();
     const cats = pickCategories({ analysis, session, profile, level });
+    const signals = extractSignals({ analysis, session, profile });   // 本次数据信号,话术挂钩用
 
     const products = [];
     for (const key of cats) {
@@ -98,10 +142,10 @@ export const productsAdapter = {
       if (!item) continue;
       if (products.some(x => x.id === item.id)) continue;   // 去重
       products.push({
-        ...item,
+        ...item,                                  // 透传全部字段(name/price/image/url/shop/isSelf/goodRate/salesYear/sellingPoints)
         category: key,
         categoryLabel: catalog[key]?.label || key,
-        reason: CATEGORY_PITCH[key] || '',
+        reason: buildReason(key, signals),        // 数据驱动推荐语
       });
     }
 
@@ -109,10 +153,17 @@ export const productsAdapter = {
       return { reason: '', products: [] };   // 目录缺失 → 前端隐藏卡
     }
 
-    // 顶部一句总起(生活方式口吻,不医疗)
-    const reason = level === 'rowing' || level === 'star'
-      ? '练完肩膀,Joy 顺手挑了几样能帮你放松、改善坐姿的好物~'
-      : '练完这一组,Joy 挑了几样帮你把「少低头」坚持下去的小东西~';
+    // 顶部一句总起:优先点出本次最突出的信号,让「为什么推荐」从第一句就清楚。
+    let reason;
+    if (signals.fling >= 3) {
+      reason = `这次有 ${signals.fling} 次甩头、脖子偏紧,Joy 挑了几样帮你练后放松、也少低头的好物~`;
+    } else if (signals.sit >= 6) {
+      reason = `你每天久坐 ${signals.sit} 小时,Joy 挑了几样帮你把「少低头」坚持下去的小东西~`;
+    } else if (level === 'rowing' || level === 'star') {
+      reason = '练完肩膀,Joy 顺手挑了几样能帮你放松、改善坐姿的好物~';
+    } else {
+      reason = '练完这一组,Joy 挑了几样帮你把「少低头」坚持下去的小东西~';
+    }
 
     return { reason, products };
   },

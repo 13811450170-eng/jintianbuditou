@@ -509,6 +509,11 @@ html, body {
 .shop-thumb { width: 62px; height: 62px; border-radius: 10px; flex-shrink: 0; object-fit: cover; background: var(--card-alt); }
 .shop-info { flex: 1; min-width: 0; }
 .shop-cat { display: inline-block; font-size: 10px; font-weight: 700; color: var(--gold); background: var(--gold-bg); padding: 1px 7px; border-radius: 6px; margin-bottom: 3px; }
+.shop-catrow { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; }
+.shop-catrow .shop-cat { margin-bottom: 0; }
+.shop-self { font-size: 9px; font-weight: 800; color: var(--jd-red); background: rgba(225,37,27,0.08); border: 1px solid rgba(225,37,27,0.2); padding: 1px 5px; border-radius: 5px; letter-spacing: 0.5px; }
+.shop-points { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 5px; }
+.shop-point { font-size: 10px; color: var(--ink-2); background: var(--card-alt); border: 1px solid var(--line); padding: 1px 7px; border-radius: 5px; }
 .shop-name { font-size: 13px; font-weight: 800; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
 .shop-why { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin-bottom: 5px; }
 .shop-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -1031,9 +1036,26 @@ function renderShop(rec) {
     img.onerror = function () { this.style.visibility = 'hidden'; };
 
     const info = document.createElement('div'); info.className = 'shop-info';
+    const catRow = document.createElement('div'); catRow.className = 'shop-catrow';
     const cat = document.createElement('span'); cat.className = 'shop-cat'; cat.textContent = p.categoryLabel || '';
+    catRow.appendChild(cat);
+    if (p.isSelf) {
+      const self = document.createElement('span'); self.className = 'shop-self'; self.textContent = '自营';
+      catRow.appendChild(self);
+    }
     const name = document.createElement('div'); name.className = 'shop-name'; name.textContent = p.name || '';
     const why = document.createElement('div'); why.className = 'shop-why'; why.textContent = p.reason || '';
+
+    // 卖点标签(sellingPoints "A|B|C" → 最多 3 个 chip)
+    const points = (p.sellingPoints || '').split('|').map(s => s.trim()).filter(Boolean).slice(0, 3);
+    let pointsRow = null;
+    if (points.length) {
+      pointsRow = document.createElement('div'); pointsRow.className = 'shop-points';
+      for (const pt of points) {
+        const chip = document.createElement('span'); chip.className = 'shop-point'; chip.textContent = pt;
+        pointsRow.appendChild(chip);
+      }
+    }
 
     const bottom = document.createElement('div'); bottom.className = 'shop-bottom';
     const price = document.createElement('div'); price.className = 'shop-price';
@@ -1043,11 +1065,14 @@ function renderShop(rec) {
     const go = document.createElement('span'); go.className = 'shop-go'; go.textContent = '去看看';
     bottom.appendChild(price); bottom.appendChild(go);
 
-    info.appendChild(cat); info.appendChild(name);
+    info.appendChild(catRow); info.appendChild(name);
     if (p.reason) info.appendChild(why);
+    if (pointsRow) info.appendChild(pointsRow);
     if (p.goodRate) {
       const meta = document.createElement('div'); meta.className = 'shop-meta';
-      meta.textContent = '好评 ' + p.goodRate + '%' + (p.salesYear ? ' · 年销 ' + p.salesYear : '');
+      let metaText = '好评 ' + p.goodRate + '%' + (p.salesYear ? ' · 年销 ' + p.salesYear : '');
+      if (p.shop) metaText += ' · ' + p.shop;
+      meta.textContent = metaText;
       info.appendChild(meta);
     }
     info.appendChild(bottom);
