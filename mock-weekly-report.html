@@ -375,6 +375,7 @@ body { overflow-y: scroll; }
   background: #fff; border: 1px solid var(--line); border-radius: 18px;
   padding: 16px; display: flex; gap: 14px; align-items: center;
   cursor: pointer; transition: all 0.25s;
+  text-decoration: none; color: inherit;
 }
 .gift-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
 .gift-thumb {
@@ -384,6 +385,7 @@ body { overflow-y: scroll; }
 }
 .gift-thumb.a { background: linear-gradient(135deg, #FFF6DA, #FFE0B2); }
 .gift-thumb.b { background: linear-gradient(135deg, #E1F2FF, #B8DFFF); }
+.gift-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .gift-info { flex: 1; min-width: 0; }
 .gift-cat {
   display: inline-block; font-size: 10px; font-weight: 700;
@@ -395,8 +397,9 @@ body { overflow-y: scroll; }
   font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 4px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.gift-desc { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin-bottom: 8px; }
+.gift-desc { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin-bottom: 6px; }
 .gift-desc strong { color: var(--ink-2); }
+.gift-meta { font-size: 10px; color: var(--ink-4); margin-bottom: 8px; }
 .gift-bottom { display: flex; align-items: center; justify-content: space-between; }
 .gift-price { font-size: 18px; font-weight: 900; color: var(--jd-red); }
 .gift-price span { font-size: 12px; margin-right: 2px; font-weight: 700; }
@@ -947,65 +950,47 @@ body { overflow-y: scroll; }
     </div>
 
     <div class="gifts-grid">
-      <div class="gift-card">
+      <a class="gift-card" href="https://item.jd.com/100118406273.html" target="_blank" rel="noopener noreferrer">
         <div class="gift-thumb a">
-          <svg viewBox="0 0 100 100" width="80" height="80">
-            <ellipse cx="50" cy="80" rx="30" ry="4" fill="rgba(0,0,0,0.08)"/>
-            <rect x="20" y="30" width="60" height="45" rx="6" fill="#FFB800" stroke="#E9A430" stroke-width="1.5"/>
-            <rect x="20" y="30" width="60" height="8" fill="#E9A430"/>
-            <line x1="30" y1="45" x2="70" y2="45" stroke="#E9A430" stroke-width="1.5" opacity="0.5"/>
-            <line x1="30" y1="55" x2="70" y2="55" stroke="#E9A430" stroke-width="1.5" opacity="0.5"/>
-            <line x1="30" y1="65" x2="70" y2="65" stroke="#E9A430" stroke-width="1.5" opacity="0.5"/>
-            <circle cx="26" cy="34" r="2" fill="#fff"/>
-            <circle cx="74" cy="34" r="2" fill="#fff"/>
-          </svg>
+          <img src="https://img14.360buyimg.com/n1/jfs/t1/498323/9/5235/139534/6a793cdfF4973ea8f/008332032011b785.jpg" alt="海尔 颈椎按摩器" loading="lazy" onerror="this.style.visibility='hidden'">
         </div>
         <div class="gift-info">
-          <span class="gift-cat">场景关联</span>
-          <div class="gift-name">加厚防滑瑜伽垫</div>
+          <span class="gift-cat">颈椎按摩仪</span>
+          <div class="gift-name">海尔 颈椎按摩器 HHZ-Y602Z-Pro</div>
           <div class="gift-desc">
-            <strong>Joy:</strong>你这周练拳击多,垫子铺上再也不硌膝盖啦
+            <strong>Joy:</strong>这周练拳击脖子转得多,练完靠它揉揉挺舒服的~
           </div>
+          <div class="gift-meta">好评 99% · 年销 10万+</div>
           <div class="gift-bottom">
-            <div class="gift-price"><span>¥</span>89</div>
-            <button class="gift-btn">
+            <div class="gift-price"><span>¥</span>195</div>
+            <span class="gift-btn">
               去看看
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </button>
+            </span>
           </div>
         </div>
-      </div>
+      </a>
 
-      <div class="gift-card">
+      <a class="gift-card" href="https://item.jd.com/100223659612.html" target="_blank" rel="noopener noreferrer">
         <div class="gift-thumb b">
-          <svg viewBox="0 0 100 100" width="80" height="80">
-            <ellipse cx="50" cy="82" rx="34" ry="4" fill="rgba(0,0,0,0.08)"/>
-            <circle cx="32" cy="50" r="16" fill="none" stroke="#00A3FF" stroke-width="3.5"/>
-            <circle cx="68" cy="50" r="16" fill="none" stroke="#00A3FF" stroke-width="3.5"/>
-            <line x1="48" y1="50" x2="52" y2="50" stroke="#00A3FF" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="16" y1="48" x2="10" y2="42" stroke="#00A3FF" stroke-width="3.5" stroke-linecap="round"/>
-            <line x1="84" y1="48" x2="90" y2="42" stroke="#00A3FF" stroke-width="3.5" stroke-linecap="round"/>
-            <ellipse cx="32" cy="50" rx="12" ry="12" fill="#00A3FF" opacity="0.15"/>
-            <ellipse cx="68" cy="50" rx="12" ry="12" fill="#00A3FF" opacity="0.15"/>
-            <path d="M 22 44 L 28 40" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-            <path d="M 58 44 L 64 40" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
-          </svg>
+          <img src="https://img14.360buyimg.com/n1/jfs/t1/301487/7/26736/58742/688b104aFb4b76344/6384396551165686.jpg" alt="赛鲸 升降电脑桌" loading="lazy" onerror="this.style.visibility='hidden'">
         </div>
         <div class="gift-info">
-          <span class="gift-cat b">健康辅助</span>
-          <div class="gift-name">防蓝光电脑眼镜</div>
+          <span class="gift-cat b">笔记本支架</span>
+          <div class="gift-name">赛鲸 D8 电脑桌 升降桌</div>
           <div class="gift-desc">
-            <strong>Joy:</strong>眼部训练之外,平时戴上也能减轻疲劳
+            <strong>Joy:</strong>把屏幕垫到平视高度,你就不用一直低头啦——这才治本。
           </div>
+          <div class="gift-meta">好评 99% · 年销 1000+</div>
           <div class="gift-bottom">
-            <div class="gift-price"><span>¥</span>158</div>
-            <button class="gift-btn">
+            <div class="gift-price"><span>¥</span>297.90</div>
+            <span class="gift-btn">
               去看看
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-            </button>
+            </span>
           </div>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="gifts-disclaim">
