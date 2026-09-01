@@ -1139,7 +1139,80 @@ body::before {
 .ar-reco-name { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
 .ar-reco-desc { font-size: 13px; color: var(--ink-3); }
 
+/* ============================================================
+   响应式 · 手机端适配(照首页三件套底座 + 本页专属断点)
+   病根:原 viewport 硬锁 width=1280,且 .step 为 absolute 居中不可滚,
+   两栏/三栏/双列全是桌面固定宽。手机端:改单列竖排、固定宽自适应、
+   step 可纵向滚动(内容多也点得到底部按钮)、走安全区。
+============================================================ */
+@media (max-width: 768px) {
+  /* 整页高度用动态 vh(app-shell.js 注入),避免手机地址栏抖动裁切 */
+  .stage { height: calc(var(--app-vh, 1vh) * 100); }
 
+  /* 顶栏收窄 + 顶部安全区 */
+  .topbar { padding: max(12px, var(--app-safe-top)) max(16px, var(--app-safe-left)) 12px max(16px, var(--app-safe-right)); }
+  .progress-strip { gap: 4px; }
+  .pdot { width: 20px; }
+  .pdot.active { width: 36px; }
+
+  /* 关键:step 从"绝对居中不可滚"改为"可纵向滚动",内容多也够得到底部按钮 */
+  .main { padding: 0; }
+  .step {
+    padding: 16px max(16px, var(--app-safe-left)) calc(24px + var(--app-safe-bottom)) max(16px, var(--app-safe-right));
+    align-items: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* 两栏(授权/呼吸)→ 竖排,视觉块缩小不再固定宽 */
+  .permission, .breathing {
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+    margin: auto;
+  }
+  .permission-visual, .body-mesh-container {
+    width: min(70vw, 300px);
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+  .perm-ring.r1 { width: min(70vw, 300px); height: min(70vw, 300px); }
+  .perm-ring.r2 { width: min(56vw, 240px); height: min(56vw, 240px); }
+  .perm-ring.r3 { width: min(42vw, 180px); height: min(42vw, 180px); }
+  .mesh-halo { width: min(66vw, 280px); height: min(66vw, 280px); }
+  .body-mesh { width: min(64vw, 270px); height: auto; }
+  .breathing-content, .permission-content { flex: none; width: 100%; }
+
+  /* 三栏/双列全部改单列(选项、完成统计、AR分区、录入表单) */
+  .qa-options,
+  .done-stats,
+  .ar-zones { grid-template-columns: 1fr !important; }
+  .intake-fields { grid-template-columns: 1fr !important; }
+  /* .welcome-features 是 flex 横排(非 grid),单独改竖排,否则第三张卡溢出 */
+  .welcome-features { flex-direction: column; align-items: stretch; }
+  .wf-item { justify-content: center; }
+
+  /* 标题在窄屏收一档 */
+  .welcome-title { font-size: 40px; }
+  .breath-title, .perm-title, .qa-title, .done-title { font-size: 26px; }
+
+  /* 录入弹层贴底全宽(照 mobile.css 里 asmt-card 的手机端做法) */
+  .intake-mask { align-items: flex-end; }
+  .intake-card {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(88vh, calc(var(--app-vh, 1vh) * 88));
+    border-radius: 22px 22px 0 0;
+    overflow-y: auto;
+  }
+}
+
+/* 极窄屏(≤380px)再收一档标题 */
+@media (max-width: 380px) {
+  .welcome-title { font-size: 34px; }
+  .breath-title, .perm-title, .qa-title, .done-title { font-size: 23px; }
+}
 </style>
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/mobile.css">
