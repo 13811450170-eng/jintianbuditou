@@ -444,11 +444,19 @@
   /* ==================== 右下角 · 真人点阵脸小窗(与拳击关统一) ==================== */
   .you-cam{
     position:absolute;bottom:5%;right:3%;z-index:30;
-    width:168px;height:126px;
+    width:232px;height:174px;
     border:3px solid #ffcc00;border-radius:12px;overflow:hidden;
     background:radial-gradient(ellipse at 50% 45%,#0b0512 0%,#000 100%);
     box-shadow:0 0 22px rgba(255,204,0,.4),0 4px 20px rgba(0,0,0,.6);
+    transition:border-color .2s, box-shadow .2s;
   }
+  /* 手臂出框时小窗告警:红框呼吸,提示"你的手臂正顶出这个取景框" */
+  .you-cam.warn{
+    border-color:#ff5a6a;
+    box-shadow:0 0 26px rgba(255,90,106,.6),0 4px 20px rgba(0,0,0,.6);
+    animation:camWarnPulse 1s ease-in-out infinite;
+  }
+  @keyframes camWarnPulse{50%{box-shadow:0 0 14px rgba(255,90,106,.35),0 4px 20px rgba(0,0,0,.6);}}
   .you-cam video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
   .you-cam .you-mesh{width:100%;height:100%;display:block;}
   .you-cam .you-label{
@@ -520,6 +528,21 @@
     display:flex;align-items:center;gap:8px;
   }
   .coach-tip .ico{width:16px;height:16px;}
+
+  /* ==================== 出框告警横幅(手臂顶出取景框时置顶提示)==================== */
+  .frame-warn{
+    position:absolute; top:16%; left:50%; transform:translateX(-50%) translateY(-6px);
+    z-index:60;
+    display:flex; align-items:center; gap:9px;
+    padding:11px 22px; border-radius:var(--r-pill);
+    background:rgba(24,4,8,.82); border:1.5px solid rgba(255,90,106,.85);
+    color:#ffd7dc; font-size:15px; font-weight:800; letter-spacing:.3px;
+    white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,90,106,.35);
+    opacity:0; pointer-events:none; transition:opacity .28s, transform .28s;
+  }
+  .frame-warn.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .frame-warn .ico{ width:19px;height:19px; color:#ff8a95; stroke:#ff8a95; flex-shrink:0; }
+  .frame-warn b{ color:#fff; }
 
   /* ==================== 开场 / 结算 覆盖层 ==================== */
   .overlay{
@@ -742,6 +765,7 @@
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
     <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.6 6.3 6.8.5-5.2 4.4 1.6 6.6L12 17.8 6.2 21.3l1.6-6.6L2.6 9.8l6.8-.5z"/></symbol>
     <symbol id="i-hands-up" viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="2.3"/><path d="M12 8v6M12 9l-3.5-4M12 9l3.5-4M12 14l-3 5M12 14l3 5"/></symbol>
+    <symbol id="i-frame-out" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 0-1 1h-3"/><path d="M12 9v6M12 9l-2.4 2.4M12 9l2.4 2.4"/></symbol>
   </svg>
 
   <!-- HUD -->
@@ -762,6 +786,9 @@
   </div>
 
   <div class="coach-tip glass" id="coachTip"><svg class="ico"><use href="#i-hands-up"/></svg>举起双手 · 够向星空</div>
+
+  <!-- 出框告警:手臂顶出取景框时置顶提示,引导往后坐 -->
+  <div class="frame-warn" id="frameWarn"><svg class="ico"><use href="#i-frame-out"/></svg><span id="frameWarnTxt">手臂超出画面 · 往后坐一点</span></div>
 
   <!-- 举臂高度条(判定同源:随举臂角度填充,过线变金) -->
   <div class="reach-meter glass" id="reachMeter">
@@ -909,6 +936,7 @@ const TARGET   = 8;      // 本局星星数
 const BIG_INDEX= 5;      // 第几颗是"双手大烟花"高潮
 const REST_MS  = 1500;   // 每颗之间的休息拍(医学:低 BPM + 单动作间歇)
 const LOST_TIMEOUT = 8000;  // 仅当"持续检测不到人"这么久才放行(摄像头挂/掉线兜底);有人在画面里则永不自动过关
+const OUT_TIMEOUT  = qn('outto',6000);  // 目标手臂持续出框这么久且已提示往后坐仍无解 → 软放行,别让近距离用户死等
 
 const dbgEl = document.getElementById('dbgAngle');
 if(DEBUG && dbgEl) dbgEl.style.display='block';
@@ -1112,6 +1140,33 @@ function isReached(spec){   // spec: 'left' | 'right' | 'both'
   return armReachByScreenSide(spec)>=REACH;
 }
 
+/* ============ 出框检测:目标手臂顶出取景框时提示 + 兜底 ============
+ * 举臂摘星靠手腕(15/16)算高度,手举高最容易冲出画面顶部→该侧算不出→判定卡住。
+ * 这里检测「当前该举的那只手腕」是否丢失/贴边,驱动置顶告警,并给软放行兜底。 */
+const EDGE_M = 0.07;   // 归一化屏幕坐标贴边阈值(距任一边 <7% 视为快出框)
+// 返回某屏幕侧「目标手腕」的出框风险:'out'(丢失/已出) | 'edge'(贴边快出) | 'ok'
+function armFrameRisk(side){
+  const lm=pose.landmarks;
+  if(!(camOK && pose.present && lm)) return 'ok';   // 无摄像头/键盘态不判出框
+  let w=null;
+  for(const i of [15,16]){
+    const p=lm[i]; if(!p) continue;
+    if((1-p.x)<0.5 === (side==='left') && (p.visibility==null?1:p.visibility)>=0.3) w=p;
+  }
+  if(!w) return 'out';                          // 该侧手腕检测不到(通常举高出顶框)
+  const sx=1-w.x, sy=w.y;
+  if(sx<=EDGE_M||sx>=1-EDGE_M||sy<=EDGE_M||sy>=1-EDGE_M) return 'edge';
+  return 'ok';
+}
+// 当前挑战涉及的所有侧里,取最高风险
+function activeFrameRisk(){
+  if(!activeSide) return 'ok';
+  const sides = activeSide==='both' ? ['left','right'] : [activeSide];
+  let risk='ok';
+  for(const s of sides){ const r=armFrameRisk(s); if(r==='out') return 'out'; if(r==='edge') risk='edge'; }
+  return risk;
+}
+
 /* ============ 举臂高度条(判定同源反馈) ============ */
 const meterEl=document.getElementById('reachMeter');
 const rmFill=document.getElementById('rmFill');
@@ -1133,6 +1188,22 @@ function updateMeter(){
   if(!present){ rmCap.textContent = camOK?'找不到手':'举臂'; }
   else if(reached){ rmCap.textContent='够到了'; }
   else { rmCap.textContent = activeSide==='left'?'举左手' : activeSide==='right'?'举右手' : activeSide==='both'?'举双手' : '再高些'; }
+}
+
+/* ============ 出框告警横幅 + 小窗红框(判定同源:目标手臂顶出取景框)============ */
+const frameWarnEl=document.getElementById('frameWarn');
+const frameWarnTxt=document.getElementById('frameWarnTxt');
+const youCamEl=document.querySelector('.you-cam');
+function updateFrameWarn(){
+  const risk = (playing && activeSide) ? activeFrameRisk() : 'ok';
+  const show = risk!=='ok';
+  if(frameWarnEl) frameWarnEl.classList.toggle('show', show);
+  if(youCamEl) youCamEl.classList.toggle('warn', show);
+  if(show && frameWarnTxt){
+    frameWarnTxt.innerHTML = risk==='out'
+      ? '手臂超出画面 · <b>往后坐一点</b>'
+      : '手臂快出框了 · <b>往后坐一点</b>';
+  }
 }
 
 /* ============ 右下角小窗:真人上肢骨架(内联自 you-facecam.js drawSkeleton/drawPoseReal) ============ */
@@ -1228,6 +1299,7 @@ function makeChallenge(i, resolve){
   say(big?'双手一起 · 够两颗星!':(spec==='left'?'举左手 · 够左边的星':'举右手 · 够右边的星'), 'i-hands-up');
   let holding=false, holdStart=0, ring=null, ring2=null, done=false;
   let lostSince=0;   // 持续"检测不到人"的起点(0=当前有人/未开始计)
+  let outSince=0;    // 持续"目标手臂出框"的起点(人在但手举出画面,别死等)
 
   function cancelHold(){
     holding=false;
@@ -1272,7 +1344,12 @@ function makeChallenge(i, resolve){
       const present = reachData().present;
       if(present){ lostSince=0; }
       else if(!lostSince){ lostSince=now; }
-      else if(now-lostSince>LOST_TIMEOUT){ finish(true); }
+      else if(now-lostSince>LOST_TIMEOUT){ finish(true); return; }
+      // 出框兜底:人在画面里、但目标手臂持续顶出取景框(举高丢手腕),已提示往后坐仍无解则软放行,别死等。
+      if(!holding && activeFrameRisk()==='out'){
+        if(!outSince){ outSince=now; }
+        else if(now-outSince>OUT_TIMEOUT){ finish(true); return; }
+      } else { outSince=0; }
     },
     _cleanup(){ cancelHold(); star.remove(); if(star2) star2.remove(); }
   };
@@ -1355,6 +1432,7 @@ function loop(now){
   }
   drawYou();
   updateMeter();
+  updateFrameWarn();
   if(challenge) challenge.tick(now);
   if(DEBUG && dbgEl){
     const present = reachData().present;

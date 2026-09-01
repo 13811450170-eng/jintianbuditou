@@ -188,11 +188,19 @@
   /* 右下角 · 真人点阵脸小窗(与拳击关统一) */
   .you-cam{
     position:absolute;bottom:20px;right:20px;z-index:30;
-    width:168px;height:126px;
+    width:232px;height:174px;
     border:3px solid #ffcc00;border-radius:12px;overflow:hidden;
     background:radial-gradient(ellipse at 50% 45%,#0b0512 0%,#000 100%);
     box-shadow:0 0 22px rgba(255,204,0,.4),0 4px 20px rgba(0,0,0,.6);
+    transition:border-color .2s, box-shadow .2s;
   }
+  /* 肘部出框时小窗告警:红框呼吸 */
+  .you-cam.warn{
+    border-color:#ff5a6a;
+    box-shadow:0 0 26px rgba(255,90,106,.6),0 4px 20px rgba(0,0,0,.6);
+    animation:camWarnPulse 1s ease-in-out infinite;
+  }
+  @keyframes camWarnPulse{50%{box-shadow:0 0 14px rgba(255,90,106,.35),0 4px 20px rgba(0,0,0,.6);}}
   .you-cam video{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
   .you-cam .you-mesh{width:100%;height:100%;display:block;}
   .you-cam .you-label{
@@ -507,6 +515,21 @@
   }
   .coach-tip .ico{width:19px;height:19px;}
 
+  /* ==================== 出框告警横幅(肘部顶出取景框时置顶提示)==================== */
+  .frame-warn{
+    position:absolute; top:14%; left:50%; transform:translateX(-50%) translateY(-6px);
+    z-index:60;
+    display:flex; align-items:center; gap:9px;
+    padding:11px 22px; border-radius:var(--r-pill);
+    background:rgba(24,4,8,.82); border:1.5px solid rgba(255,90,106,.85);
+    color:#ffd7dc; font-size:15px; font-weight:800; letter-spacing:.3px;
+    white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,.5),0 0 18px rgba(255,90,106,.35);
+    opacity:0; pointer-events:none; transition:opacity .28s, transform .28s;
+  }
+  .frame-warn.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .frame-warn .ico{ width:19px;height:19px; color:#ff8a95; stroke:#ff8a95; flex-shrink:0; }
+  .frame-warn b{ color:#fff; }
+
   /* 扩胸幅度条(判定同源反馈:借摘星高度条,横向表示两肘打开程度) */
   .open-meter{
     position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:30;
@@ -564,6 +587,7 @@
     <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/></symbol>
     <symbol id="i-body-row" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="2.3"/><path d="M12 7v6M12 9l-5 2M12 9l5 2M12 13l-3 6M12 13l3 6"/></symbol>
     <symbol id="i-arms-open" viewBox="0 0 24 24"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.2v7M12 10l-6-2M12 10l6-2M12 14.2l-3 5.8M12 14.2l3 5.8"/></symbol>
+    <symbol id="i-frame-out" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M20 8V5a1 1 0 0 0-1-1h-3M4 16v3a1 1 0 0 0 1 1h3M20 16v3a1 1 0 0 0-1 1h-3"/><path d="M8 12h8M8 12l2.4-2.4M8 12l2.4 2.4M16 12l-2.4-2.4M16 12l-2.4 2.4"/></symbol>
   </svg>
 
   <!-- 底层视频 -->
@@ -621,6 +645,9 @@
 
   <!-- 旁白教练语 -->
   <div class="coach-tip glass" id="coachTip"><svg class="ico"><use href="#i-arms-open"/></svg>肘部向两侧打开,够到金圈</div>
+
+  <!-- 出框告警:肘部顶出取景框时置顶提示,引导往后坐 -->
+  <div class="frame-warn" id="frameWarn"><svg class="ico"><use href="#i-frame-out"/></svg><span id="frameWarnTxt">手肘超出画面 · 往后坐一点</span></div>
 
   <!-- 右下角 · 真人上肢骨架小窗(与摘星关统一) -->
   <div class="you-cam" data-track="pose-row" data-mask>
@@ -840,6 +867,25 @@ function openSide(side){
 }
 function anyInput(){ return (camOK&&pose.present) || keyHeldUp||keyHeldLeft||keyHeldRight; }
 
+/* ============ 出框检测:肘部(13/14)顶出取景框时提示 + 兜底 ============
+ * 扩胸靠肘外展,双肘往两侧打开时最容易冲出左右边框→该侧算不出→判定卡住。
+ * 检测两个肘点是否丢失/贴边,驱动置顶告警。 */
+const EDGE_M = 0.07;   // 归一化屏幕坐标贴边阈值(距任一边 <7% 视为快出框)
+// 全局出框风险(扩胸是双肘同时动,任一肘出框都提示):'out' | 'edge' | 'ok'
+function elbowFrameRisk(){
+  const lm=pose.landmarks;
+  if(!(camOK && pose.present && lm)) return 'ok';   // 无摄像头/键盘态不判出框
+  let risk='ok', seen=0;
+  for(const i of [13,14]){
+    const p=lm[i]; if(!p || (p.visibility==null?1:p.visibility)<0.3) continue;
+    seen++;
+    const sx=1-p.x, sy=p.y;
+    if(sx<=EDGE_M||sx>=1-EDGE_M||sy<=EDGE_M||sy>=1-EDGE_M) risk='edge';
+  }
+  if(seen<2) return 'out';   // 有肘检测不到(通常打太开出左右框)
+  return risk;
+}
+
 /* ============ 通用飘字/提示 ============ */
 function showToast(txt,dur=2400){
   toast.innerHTML=`<svg class="ico"><use href="#i-wave"/></svg>${txt}`;toast.classList.add('show');
@@ -905,6 +951,22 @@ function updateMeter(){
   if(!present) omCap.textContent = camOK?'找不到人':'扩胸';
   else if(reached) omCap.textContent='够到了';
   else omCap.textContent='再打开';
+}
+
+/* ============ 出框告警横幅 + 小窗红框(判定同源:肘部顶出取景框)============ */
+const frameWarnEl=document.getElementById('frameWarn');
+const frameWarnTxt=document.getElementById('frameWarnTxt');
+const youCamEl=document.querySelector('.you-cam');
+function updateFrameWarn(){
+  const risk = playing ? elbowFrameRisk() : 'ok';
+  const show = risk!=='ok';
+  if(frameWarnEl) frameWarnEl.classList.toggle('show', show);
+  if(youCamEl) youCamEl.classList.toggle('warn', show);
+  if(show && frameWarnTxt){
+    frameWarnTxt.innerHTML = risk==='out'
+      ? '手肘超出画面 · <b>往后坐一点</b>'
+      : '手肘快出框了 · <b>往后坐一点</b>';
+  }
 }
 
 /* ============ 双肘准星:外展角 → 屏幕横向偏移(向两侧打开)。同源:到 OPEN 即压中圈心 ============ */
@@ -1088,6 +1150,7 @@ function loop(now){
   drawYou();
   updateReticles();
   updateMeter();
+  updateFrameWarn();
   if(playing) tickJudge(now);
   if(DEBUG && dbgEl){
     dbgEl.textContent=`左肘:${openSide('left').toFixed(0)}° 右肘:${openSide('right').toFixed(0)}° open:${OPEN} present:${anyInput()?1:0} cam:${camOK?1:0} retL:${retPos.l.x.toFixed(0)} retR:${retPos.r.x.toFixed(0)}`;
