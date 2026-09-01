@@ -431,8 +431,21 @@ if (z.plays.length === 0) {
 // 降级必须由评估模块向用户明示；模块本身加载失败时不允许静默绕过。
 async function enterPlay(url, needAssess, zone) {
   if (needAssess && typeof window.runAssessment !== 'function') {
-    alert('健康评估模块暂时没有加载成功，请刷新页面后重试。');
-    return;
+    // 可能只是还没加载完(慢网/内网),先等它就绪,不要立刻判死。
+    try {
+      await Promise.race([
+        window.assessmentReady,
+        new Promise((_, rej) => setTimeout(() => rej(new Error('加载超时(15秒)')), 15000)),
+      ]);
+    } catch (e) {
+      const why = window.assessmentLoadError || (e && e.message) || String(e);
+      alert('健康评估模块加载失败：' + why + '\n\n请检查网络后重试；若反复出现请把此提示反馈给我们。');
+      return;
+    }
+    if (typeof window.runAssessment !== 'function') {
+      alert('健康评估模块加载失败：' + (window.assessmentLoadError || '未知原因') + '\n\n请刷新页面后重试。');
+      return;
+    }
   }
   if (needAssess) {
     try {
@@ -441,7 +454,7 @@ async function enterPlay(url, needAssess, zone) {
       if (r && r.safetyMode) sessionStorage.setItem('safetyMode', r.safetyMode);
       else sessionStorage.removeItem('safetyMode');
     } catch (e) {
-      alert('健康评估未完成，请刷新页面后重试。');
+      alert('健康评估未完成：' + ((e && e.message) || '出现异常') + '\n\n请刷新页面后重试。');
       return;
     }
   }
@@ -449,12 +462,14 @@ async function enterPlay(url, needAssess, zone) {
 }
 </script>
 <script type="module">
-  // 评估闸门(ES module)挂到 window,供上面非 module 脚本的 enterPlay 调用
-  import('./js/assessment.js')
-    .then(m => { window.runAssessment = m.runAssessment; })
+  // 评估闸门(ES module)挂到 window,供上面非 module 脚本的 enterPlay 调用。
+  // 把加载 Promise 也挂出去,enterPlay 点击时可 await 它就绪,避免"还没加载完就点"被误判为失败。
+  window.assessmentReady = import('./js/assessment.js')
+    .then(m => { window.runAssessment = m.runAssessment; return m.runAssessment; })
     .catch((e) => {
-      window.assessmentLoadError = e && e.message ? e.message : 'unknown';
+      window.assessmentLoadError = e && e.message ? e.message : String(e);
       console.error('[assessment] 模块加载失败:', e);
+      throw e;
     });
 </script>
 </body>
