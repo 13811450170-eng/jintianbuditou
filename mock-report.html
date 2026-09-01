@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1280">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>今天不低头 · 单次报告</title>
 <style>
 :root {
@@ -556,6 +556,63 @@ html, body {
   font-family: inherit;
 }
 .btn-ghost:hover { color: var(--ink); border-color: var(--ink); }
+
+/* ==================== 手机端适配 ==================== */
+@media (max-width: 768px) {
+  /* 整页从「单屏内部滚」改为「整页自然滚」 */
+  /* body/html 被移动端底座锁成不可滚,故让 .page 自身成为滚动容器 */
+  .page {
+    height: calc(var(--app-vh, 1vh) * 100);
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 16px);
+    gap: 14px;
+    overflow-x: hidden;
+  }
+  /* 两栏 → 上下单列:hero 打分栏在上,details 模块依次在下 */
+  .main {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-height: 0;
+  }
+  /* 右栏关掉内部滚动,交给整页滚 */
+  .details {
+    overflow-y: visible;
+    min-height: 0;
+    gap: 12px;
+  }
+  /* 打分栏给个稳定高度,别被压扁,让星星/RANK 完整可见 */
+  .hero { min-height: 340px; }
+  /* 底部火苗+Joy 语录:横排会撑破窄屏,改竖排全宽 */
+  .hero-bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .joy-quote { max-width: none; }
+
+  /* 客观数据 4 列 → 2 列,窄屏不挤 */
+  .data-grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+
+  /* 底部操作栏吸底 + 双按钮全宽等分,触摸目标够大 */
+  .actions {
+    position: sticky;
+    bottom: 0;
+    justify-content: stretch;
+    gap: 10px;
+    padding: 10px 0 calc(env(safe-area-inset-bottom) + 2px);
+    background: linear-gradient(to top, var(--bg) 72%, transparent);
+    z-index: 20;
+  }
+  .actions .btn-ghost,
+  .actions .btn-primary {
+    flex: 1;
+    justify-content: center;
+    padding: 15px 12px;
+    font-size: 14px;
+  }
+}
 </style>
 <link rel="stylesheet" href="styles/tokens.css">
 <link rel="stylesheet" href="styles/mobile.css">
