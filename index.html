@@ -372,6 +372,105 @@ body::before {
   border: 2px solid #fff;
 }
 
+/* ========== 坚持日历(顶栏下拉热力图) ========== */
+.cal-wrap { position: relative; flex-shrink: 0; }
+.cal-dot {
+  position: absolute; top: 8px; right: 9px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #FF3B30;
+}
+.icon-btn[aria-expanded="true"] { color: var(--ink); box-shadow: var(--shadow-2); }
+
+.cal-pop {
+  position: absolute; top: calc(100% + 12px); right: 0;
+  width: 336px; z-index: 60;
+  background: rgba(255,255,255,0.86);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 22px;
+  box-shadow: var(--shadow-3);
+  padding: 18px 18px 14px;
+  transform-origin: top right;
+  animation: calPopIn 0.22s cubic-bezier(0.16,1,0.3,1);
+}
+.cal-pop[hidden] { display: none; }
+@keyframes calPopIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.cal-title { font-size: 15px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
+.cal-nav { display: flex; align-items: center; gap: 4px; }
+.cal-month { font-size: 12.5px; font-weight: 700; color: var(--ink-2); min-width: 88px; text-align: center; }
+.cal-navbtn {
+  width: 26px; height: 26px; border-radius: 8px; border: none;
+  background: transparent; color: var(--ink-3); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.16s;
+}
+.cal-navbtn:hover { background: var(--bg-hover); color: var(--ink); }
+.cal-navbtn svg { width: 15px; height: 15px; }
+
+.cal-stats {
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, rgba(255,107,74,0.08), rgba(255,183,77,0.06));
+  border: 1px solid rgba(255,107,74,0.14);
+  border-radius: 14px; padding: 11px 8px; margin-bottom: 14px;
+}
+.cal-stat { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.cal-stat-num { font-size: 19px; font-weight: 800; color: var(--ink); line-height: 1; }
+.cal-stat-num small { font-size: 11px; font-weight: 700; color: var(--ink-3); margin-left: 1px; }
+.cal-stat-lab { font-size: 10.5px; font-weight: 600; color: var(--ink-3); }
+.cal-stat-sep { width: 1px; height: 26px; background: var(--line-hard); }
+
+.cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+.cal-week span { text-align: center; font-size: 10.5px; font-weight: 700; color: var(--ink-4); }
+
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal-cell {
+  aspect-ratio: 1; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11.5px; font-weight: 600; color: var(--ink-3);
+  position: relative; background: #F0F1F3;
+  transition: transform 0.12s;
+}
+.cal-cell.empty { background: transparent; }
+.cal-cell.cal-today { background: #fff !important; border-radius: 9px; font-weight: 800; color: #FF5C67; box-shadow: 0 0 0 1px var(--line-hard); }
+.cal-cell:not(.empty):hover { transform: scale(1.12); z-index: 2; }
+/* 训练量三级热度:浅→中→深,深=练得多。深红 #FF5C67 仅此处出现,今天用白框区分。 */
+.cal-cell.h1 { background: #FFF0F4; color: #E86A78; }
+.cal-cell.h2 { background: #FFADBE; color: #A83248; }
+.cal-cell.h3 { background: #FF5C67; color: #fff; }
+/* 保护卡:浅绿点缀 */
+.cal-cell.ice { background: #EBFBEB; color: #5AA36A; }
+.cal-cell.ice::after {
+  content: "❄"; position: absolute; top: 1px; right: 3px; font-size: 8px; color: #6FBF7F; opacity: 0.9;
+}
+/* 断签缺口 */
+.cal-cell.miss { color: var(--ink-4); }
+.cal-cell.miss::after {
+  content: ""; position: absolute; left: 50%; top: 50%;
+  width: 12px; height: 1.5px; background: var(--ink-4); opacity: 0.35;
+  transform: translate(-50%,-50%) rotate(-45deg);
+}
+/* 彩蛋微光(不明示,只给一点点提示) */
+.cal-cell.egg > .egg-glow {
+  position: absolute; top: 4px; right: 4px; width: 5px; height: 5px; border-radius: 50%;
+  background: #F0A020;
+}
+
+.cal-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cal-legend { display: flex; gap: 10px; }
+.cal-lg { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--ink-3); }
+.cal-lg i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.lg-heat { background: #FF5C67; }
+.lg-ice  { background: #C4EEC4; }
+.lg-egg  { background: #F0A020; }
+.cal-cta { display: flex; align-items: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--ink); text-decoration: none; transition: gap 0.16s; }
+.cal-cta:hover { gap: 5px; }
+.cal-cta svg { width: 13px; height: 13px; }
+
 /* ========== 主体区(左身体数据面板 + 右今日推荐) ========== */
 .main {
   flex: 1;
@@ -1201,22 +1300,71 @@ body::before {
       </div>
     </div>
 
-    <button class="icon-btn" title="活动日历" style="position:relative">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-        <line x1="16" y1="2" x2="16" y2="6"/>
-        <line x1="8" y1="2" x2="8" y2="6"/>
-        <line x1="3" y1="10" x2="21" y2="10"/>
-      </svg>
-      <span style="position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:#FF6B4A;border:1.5px solid var(--bg)"></span>
-    </button>
+    <div class="cal-wrap">
+      <button class="icon-btn" id="calBtn" title="坚持日历" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span class="cal-dot" id="calDot"></span>
+      </button>
+
+      <div class="cal-pop" id="calPop" hidden>
+        <div class="cal-head">
+          <div class="cal-title">坚持日历</div>
+          <div class="cal-nav">
+            <button class="cal-navbtn" id="calPrev" title="上个月" aria-label="上个月">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <div class="cal-month" id="calMonth">2026 年 8 月</div>
+            <button class="cal-navbtn" id="calNext" title="下个月" aria-label="下个月">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="cal-stats">
+          <div class="cal-stat">
+            <span class="cal-stat-num" id="calMonthDays">—</span>
+            <span class="cal-stat-lab">本月坚持</span>
+          </div>
+          <div class="cal-stat-sep"></div>
+          <div class="cal-stat">
+            <span class="cal-stat-num" id="calBest">32<small>天</small></span>
+            <span class="cal-stat-lab">最长连续</span>
+          </div>
+          <div class="cal-stat-sep"></div>
+          <div class="cal-stat">
+            <span class="cal-stat-num" id="calMonthMins">—</span>
+            <span class="cal-stat-lab">本月时长</span>
+          </div>
+        </div>
+
+        <div class="cal-week">
+          <span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+
+        <div class="cal-foot">
+          <div class="cal-legend">
+            <span class="cal-lg"><i class="lg-heat"></i>训练量</span>
+            <span class="cal-lg"><i class="lg-ice"></i>保护卡</span>
+            <span class="cal-lg"><i class="lg-egg"></i>彩蛋日</span>
+          </div>
+          <a class="cal-cta" href="mock-weekly-report.html">完整报告
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
 
     <button class="icon-btn" title="消息">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
       </svg>
-      <span class="badge"></span>
     </button>
 
     <button class="icon-btn" title="设置">
@@ -1517,6 +1665,117 @@ body::before {
   requestAnimationFrame(() => setTimeout(() => {
     rings.forEach(r => { r.style.strokeDashoffset = r.dataset.offset; });
   }, 400));
+})();
+
+/* ========== 坚持日历:顶栏下拉月历热力图 ========== */
+(function stickCalendar() {
+  const btn  = document.getElementById('calBtn');
+  const pop  = document.getElementById('calPop');
+  const grid = document.getElementById('calGrid');
+  const dot  = document.getElementById('calDot');
+  if (!btn || !pop || !grid) return;
+
+  // 红点:用户点开过一次就永久消失(localStorage 记住)
+  const DOT_KEY = 'cal_seen_v1';
+  try { if (dot && localStorage.getItem(DOT_KEY)) dot.hidden = true; } catch (e) {}
+  function dismissDot() {
+    if (dot) dot.hidden = true;
+    try { localStorage.setItem(DOT_KEY, '1'); } catch (e) {}
+  }
+
+  const WD = ['日','一','二','三','四','五','六'];  // JS getDay(): 0=周日
+  const pad = n => String(n).padStart(2, '0');
+  const key = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  // —— 演示口径:近 32 天连续坚持(对齐首页 streak「连续打卡 32 天」)——
+  // 真实用户数据从 health_profile_v1.recentSessions 叠加进来;两者取并集。
+  // 每天记录:level(1-4 训练热度)/ ice(保护卡顶) / egg(彩蛋日) / mins(分钟)
+  const today = new Date();
+  const days = {};                       // 'YYYY-MM-DD' -> { level, ice, egg, mins }
+  const seeded = [2,1,3,2,1,1,2,3,1,2,1,1,2,3,2,1,2,1,1,3,2,1,2,2,1,1,3,2,1,2,1,2]; // 32 天热度纹理(1-3)
+  for (let i = 0; i < 32; i++) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const lvl = seeded[i];
+    days[key(d)] = { level: lvl, mins: lvl * 5 + 4 };
+  }
+  // 演示:第 18 天用了张保护卡顶上(那天没练但没断)
+  { const d = new Date(today); d.setDate(today.getDate() - 18); days[key(d)] = { ice: true, mins: 0 }; }
+  // 演示:彩蛋日(周五 17:00 彩蛋 / 连续 7 天里程碑),只给微光不明示
+  [4, 11, 25].forEach(off => { const d = new Date(today); d.setDate(today.getDate()-off); if (days[key(d)]) days[key(d)].egg = true; });
+  // 今天先留个「可撞」的彩蛋提示 → 顶栏红点
+  days[key(today)] = days[key(today)] || { level: 0, mins: 0 };
+  days[key(today)].egg = true;
+
+  // 叠加真实训练:recentSessions 里今天/近几天真练过的,升一档热度
+  try {
+    const raw = JSON.parse(localStorage.getItem('health_profile_v1') || '{}');
+    (raw.recentSessions || []).forEach(s => {
+      if (!s || !s.ts) return;
+      const k = key(new Date(s.ts));
+      const mins = Math.max(1, Math.round((s.durationMs || 0) / 60000));
+      const cur = days[k] || { level: 0, mins: 0 };
+      cur.level = Math.min(3, (cur.level || 0) + 1);
+      cur.mins  = (cur.mins || 0) + mins;
+      days[k] = cur;
+    });
+  } catch (e) {}
+
+  let view = new Date(today.getFullYear(), today.getMonth(), 1);   // 当前查看的月份
+
+  function render() {
+    const y = view.getFullYear(), m = view.getMonth();
+    document.getElementById('calMonth').textContent = `${y} 年 ${m+1} 月`;
+
+    // 周一为首列:把 getDay()(0=日) 映射成 (0=一 … 6=日)
+    const first = new Date(y, m, 1);
+    let lead = (first.getDay() + 6) % 7;
+    const total = new Date(y, m+1, 0).getDate();
+
+    let html = '';
+    for (let i = 0; i < lead; i++) html += '<div class="cal-cell empty"></div>';
+
+    let monthDays = 0, monthMins = 0;
+    const todayKey = key(today);
+    for (let dnum = 1; dnum <= total; dnum++) {
+      const d = new Date(y, m, dnum);
+      const k = key(d);
+      const rec = days[k];
+      const future = d > today;
+      let cls = 'cal-cell', glow = '';
+
+      if (k === todayKey) cls += ' cal-today';
+      if (rec && rec.ice) cls += ' ice';
+      else if (rec && rec.level > 0) { cls += ' h' + rec.level; monthDays++; monthMins += (rec.mins||0); }
+      else if (!future && d <= today) {
+        // 过去且无记录 → 断签缺口(但今天本身不画叉)
+        if (k !== todayKey) cls += ' miss';
+      }
+      if (rec && rec.egg) { cls += ' egg'; glow = '<span class="egg-glow"></span>'; }
+      if (rec && rec.ice) monthDays++;   // 保护卡也算「没断」
+
+      const label = (k === todayKey) ? '今' : dnum;
+      html += `<div class="${cls}">${k === todayKey ? '' : glow}${label}</div>`;
+    }
+    grid.innerHTML = html;
+
+    document.getElementById('calMonthDays').innerHTML = monthDays + '<small>天</small>';
+    document.getElementById('calMonthMins').innerHTML = monthMins + '<small>分</small>';
+  }
+
+  function open()  { render(); pop.hidden = false; btn.setAttribute('aria-expanded','true'); }
+  function close() { pop.hidden = true; btn.setAttribute('aria-expanded','false'); }
+  function toggle(){ pop.hidden ? open() : close(); }
+
+  btn.addEventListener('click', e => { e.stopPropagation(); toggle(); });
+  pop.addEventListener('click', e => e.stopPropagation());
+  document.addEventListener('click', () => { if (!pop.hidden) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !pop.hidden) close(); });
+
+  document.getElementById('calPrev').addEventListener('click', () => { view.setMonth(view.getMonth()-1); render(); });
+  document.getElementById('calNext').addEventListener('click', () => {
+    const n = new Date(view.getFullYear(), view.getMonth()+1, 1);
+    if (n <= new Date(today.getFullYear(), today.getMonth(), 1)) { view = n; render(); }
+  });
 })();
 </script>
 

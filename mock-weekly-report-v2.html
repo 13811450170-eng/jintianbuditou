@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>今天不低头 · 本周训练报告 v2</title>
+<style>
+:root {
+  --bg:          #EDEDF0;
+  --card:        #FFFFFF;
+  --card-alt:    #F5F5F7;
+  --line:        rgba(10, 10, 15, 0.06);
+  --line-hard:   rgba(10, 10, 15, 0.1);
+
+  --ink:         #0A0A0F;
+  --ink-2:       #3A3A45;
+  --ink-3:       #6B6B7A;
+  --ink-4:       #A8A8B3;
+
+  --neck:        #00A3FF;
+  --neck-bg:     #E1F2FF;
+  --shoulder:    #7C5AFF;
+  --shoulder-bg: #EBE5FF;
+  --eye:         #4CAF88;
+  --eye-bg:      #E1F5EC;
+
+  --gold:        #FFB800;
+  --gold-bg:     #FFF6DA;
+  --fire:        #FF6B4A;
+  --success:     #4CAF88;
+
+  --jd-red:      #E1251B;
+
+  --shadow-1:    0 2px 8px rgba(10, 10, 15, 0.04);
+  --shadow-2:    0 6px 20px rgba(10, 10, 15, 0.06);
+  --shadow-3:    0 12px 32px rgba(10, 10, 15, 0.1);
+
+  --font: "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system, Inter, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.01em;
+}
+body { overflow-y: scroll; }
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 40px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ========== 顶栏 ========== */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.topbar-left {
+  display: flex; align-items: center; gap: 8px;
+  color: var(--ink-3); font-size: 13px; cursor: pointer;
+}
+.topbar-left:hover { color: var(--ink); }
+.topbar-left svg { width: 16px; height: 16px; }
+.topbar-title { font-size: 15px; font-weight: 700; color: var(--ink); }
+.topbar-right { display: flex; gap: 10px; }
+.icon-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--card); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-3); box-shadow: var(--shadow-1); transition: all 0.2s;
+}
+.icon-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); color: var(--ink); }
+.icon-btn svg { width: 18px; height: 18px; }
+
+/* ========== 封面 Hero(深色) ========== */
+.hero {
+  background: linear-gradient(135deg, #1E1B3A 0%, #2E1152 60%, #4A1856 100%);
+  border-radius: 32px;
+  padding: 44px 52px;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  box-shadow: var(--shadow-2);
+}
+.hero::before {
+  content: ""; position: absolute; top: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(255, 184, 0, 0.15), transparent 60%);
+  border-radius: 50%;
+}
+.hero::after {
+  content: ""; position: absolute; bottom: -80px; left: -80px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(255, 107, 74, 0.12), transparent 60%);
+  border-radius: 50%;
+}
+.hero-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 40px; }
+.hero-content { flex: 1; }
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px 6px 10px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 100px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  margin-bottom: 18px;
+}
+.hero-tag-dot { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; box-shadow: 0 0 8px var(--gold); }
+.hero-week { font-size: 12px; color: rgba(255,255,255,0.6); letter-spacing: 1.5px; margin-bottom: 10px; }
+.hero-title { font-size: 40px; font-weight: 900; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 18px; }
+.hero-title .accent {
+  background: linear-gradient(135deg, #FFE89B, var(--gold));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-quote { font-size: 15px; color: rgba(255,255,255,0.9); line-height: 1.7; max-width: 460px; }
+.hero-quote strong { color: #fff; font-weight: 700; }
+
+/* Hero 右侧:健康分大牌 */
+.hero-score { flex-shrink: 0; text-align: center; position: relative; }
+.hero-score-ring { position: relative; width: 200px; height: 200px; }
+.hero-score-num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.hero-score-val {
+  font-size: 76px; font-weight: 900; line-height: 1; letter-spacing: -0.04em;
+  color: #fff; filter: drop-shadow(0 4px 16px rgba(255, 184, 0, 0.4));
+}
+.hero-score-lbl { font-size: 12px; color: rgba(255,255,255,0.7); letter-spacing: 1.5px; margin-top: 6px; }
+.hero-score-delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 14px; padding: 5px 12px;
+  background: rgba(76, 175, 136, 0.2);
+  border: 1px solid rgba(76, 175, 136, 0.35);
+  border-radius: 100px;
+  font-size: 12px; font-weight: 700; color: #7DECBB;
+}
+.hero-score-delta svg { width: 12px; height: 12px; }
+
+/* ========== 通用卡片 ========== */
+.card { background: var(--card); border-radius: 22px; padding: 24px 28px; box-shadow: var(--shadow-1); }
+.card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.card-head-left { display: flex; align-items: center; gap: 10px; }
+.card-head-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--card-alt); color: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+}
+.card-head-icon svg { width: 16px; height: 16px; }
+.card-title { font-size: 17px; font-weight: 800; color: var(--ink); }
+.card-hint { font-size: 12px; color: var(--ink-4); }
+
+/* ========== 本周进步:6周曲线 + 群体位置 ========== */
+.progress-block {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 28px;
+  align-items: stretch;
+}
+.trend-wrap { position: relative; }
+.trend-chart { width: 100%; height: 240px; }
+
+/* 群体位置侧栏 */
+.rank-panel {
+  padding: 22px 24px;
+  background: linear-gradient(160deg, #F5F3FF 0%, #FBFAFF 100%);
+  border: 1px solid rgba(124, 90, 255, 0.12);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.rank-panel-title {
+  font-size: 12px; color: var(--shoulder); font-weight: 700;
+  letter-spacing: 1px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px;
+}
+.rank-panel-title svg { width: 14px; height: 14px; }
+.rank-panel-sub { font-size: 11px; color: var(--ink-4); margin-bottom: 20px; }
+
+.rank-big { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.rank-big-beat { font-size: 52px; font-weight: 900; color: var(--shoulder); line-height: 1; letter-spacing: -0.03em; }
+.rank-big-pct { font-size: 24px; font-weight: 800; color: var(--shoulder); }
+.rank-big-txt { font-size: 13px; color: var(--ink-2); margin-bottom: 18px; line-height: 1.5; }
+.rank-big-txt strong { color: var(--ink); font-weight: 700; }
+
+/* 部门内小排行 */
+.rank-list { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 18px; border-top: 1px dashed rgba(124,90,255,0.18); }
+.rank-list-title { font-size: 11px; color: var(--ink-3); font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; }
+.rank-row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+.rank-medal {
+  width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff; background: var(--ink-4);
+}
+.rank-medal.top { background: linear-gradient(135deg, var(--gold), var(--fire)); }
+.rank-row.me { font-weight: 800; }
+.rank-row.me .rank-medal { background: var(--shoulder); }
+.rank-name { flex: 1; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-row.me .rank-name { color: var(--ink); }
+.rank-score { color: var(--ink-3); font-weight: 700; font-variant-numeric: tabular-nums; }
+.rank-row.me .rank-score { color: var(--shoulder); }
+.rank-privacy { font-size: 10px; color: var(--ink-4); margin-top: 12px; line-height: 1.4; }
+
+/* ========== 身体活动度改善 ROM ========== */
+.rom-head-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 7px;
+  background: var(--eye-bg); color: var(--eye);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
+}
+.rom-head-badge svg { width: 11px; height: 11px; }
+.rom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rom-item {
+  padding: 20px 22px;
+  background: var(--card-alt);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.rom-item-top { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.rom-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.rom-name { font-size: 14px; font-weight: 800; color: var(--ink); }
+.rom-sub { font-size: 11px; color: var(--ink-4); margin-left: auto; }
+
+/* 度数对比:起始 → 现在 */
+.rom-nums { display: flex; align-items: flex-end; gap: 14px; margin-bottom: 16px; }
+.rom-now { font-size: 44px; font-weight: 900; line-height: 0.9; letter-spacing: -0.03em; }
+.rom-now .deg { font-size: 22px; font-weight: 800; }
+.rom-from {
+  font-size: 12px; color: var(--ink-4); margin-bottom: 6px; line-height: 1.5;
+}
+.rom-from strong { color: var(--ink-3); font-weight: 700; }
+.rom-gain {
+  margin-left: auto; margin-bottom: 4px;
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 100px;
+  font-size: 13px; font-weight: 800;
+}
+.rom-gain svg { width: 12px; height: 12px; }
+
+/* 进度条:当前 vs 健康区间 */
+.rom-bar-wrap { position: relative; }
+.rom-bar-track { height: 8px; border-radius: 4px; background: rgba(10,10,15,0.06); position: relative; overflow: hidden; }
+.rom-bar-fill { height: 100%; border-radius: 4px; }
+.rom-bar-goal {
+  position: absolute; top: -3px; width: 2px; height: 14px;
+  background: var(--ink-3); border-radius: 1px;
+}
+.rom-bar-labels { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--ink-4); }
+.rom-bar-labels .goal-tag { color: var(--ink-3); font-weight: 700; }
+
+.rom-foot {
+  margin-top: 18px; padding: 14px 18px;
+  background: var(--eye-bg);
+  border-radius: 12px;
+  font-size: 12px; color: var(--ink-2); line-height: 1.6;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.rom-foot svg { width: 16px; height: 16px; color: var(--eye); flex-shrink: 0; margin-top: 1px; }
+.rom-foot strong { color: var(--ink); font-weight: 700; }
+
+/* ========== 训练热力图 ========== */
+.heatmap-block { display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: center; }
+.heatmap-grid { display: grid; grid-template-columns: 40px repeat(7, 1fr); gap: 8px; }
+.hm-hdr, .hm-row-lbl {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: var(--ink-4); font-weight: 600; height: 30px;
+}
+.hm-row-lbl { justify-content: flex-start; padding-left: 4px; }
+.hm-cell {
+  height: 50px; border-radius: 10px; background: var(--card-alt);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s; cursor: pointer; position: relative;
+}
+.hm-cell:hover { transform: scale(1.06); }
+.hm-cell.filled-neck-1 { background: var(--neck-bg); }
+.hm-cell.filled-neck-2 { background: var(--neck); }
+.hm-cell.filled-shoulder-1 { background: var(--shoulder-bg); }
+.hm-cell.filled-shoulder-2 { background: var(--shoulder); }
+.hm-cell.filled-eye-1 { background: var(--eye-bg); }
+.hm-cell.filled-eye-2 { background: var(--eye); }
+.hm-count { font-size: 12px; font-weight: 800; color: #fff; }
+.hm-count.dim { color: var(--ink); opacity: 0.55; }
+.hm-summary { padding: 20px 22px; background: var(--card-alt); border-radius: 18px; width: 260px; }
+.hm-summary-title { font-size: 12px; color: var(--ink-3); font-weight: 600; margin-bottom: 12px; letter-spacing: 1px; }
+.hm-legend { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.hm-legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); }
+.hm-legend-swatch { width: 14px; height: 14px; border-radius: 4px; flex-shrink: 0; }
+.hm-legend-item strong { color: var(--ink); font-weight: 700; margin-left: auto; }
+.hm-note { font-size: 12px; color: var(--ink-3); line-height: 1.5; padding-top: 14px; border-top: 1px dashed var(--line-hard); }
+.hm-note strong { color: var(--ink); font-weight: 700; }
+
+/* ========== 感受趋势折线 ========== */
+.feel-chart-wrap { display: grid; grid-template-columns: 1fr 260px; gap: 32px; align-items: center; }
+.feel-chart { width: 100%; height: 220px; }
+.feel-summary { padding: 20px 22px; background: var(--card-alt); border-radius: 18px; }
+.feel-summary-title { font-size: 12px; color: var(--ink-3); font-weight: 600; margin-bottom: 12px; letter-spacing: 1px; }
+.feel-avg { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
+.feel-avg-emoji { font-size: 32px; }
+.feel-avg-txt { font-size: 15px; font-weight: 700; color: var(--ink); }
+.feel-note { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+.feel-note strong { color: var(--ink); }
+
+/* ========== AI 洞察 ========== */
+.insights-block { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.insight-item { padding: 18px 20px; background: var(--card-alt); border-radius: 16px; display: flex; gap: 14px; align-items: flex-start; }
+.insight-icon {
+  width: 34px; height: 34px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.insight-icon.i1 { background: var(--neck); }
+.insight-icon.i2 { background: var(--shoulder); }
+.insight-icon.i3 { background: var(--gold); }
+.insight-icon.i4 { background: var(--success); }
+.insight-icon svg { width: 18px; height: 18px; }
+.insight-body { flex: 1; }
+.insight-tag { font-size: 10px; font-weight: 700; color: var(--ink-4); letter-spacing: 1.5px; margin-bottom: 4px; }
+.insight-txt { font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+.insight-txt strong { color: var(--ink); font-weight: 700; }
+
+/* ========== 下周建议 ========== */
+.suggests { display: flex; flex-direction: column; gap: 12px; }
+.sug-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; background: var(--card-alt); border-radius: 14px;
+  cursor: pointer; transition: all 0.2s;
+}
+.sug-item:hover { background: var(--bg); transform: translateX(2px); }
+.sug-num {
+  width: 26px; height: 26px; background: var(--ink); color: #fff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
+}
+.sug-body { flex: 1; font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+.sug-body strong { color: var(--ink); font-weight: 700; }
+.sug-arrow { color: var(--ink-3); flex-shrink: 0; }
+.sug-arrow svg { width: 16px; height: 16px; }
+
+/* ========== 京东商品植入 ========== */
+.gifts-block {
+  background: linear-gradient(135deg, #FFF9EC 0%, #FFFDF6 100%);
+  border: 1px solid rgba(255, 184, 0, 0.15);
+  border-radius: 22px; padding: 26px 28px;
+}
+.gifts-head { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.gifts-icon {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--gold), var(--fire));
+  display: flex; align-items: center; justify-content: center; color: #fff;
+}
+.gifts-icon svg { width: 22px; height: 22px; }
+.gifts-title-block { flex: 1; }
+.gifts-title { font-size: 17px; font-weight: 800; color: var(--ink); }
+.gifts-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.gifts-jd-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 10px; background: rgba(225, 37, 27, 0.08);
+  border: 1px solid rgba(225, 37, 27, 0.2); border-radius: 8px;
+  color: var(--jd-red); font-size: 11px; font-weight: 800; letter-spacing: 0.5px;
+}
+.gifts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.gift-card {
+  background: #fff; border: 1px solid var(--line); border-radius: 18px;
+  padding: 16px; display: flex; gap: 14px; align-items: center;
+  cursor: pointer; transition: all 0.25s;
+}
+.gift-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.gift-thumb {
+  width: 100px; height: 100px; border-radius: 14px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.gift-thumb.a { background: linear-gradient(135deg, #FFF6DA, #FFE0B2); }
+.gift-thumb.b { background: linear-gradient(135deg, #E1F2FF, #B8DFFF); }
+.gift-info { flex: 1; min-width: 0; }
+.gift-cat {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  color: var(--gold); background: var(--gold-bg);
+  padding: 2px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px;
+}
+.gift-cat.b { color: var(--neck); background: var(--neck-bg); }
+.gift-name {
+  font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.gift-desc { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin-bottom: 8px; }
+.gift-desc strong { color: var(--ink-2); }
+.gift-bottom { display: flex; align-items: center; justify-content: space-between; }
+.gift-price { font-size: 18px; font-weight: 900; color: var(--jd-red); }
+.gift-price span { font-size: 12px; margin-right: 2px; font-weight: 700; }
+.gift-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 5px 12px; background: var(--jd-red); color: #fff;
+  border-radius: 100px; font-size: 11px; font-weight: 700;
+  border: none; cursor: pointer; font-family: inherit;
+}
+.gift-btn svg { width: 11px; height: 11px; }
+.gifts-disclaim {
+  font-size: 11px; color: var(--ink-4); margin-top: 14px;
+  padding-top: 14px; border-top: 1px dashed rgba(255, 184, 0, 0.3); line-height: 1.5;
+}
+.gifts-disclaim strong { color: var(--ink-3); }
+
+/* ========== 底部 CTA + 免责 ========== */
+.bottom-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 20px 28px; background: var(--card); border-radius: 22px; box-shadow: var(--shadow-1);
+}
+.bottom-cta-txt { font-size: 13px; color: var(--ink-3); }
+.bottom-cta-txt strong { color: var(--ink); font-weight: 700; }
+.bottom-cta-btns { display: flex; gap: 10px; }
+.btn-primary {
+  background: var(--ink); color: #fff; border: none;
+  padding: 12px 24px; border-radius: 100px; font-size: 13px; font-weight: 700;
+  cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+  transition: all 0.2s; font-family: inherit;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(10,10,15,0.2); }
+.btn-primary svg { width: 15px; height: 15px; }
+.btn-ghost {
+  background: transparent; color: var(--ink-2); border: 1px solid var(--line-hard);
+  padding: 11px 22px; border-radius: 100px; font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink); background: var(--bg); }
+.footer-note { text-align: center; padding: 20px 0; font-size: 11px; color: var(--ink-4); line-height: 1.7; }
+.footer-note a { color: var(--ink-4); text-decoration: none; margin: 0 8px; }
+.footer-note a:hover { color: var(--ink-3); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- 顶栏 -->
+  <header class="topbar">
+    <div class="topbar-left" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </div>
+    <div class="topbar-title">本周训练报告</div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="生成分享卡">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/>
+        </svg>
+      </button>
+      <button class="icon-btn" title="历史周报">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- 封面 Hero:健康分当主角 -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-tag">
+          <span class="hero-tag-dot"></span>
+          第 6 周 · 本周报告
+        </span>
+        <div class="hero-week">2026.08.05 — 2026.08.11</div>
+        <h1 class="hero-title">
+          你的身体<br>
+          比上周<span class="accent">更舒展了</span>
+        </h1>
+        <p class="hero-quote">
+          <strong>Joy 想对你说:</strong>连续 6 天没落下,颈椎活动度回来了 9°,健康分冲到了这半年最高。这一周,你的身体真的在回应你。
+        </p>
+      </div>
+
+      <div class="hero-score">
+        <div class="hero-score-ring">
+          <svg width="200" height="200" viewBox="0 0 200 200">
+            <circle cx="100" cy="100" r="86" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="14"/>
+            <circle cx="100" cy="100" r="86" fill="none" stroke="url(#scoreGrad)" stroke-width="14"
+                    stroke-linecap="round" stroke-dasharray="540.4" stroke-dashoffset="97.3"
+                    transform="rotate(-90 100 100)"/>
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFE89B"/>
+                <stop offset="100%" stop-color="#FFB800"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="hero-score-num">
+            <div class="hero-score-val">82</div>
+            <div class="hero-score-lbl">本周健康分</div>
+          </div>
+        </div>
+        <div class="hero-score-delta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+          较上周 +11
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 本周进步:6 周曲线 + 群体位置 -->
+  <section class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <div class="card-head-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+        </div>
+        <div class="card-title">你的健康分,正在往上走</div>
+      </div>
+      <div class="card-hint">连续 6 周记录</div>
+    </div>
+
+    <div class="progress-block">
+      <!-- 左:6 周主曲线 -->
+      <div class="trend-wrap">
+        <svg class="trend-chart" viewBox="0 0 680 240" xmlns="http://www.w3.org/2000/svg">
+          <!-- 横向刻度线 -->
+          <line x1="40" y1="40"  x2="672" y2="40"  stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+          <line x1="40" y1="95"  x2="672" y2="95"  stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+          <line x1="40" y1="150" x2="672" y2="150" stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+          <line x1="40" y1="205" x2="672" y2="205" stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+          <!-- Y 轴标签 -->
+          <text x="30" y="44"  font-size="11" text-anchor="end" fill="#A8A8B3">90</text>
+          <text x="30" y="99"  font-size="11" text-anchor="end" fill="#A8A8B3">75</text>
+          <text x="30" y="154" font-size="11" text-anchor="end" fill="#A8A8B3">60</text>
+          <text x="30" y="209" font-size="11" text-anchor="end" fill="#A8A8B3">45</text>
+
+          <!-- 面积填充:6 周 45→52→58→61→71→82 映射到 y -->
+          <path d="M 90,187 L 205,161 L 320,139 L 435,128 L 550,91 L 665,51
+                   L 665,224 L 90,224 Z" fill="url(#trendGrad)" opacity="0.18"/>
+          <!-- 主折线 -->
+          <polyline points="90,187 205,161 320,139 435,128 550,91 665,51"
+                    fill="none" stroke="url(#trendStroke)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 数据点 -->
+          <circle cx="90"  cy="187" r="5" fill="#fff" stroke="var(--shoulder)" stroke-width="3"/>
+          <circle cx="205" cy="161" r="5" fill="#fff" stroke="var(--shoulder)" stroke-width="3"/>
+          <circle cx="320" cy="139" r="5" fill="#fff" stroke="var(--shoulder)" stroke-width="3"/>
+          <circle cx="435" cy="128" r="5" fill="#fff" stroke="var(--shoulder)" stroke-width="3"/>
+          <circle cx="550" cy="91"  r="5" fill="#fff" stroke="var(--shoulder)" stroke-width="3"/>
+          <circle cx="665" cy="51"  r="8" fill="var(--gold)" stroke="#fff" stroke-width="3"/>
+          <!-- 本周高亮标注 -->
+          <rect x="628" y="20" width="52" height="22" rx="11" fill="var(--gold)"/>
+          <text x="654" y="35" font-size="12" font-weight="800" text-anchor="middle" fill="#fff">82</text>
+          <!-- X 轴 -->
+          <text x="90"  y="238" font-size="11" text-anchor="middle" fill="#A8A8B3">第1周</text>
+          <text x="205" y="238" font-size="11" text-anchor="middle" fill="#A8A8B3">第2周</text>
+          <text x="320" y="238" font-size="11" text-anchor="middle" fill="#A8A8B3">第3周</text>
+          <text x="435" y="238" font-size="11" text-anchor="middle" fill="#A8A8B3">第4周</text>
+          <text x="550" y="238" font-size="11" text-anchor="middle" fill="#A8A8B3">第5周</text>
+          <text x="665" y="238" font-size="11" text-anchor="middle" fill="#0A0A0F" font-weight="700">本周</text>
+
+          <defs>
+            <linearGradient id="trendGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="#7C5AFF"/>
+              <stop offset="100%" stop-color="#7C5AFF" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="trendStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#7C5AFF"/>
+              <stop offset="100%" stop-color="#FFB800"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- 右:群体位置 -->
+      <div class="rank-panel">
+        <div class="rank-panel-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          在同事中的位置
+        </div>
+        <div class="rank-panel-sub">和你一样在坚持的久坐族</div>
+
+        <div class="rank-big">
+          <span class="rank-big-beat">72</span>
+          <span class="rank-big-pct">%</span>
+        </div>
+        <div class="rank-big-txt">
+          本周你的训练活跃度<br>击败了 <strong>72% 的同事</strong>
+        </div>
+
+        <div class="rank-list">
+          <div class="rank-list-title">设计部 · 本周活跃榜</div>
+          <div class="rank-row">
+            <div class="rank-medal top">1</div>
+            <div class="rank-name">小鹿</div>
+            <div class="rank-score">91</div>
+          </div>
+          <div class="rank-row me">
+            <div class="rank-medal">3</div>
+            <div class="rank-name">你</div>
+            <div class="rank-score">82</div>
+          </div>
+          <div class="rank-row">
+            <div class="rank-medal">4</div>
+            <div class="rank-name">阿泽</div>
+            <div class="rank-score">76</div>
+          </div>
+        </div>
+        <div class="rank-privacy">仅对比训练活跃度,不涉及任何身体健康数据。可在设置中退出排行。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 身体活动度改善 ROM -->
+  <section class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <div class="card-head-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 7.8l-7.7 7.7-4-4-5.7 5.7"/><path d="M15 7h5.2V12.2"/></svg>
+        </div>
+        <div class="card-title">你的身体,实实在在松开了</div>
+      </div>
+      <div class="rom-head-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M23 11.5l-2 2-4-4"/><path d="M12 2a10 10 0 1 0 8 4"/></svg>
+        摄像头实测
+      </div>
+    </div>
+
+    <div class="rom-grid">
+      <!-- 颈椎活动度 -->
+      <div class="rom-item">
+        <div class="rom-item-top">
+          <span class="rom-dot" style="background: var(--neck);"></span>
+          <span class="rom-name">颈椎 · 左右转动幅度</span>
+          <span class="rom-sub">正常参考 60–80°</span>
+        </div>
+        <div class="rom-nums">
+          <div class="rom-now" style="color: var(--neck);">61<span class="deg">°</span></div>
+          <div class="rom-from">进关时<br><strong>52°</strong> 起步</div>
+          <div class="rom-gain" style="background: var(--eye-bg); color: var(--eye);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            +9°
+          </div>
+        </div>
+        <div class="rom-bar-wrap">
+          <div class="rom-bar-track">
+            <div class="rom-bar-fill" style="width: 76%; background: linear-gradient(90deg, #7FD4FF, var(--neck));"></div>
+            <div class="rom-bar-goal" style="left: 75%;"></div>
+          </div>
+          <div class="rom-bar-labels">
+            <span>受限</span>
+            <span class="goal-tag">健康线 60°</span>
+            <span>灵活</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 肩部活动度 -->
+      <div class="rom-item">
+        <div class="rom-item-top">
+          <span class="rom-dot" style="background: var(--shoulder);"></span>
+          <span class="rom-name">肩部 · 上举幅度</span>
+          <span class="rom-sub">正常参考 150–180°</span>
+        </div>
+        <div class="rom-nums">
+          <div class="rom-now" style="color: var(--shoulder);">156<span class="deg">°</span></div>
+          <div class="rom-from">进关时<br><strong>148°</strong> 起步</div>
+          <div class="rom-gain" style="background: var(--eye-bg); color: var(--eye);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+            +8°
+          </div>
+        </div>
+        <div class="rom-bar-wrap">
+          <div class="rom-bar-track">
+            <div class="rom-bar-fill" style="width: 68%; background: linear-gradient(90deg, #B7A4FF, var(--shoulder));"></div>
+            <div class="rom-bar-goal" style="left: 66%;"></div>
+          </div>
+          <div class="rom-bar-labels">
+            <span>受限</span>
+            <span class="goal-tag">健康线 150°</span>
+            <span>灵活</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rom-foot">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      <div>这两个数字来自你每次进关时摄像头的<strong>真实测量</strong>,不是训练得分。颈椎已回到健康线以上,肩部还差一点点——<strong>下周再练 3 次就能达标</strong>。</div>
+    </div>
+  </section>
+
+  <!-- 训练热力图 -->
+  <section class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <div class="card-head-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div class="card-title">训练热力图</div>
+      </div>
+      <div class="card-hint">深色 = 练过 2+ 次</div>
+    </div>
+
+    <div class="heatmap-block">
+      <div class="heatmap-grid">
+        <div></div>
+        <div class="hm-hdr">周一</div><div class="hm-hdr">周二</div><div class="hm-hdr">周三</div>
+        <div class="hm-hdr">周四</div><div class="hm-hdr">周五</div><div class="hm-hdr">周六</div><div class="hm-hdr">周日</div>
+
+        <div class="hm-row-lbl" style="color: var(--neck);">颈</div>
+        <div class="hm-cell filled-neck-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell filled-neck-2"><span class="hm-count">2</span></div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell filled-neck-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell filled-neck-2"><span class="hm-count">2</span></div>
+        <div class="hm-cell filled-neck-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell filled-neck-1"><span class="hm-count dim">1</span></div>
+
+        <div class="hm-row-lbl" style="color: var(--shoulder);">肩</div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell filled-shoulder-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell filled-shoulder-2"><span class="hm-count">2</span></div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell filled-shoulder-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell filled-shoulder-1"><span class="hm-count dim">1</span></div>
+
+        <div class="hm-row-lbl" style="color: var(--eye);">眼</div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell filled-eye-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell"></div>
+        <div class="hm-cell filled-eye-1"><span class="hm-count dim">1</span></div>
+        <div class="hm-cell"></div>
+      </div>
+
+      <div class="hm-summary">
+        <div class="hm-summary-title">部位覆盖</div>
+        <div class="hm-legend">
+          <div class="hm-legend-item">
+            <div class="hm-legend-swatch" style="background: var(--neck);"></div>
+            颈椎 <strong>8 次</strong>
+          </div>
+          <div class="hm-legend-item">
+            <div class="hm-legend-swatch" style="background: var(--shoulder);"></div>
+            肩颈 <strong>4 次</strong>
+          </div>
+          <div class="hm-legend-item">
+            <div class="hm-legend-swatch" style="background: var(--eye);"></div>
+            眼部 <strong>2 次</strong>
+          </div>
+        </div>
+        <div class="hm-note">
+          你的<strong>颈椎训练最勤</strong>,坚持 6 天没落下;<strong>眼部相对偏少</strong>,下周可以补上。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 感受趋势 -->
+  <section class="card">
+    <div class="card-head">
+      <div class="card-head-left">
+        <div class="card-head-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <div class="card-title">感受趋势</div>
+      </div>
+      <div class="card-hint">你自己打的分</div>
+    </div>
+
+    <div class="feel-chart-wrap">
+      <svg class="feel-chart" viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg">
+        <line x1="52" y1="30"  x2="632" y2="30"  stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+        <line x1="52" y1="75"  x2="632" y2="75"  stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+        <line x1="52" y1="120" x2="632" y2="120" stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+        <line x1="52" y1="165" x2="632" y2="165" stroke="rgba(10,10,15,0.05)" stroke-dasharray="2 4"/>
+
+        <text x="30" y="35"  font-size="18" text-anchor="middle">🥰</text>
+        <text x="30" y="80"  font-size="18" text-anchor="middle">😊</text>
+        <text x="30" y="125" font-size="18" text-anchor="middle">🙂</text>
+        <text x="30" y="170" font-size="18" text-anchor="middle">😐</text>
+        <text x="30" y="205" font-size="18" text-anchor="middle">😩</text>
+
+        <text x="110" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">一</text>
+        <text x="190" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">二</text>
+        <text x="270" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">三</text>
+        <text x="350" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">四</text>
+        <text x="430" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">五</text>
+        <text x="510" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">六</text>
+        <text x="590" y="215" font-size="11" text-anchor="middle" fill="#A8A8B3">日</text>
+
+        <path d="M 110,165 L 190,120 L 270,165 L 350,120 L 430,75 L 510,75 L 590,30
+                 L 590,200 L 110,200 Z" fill="url(#feelGrad)" opacity="0.15"/>
+        <polyline points="110,165 190,120 270,165 350,120 430,75 510,75 590,30"
+                  fill="none" stroke="url(#feelStroke)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <g>
+          <circle cx="110" cy="165" r="6" fill="#fff" stroke="var(--neck)" stroke-width="3"/>
+          <circle cx="190" cy="120" r="6" fill="#fff" stroke="var(--neck)" stroke-width="3"/>
+          <circle cx="270" cy="165" r="6" fill="#fff" stroke="var(--neck)" stroke-width="3"/>
+          <circle cx="350" cy="120" r="6" fill="#fff" stroke="var(--neck)" stroke-width="3"/>
+          <circle cx="430" cy="75"  r="6" fill="#fff" stroke="var(--neck)" stroke-width="3"/>
+          <circle cx="510" cy="75"  r="6" fill="#fff" stroke="var(--neck)" stroke-width="3"/>
+          <circle cx="590" cy="30"  r="8" fill="var(--gold)" stroke="#fff" stroke-width="3"/>
+        </g>
+        <g>
+          <rect x="558" y="4" width="64" height="20" rx="10" fill="var(--gold)"/>
+          <text x="590" y="18" font-size="11" font-weight="700" text-anchor="middle" fill="#fff">最舒展</text>
+        </g>
+        <defs>
+          <linearGradient id="feelGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#00A3FF"/>
+            <stop offset="100%" stop-color="#00A3FF" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="feelStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#00A3FF"/>
+            <stop offset="100%" stop-color="#FFB800"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="feel-summary">
+        <div class="feel-summary-title">本周平均</div>
+        <div class="feel-avg">
+          <span class="feel-avg-emoji">😊</span>
+          <span class="feel-avg-txt">舒服</span>
+        </div>
+        <div class="feel-note">
+          周三感受偏紧,可能是<strong>加班影响</strong>;后半周越来越舒展,身体状态<strong>整体向上</strong>。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI 洞察 + 下周建议 两栏 -->
+  <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px;">
+
+    <section class="card">
+      <div class="card-head">
+        <div class="card-head-left">
+          <div class="card-head-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <div class="card-title">Joy 的观察</div>
+        </div>
+        <div class="card-hint">4 条洞察</div>
+      </div>
+
+      <div class="insights-block">
+        <div class="insight-item">
+          <div class="insight-icon i1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div class="insight-body">
+            <div class="insight-tag">规律性</div>
+            <div class="insight-txt">你的<strong>颈椎训练最稳定</strong>,坚持了 6 天没落下,这个节奏很棒。</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon i2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <div class="insight-body">
+            <div class="insight-tag">感受关联</div>
+            <div class="insight-txt">周三感受偏紧,可能加班了。<strong>周末感受最舒展</strong>,身体在休息中恢复。</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon i3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-9 10-9 10 9 10 9-3 9-10 9-10-9-10-9z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <div class="insight-body">
+            <div class="insight-tag">训练偏好</div>
+            <div class="insight-txt">眼部训练本周只有 2 次,<strong>相对偏少</strong>,眼睛也需要休息哦。</div>
+          </div>
+        </div>
+        <div class="insight-item">
+          <div class="insight-icon i4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div class="insight-body">
+            <div class="insight-tag">陪伴关系</div>
+            <div class="insight-txt">你和 <strong>Joy 见了 12 次面</strong>,好感度 +30,这周 Joy 会记住你哦。</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div class="card-head-left">
+          <div class="card-head-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2l3 6.9L22 10l-5.5 4.7L18 22l-6-3.5L6 22l1.5-7.3L2 10l7-1.1z"/></svg>
+          </div>
+          <div class="card-title">下周建议</div>
+        </div>
+        <div class="card-hint">2 条</div>
+      </div>
+
+      <div class="suggests">
+        <div class="sug-item">
+          <div class="sug-num">1</div>
+          <div class="sug-body">
+            <strong>增加眼部训练</strong>,建议每天早晨加一次「追星寻迹」,能有效缓解视疲劳。
+          </div>
+          <div class="sug-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+        <div class="sug-item">
+          <div class="sug-num">2</div>
+          <div class="sug-body">
+            肩部还差 <strong>4° 到健康线</strong>,试试「拉弓射箭」,肩胛后收能显著改善圆肩驼背。
+          </div>
+          <div class="sug-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 京东商品植入(下沉到行动之后) -->
+  <section class="gifts-block">
+    <div class="gifts-head">
+      <div class="gifts-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15 8.5 22 9.5 17 14.5 18.5 21.5 12 18 5.5 21.5 7 14.5 2 9.5 9 8.5 12 2"/>
+        </svg>
+      </div>
+      <div class="gifts-title-block">
+        <div class="gifts-title">Joy 用过的好物</div>
+        <div class="gifts-sub">配合你这周的训练场景,可能会喜欢</div>
+      </div>
+      <div class="gifts-jd-tag">JD · 京东自营</div>
+    </div>
+
+    <div class="gifts-grid">
+      <div class="gift-card">
+        <div class="gift-thumb a">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <ellipse cx="50" cy="80" rx="30" ry="4" fill="rgba(0,0,0,0.08)"/>
+            <rect x="20" y="30" width="60" height="45" rx="6" fill="#FFB800" stroke="#E9A430" stroke-width="1.5"/>
+            <rect x="20" y="30" width="60" height="8" fill="#E9A430"/>
+            <line x1="30" y1="45" x2="70" y2="45" stroke="#E9A430" stroke-width="1.5" opacity="0.5"/>
+            <line x1="30" y1="55" x2="70" y2="55" stroke="#E9A430" stroke-width="1.5" opacity="0.5"/>
+            <line x1="30" y1="65" x2="70" y2="65" stroke="#E9A430" stroke-width="1.5" opacity="0.5"/>
+            <circle cx="26" cy="34" r="2" fill="#fff"/>
+            <circle cx="74" cy="34" r="2" fill="#fff"/>
+          </svg>
+        </div>
+        <div class="gift-info">
+          <span class="gift-cat">场景关联</span>
+          <div class="gift-name">加厚防滑瑜伽垫</div>
+          <div class="gift-desc">
+            <strong>Joy:</strong>你这周练拳击多,垫子铺上再也不硌膝盖啦
+          </div>
+          <div class="gift-bottom">
+            <div class="gift-price"><span>¥</span>89</div>
+            <button class="gift-btn">
+              去看看
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="gift-card">
+        <div class="gift-thumb b">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <ellipse cx="50" cy="82" rx="34" ry="4" fill="rgba(0,0,0,0.08)"/>
+            <circle cx="32" cy="50" r="16" fill="none" stroke="#00A3FF" stroke-width="3.5"/>
+            <circle cx="68" cy="50" r="16" fill="none" stroke="#00A3FF" stroke-width="3.5"/>
+            <line x1="48" y1="50" x2="52" y2="50" stroke="#00A3FF" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="16" y1="48" x2="10" y2="42" stroke="#00A3FF" stroke-width="3.5" stroke-linecap="round"/>
+            <line x1="84" y1="48" x2="90" y2="42" stroke="#00A3FF" stroke-width="3.5" stroke-linecap="round"/>
+            <ellipse cx="32" cy="50" rx="12" ry="12" fill="#00A3FF" opacity="0.15"/>
+            <ellipse cx="68" cy="50" rx="12" ry="12" fill="#00A3FF" opacity="0.15"/>
+            <path d="M 22 44 L 28 40" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+            <path d="M 58 44 L 64 40" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="gift-info">
+          <span class="gift-cat b">健康辅助</span>
+          <div class="gift-name">防蓝光电脑眼镜</div>
+          <div class="gift-desc">
+            <strong>Joy:</strong>眼部训练之外,平时戴上也能减轻疲劳
+          </div>
+          <div class="gift-bottom">
+            <div class="gift-price"><span>¥</span>158</div>
+            <button class="gift-btn">
+              去看看
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gifts-disclaim">
+      <strong>ⓘ 关于推荐:</strong>商品由京东提供,基于你本周训练场景推荐,与身体数据无关。可在设置中关闭推荐。
+    </div>
+  </section>
+
+  <!-- 底部 CTA -->
+  <section class="bottom-cta">
+    <div class="bottom-cta-txt">
+      <strong>准备好开始新一周了吗?</strong> Joy 已经根据你的数据准备好了下周计划。
+    </div>
+    <div class="bottom-cta-btns">
+      <button class="btn-ghost">生成分享卡</button>
+      <button class="btn-primary" onclick="location.href='index.html'">
+        开启新一周
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    本报告基于本地训练数据生成,不作为医疗诊断依据。
+    <br>
+    <a href="#">医学建议</a> · <a href="#">免责声明</a> · <a href="#">数据与隐私</a> · <a href="#">关闭推荐</a>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,465 @@
+<title>复赛评委提问预案</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{
+  --bg:#F6F3EF; --surface:#FFFFFF; --surface-2:#FBF8F4;
+  --ink:#221D17; --ink-2:#655D52; --ink-3:#9A9084;
+  --line:rgba(34,29,23,.10); --line-2:rgba(34,29,23,.16);
+  --accent:#E8591F; --accent-ink:#B23F14; --accent-wash:rgba(232,89,31,.10);
+  --strong:#1E9A62; --strong-ink:#137347; --strong-wash:rgba(30,154,98,.12);
+  --watch:#C77A12; --watch-ink:#9A5D08; --watch-wash:rgba(199,122,18,.13);
+  --crit:#CD463A; --crit-ink:#A5342A; --crit-wash:rgba(205,70,58,.12);
+  --shadow:0 1px 2px rgba(34,29,23,.04),0 8px 28px rgba(34,29,23,.06);
+  --radius:16px;
+  --cjk:"PingFang SC","Hiragino Sans GB","HarmonyOS Sans SC","Microsoft YaHei",-apple-system,BlinkMacSystemFont,sans-serif;
+  --num:"SF Pro Display",-apple-system,"Segoe UI",Roboto,var(--cjk);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+    --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+    --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+    --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+    --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+    --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+    --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#18140F; --surface:#231E18; --surface-2:#2B251E;
+  --ink:#F1EBE2; --ink-2:#B7AD9E; --ink-3:#867C6F;
+  --line:rgba(241,235,226,.12); --line-2:rgba(241,235,226,.18);
+  --accent:#FF7A4D; --accent-ink:#FFAC8A; --accent-wash:rgba(255,122,77,.14);
+  --strong:#4ECB8C; --strong-ink:#7FDCAC; --strong-wash:rgba(78,203,140,.15);
+  --watch:#E7A544; --watch-ink:#F2C078; --watch-wash:rgba(231,165,68,.15);
+  --crit:#F0796C; --crit-ink:#F7A398; --crit-wash:rgba(240,121,108,.15);
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--cjk);background:var(--bg);color:var(--ink);
+  line-height:1.62;-webkit-font-smoothing:antialiased;
+  padding:clamp(20px,5vw,64px) clamp(16px,5vw,24px) 80px}
+.wrap{max-width:920px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.num{font-variant-numeric:tabular-nums;font-family:var(--num)}
+.eyebrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:12.5px;font-weight:700;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+/* hero */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:clamp(22px,4vw,34px);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;
+  background:linear-gradient(var(--accent),var(--strong))}
+.hero h1{font-size:clamp(22px,4vw,30px);line-height:1.26;letter-spacing:-.01em;
+  font-weight:800;text-wrap:balance;margin:13px 0 8px}
+.hero h1 em{font-style:normal;color:var(--accent-ink)}
+.hero .lede{font-size:15px;color:var(--ink-2);max-width:64ch}
+.countdown{display:flex;gap:22px;margin-top:18px;flex-wrap:wrap}
+.cd{display:flex;flex-direction:column;gap:2px}
+.cd .v{font-family:var(--num);font-variant-numeric:tabular-nums;font-weight:800;
+  font-size:23px;letter-spacing:-.02em;color:var(--accent-ink);line-height:1}
+.cd .v.strong{color:var(--strong-ink)}
+.cd .l{font-size:11.5px;color:var(--ink-3);font-weight:600;letter-spacing:.04em}
+
+/* legend */
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-3);padding:0 4px;align-items:center}
+.legend .k{display:inline-flex;align-items:center;gap:6px}
+.wtag{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap;font-family:var(--num)}
+.wtag.val{background:var(--accent-wash);color:var(--accent-ink)}
+.wtag.inc{background:var(--strong-wash);color:var(--strong-ink)}
+.wtag.cre{background:var(--watch-wash);color:var(--watch-ink)}
+.wtag.fea{background:rgba(34,29,23,.06);color:var(--ink-3)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wtag.fea{background:rgba(241,235,226,.08)}}
+
+/* rubric — official 6 criteria */
+.rubric{background:linear-gradient(135deg,var(--strong-wash),transparent);
+  border:1px solid var(--line);border-left:4px solid var(--strong);border-radius:var(--radius);
+  padding:20px 24px}
+.rubric .eyebrow{color:var(--strong-ink);margin-bottom:6px}
+.rubric h2{font-size:clamp(16px,3vw,19px);font-weight:800;margin-bottom:5px;line-height:1.32;text-wrap:balance}
+.rubric h2 em{font-style:normal;color:var(--strong-ink)}
+.rubric .sub{font-size:13px;color:var(--ink-2);line-height:1.55;max-width:70ch;margin-bottom:15px}
+.crit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:10px;overflow:hidden}
+@media(max-width:600px){.crit-grid{grid-template-columns:1fr}}
+.crit{background:var(--surface);padding:11px 14px;display:flex;gap:10px;align-items:flex-start}
+.crit .cn{flex-shrink:0;font-family:var(--num);font-weight:800;font-size:12px;color:var(--strong-ink);
+  width:20px;height:20px;border-radius:6px;background:var(--strong-wash);display:grid;place-items:center;margin-top:1px}
+.crit .ct{font-size:12.5px;line-height:1.45}
+.crit .ct b{font-weight:750}
+.crit .ct .qref{display:inline-block;font-family:var(--num);font-size:10.5px;font-weight:800;
+  color:var(--accent-ink);background:var(--accent-wash);padding:1px 7px;border-radius:999px;margin-left:4px;white-space:nowrap}
+.crit.warn6{background:var(--crit-wash)}
+.crit.warn6 .cn{color:var(--crit-ink);background:rgba(205,70,58,.2)}
+.crit.warn6 .ct b{color:var(--crit-ink)}
+
+/* positioning reframe */
+.reframe{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 22px}
+.reframe .eyebrow{color:var(--accent-ink);margin-bottom:6px}
+.reframe .flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:4px}
+.reframe .st{flex:1;min-width:130px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.reframe .st .h{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.reframe .st.before .h{color:var(--crit-ink)} .reframe .st.after .h{color:var(--strong-ink)}
+.reframe .st .c{font-size:13px;line-height:1.5;color:var(--ink-2)}
+.reframe .st .c b{color:var(--ink);font-weight:750}
+.reframe .arrow{font-weight:900;color:var(--accent);font-size:18px;flex-shrink:0}
+@media(max-width:560px){.reframe .arrow{transform:rotate(90deg)}}
+
+/* section title */
+.sec-title{display:flex;align-items:baseline;gap:11px;margin-bottom:4px;flex-wrap:wrap}
+.sec-title .k{font-family:var(--num);font-weight:800;font-size:13px;color:var(--accent-ink);
+  background:var(--accent-wash);width:26px;height:26px;border-radius:8px;
+  display:grid;place-items:center;flex-shrink:0}
+.sec-title .k.t2{color:var(--watch-ink);background:var(--watch-wash)}
+.sec-title .k.t3{color:var(--ink-3);background:rgba(34,29,23,.06)}
+.sec-title h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.sec-title span{font-size:13px;color:var(--ink-3);font-weight:500}
+
+/* question cards */
+.qs{display:flex;flex-direction:column;gap:13px}
+.qc{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);padding:18px 20px;position:relative;overflow:hidden;
+  break-inside:avoid;page-break-inside:avoid}
+.qc::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--line-2)}
+.qc.t1::before{background:var(--accent)}
+.qc.t2::before{background:var(--watch)}
+.qc.t3::before{background:var(--ink-3)}
+.qc-head{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:13px}
+.qc-no{font-family:var(--num);font-weight:800;font-size:14px;flex-shrink:0;
+  width:30px;height:30px;border-radius:9px;display:grid;place-items:center;margin-top:1px}
+.qc.t1 .qc-no{background:var(--accent-wash);color:var(--accent-ink)}
+.qc.t2 .qc-no{background:var(--watch-wash);color:var(--watch-ink)}
+.qc.t3 .qc-no{background:rgba(34,29,23,.06);color:var(--ink-3)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .qc.t3 .qc-no{background:rgba(241,235,226,.08)}}
+.qc-qwrap{flex:1;min-width:0}
+.qc-q{font-size:15.5px;font-weight:800;line-height:1.4;letter-spacing:-.01em;text-wrap:balance}
+.qc-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.qc-src{font-size:11px;color:var(--ink-3);font-weight:600}
+
+/* answer block */
+.ans{background:var(--surface-2);border:1px solid var(--line);border-radius:11px;
+  padding:13px 15px;margin-bottom:11px}
+.ans .h{font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--strong-ink);
+  text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.ans .h::before{content:"“";font-size:18px;line-height:0;position:relative;top:3px;color:var(--strong)}
+.ans p{font-size:14px;color:var(--ink);line-height:1.62}
+.ans p b{font-weight:800;color:var(--accent-ink)}
+.ans p .g{font-weight:800;color:var(--strong-ink)}
+
+/* ammo chips */
+.ammo{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:2px}
+.ammo .lab{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase;margin-right:2px}
+.chip{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;white-space:nowrap;
+  background:var(--accent-wash);color:var(--accent-ink);font-family:var(--num)}
+.chip.chk::after{content:" 需核实";font-size:9.5px;opacity:.75;font-family:var(--cjk)}
+
+/* watch-out */
+.dont{display:flex;gap:9px;align-items:flex-start;margin-top:11px;
+  background:var(--crit-wash);border-radius:10px;padding:10px 13px}
+.dont .ic{flex-shrink:0;font-weight:900;font-size:13px;color:var(--crit-ink);margin-top:1px}
+.dont .tx{font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.dont .tx b{color:var(--crit-ink);font-weight:800}
+
+/* two硬伤 */
+.scars{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);border-left:4px solid var(--crit);padding:18px 22px}
+.scars h3{font-size:15px;font-weight:800;margin-bottom:12px;color:var(--crit-ink)}
+.scar{display:flex;gap:11px;align-items:flex-start;font-size:13.5px;line-height:1.55}
+.scar+.scar{margin-top:9px}
+.scar .x{flex-shrink:0;width:19px;height:19px;border-radius:50%;background:var(--crit);
+  color:#fff;font-weight:900;font-size:11px;display:grid;place-items:center;margin-top:2px}
+.scar b{font-weight:800}
+
+/* opening hook */
+.hook{border-radius:12px;padding:17px 22px;font-size:15.5px;line-height:1.55;display:flex;gap:12px;align-items:flex-start;
+  background:linear-gradient(135deg,var(--strong-wash),transparent);
+  border:1px solid var(--line);border-left:4px solid var(--strong);font-weight:750}
+.hook b{color:var(--strong-ink)}
+.hook .ic{flex-shrink:0;font-weight:900;font-size:16px;color:var(--strong)}
+
+.foot{font-size:11.5px;color:var(--ink-3);line-height:1.6;text-align:center;
+  border-top:1px solid var(--line);padding-top:20px}
+
+@media print{
+  body{padding:0}
+  .qc,.hero,.scars,.rubric,.reframe{box-shadow:none}
+}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow"><span class="dot"></span>今天不低头 · 复赛答辩 · 评委提问预案</div>
+    <div class="hero">
+      <div class="eyebrow" style="color:var(--accent-ink)">AI 工具应用赛道 · 上午场 · 5 分钟问答只够 3–5 题</div>
+      <h1>工具赛道拼的是<em>「明显提效」</em> —— 每题配 30 秒脚本 + 数字弹药 + 命中权重</h1>
+      <p class="lede">工具赛道评委不问「能做多大生意」,问「<b>它真提效了吗、能不能稳定推广</b>」。标准是:用数据证明体验/成本/效率的改善,且「不只是把几个 Prompt 串起来」。下面 12 题按命中概率分三档,一档是工具赛道特有的送命题,先背熟。</p>
+      <div class="countdown">
+        <div class="cd"><span class="v">9/3 上午</span><span class="l">AI 工具应用赛道</span></div>
+        <div class="cd"><span class="v">5+5</span><span class="l">讲演 + 问答(分钟)</span></div>
+        <div class="cd"><span class="v strong">B 端 ROI</span><span class="l">提效主叙事</span></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span class="k"><span class="wtag val">价值 50%</span>= 提效价值/ROI</span>
+    <span class="k"><span class="wtag inc">孵化 30%</span>= 可推广性</span>
+    <span class="k"><span class="wtag cre">创新 20%</span>= 技术差异</span>
+    <span class="k"><span class="wtag fea">稳定</span>不单独计分,现场必问</span>
+  </div>
+
+  <!-- OFFICIAL RUBRIC -->
+  <div class="rubric">
+    <div class="eyebrow">官方判据 · 工具赛道 6 条 —— 这就是评委手里的评分尺</div>
+    <h2>复赛「明显提效」的<em>六项达标要求</em>,每条都要有人接</h2>
+    <p class="sub">Q&A 原文:方案能稳定应用于真实工作流程,并用数据证明体验、成本、效率的改善。下面标注每条判据由哪题应答覆盖 —— 讲演 + 问答里务必条条落地。</p>
+    <div class="crit-grid">
+      <div class="crit"><span class="cn num">①</span><span class="ct"><b>完整工作流</b>:接入企业健康管理全链路<span class="qref">Q1·Q2</span></span></div>
+      <div class="crit"><span class="cn num">②</span><span class="ct"><b>能稳定运行</b>:识别护栏 + 现场可演示<span class="qref">Q4</span></span></div>
+      <div class="crit"><span class="cn num">③</span><span class="ct"><b>有实际使用案例</b>:真实员工试点<span class="qref">Q4·Q2</span></span></div>
+      <div class="crit"><span class="cn num">④</span><span class="ct"><b>有前后效率/质量对比</b>:ROM+依从数据<span class="qref">Q2·Q6</span></span></div>
+      <div class="crit"><span class="cn num">⑤</span><span class="ct"><b>有容错和优化</b>:光线/误判降级处理<span class="qref">Q4</span></span></div>
+      <div class="crit warn6"><span class="cn num">⑥</span><span class="ct"><b>不只是串 Prompt</b>:姿态内核+医学库是硬技术<span class="qref">Q3</span></span></div>
+    </div>
+  </div>
+
+  <!-- POSITIONING REFRAME -->
+  <div class="reframe">
+    <div class="eyebrow">开场就要定的位 · 决定整场是否切题</div>
+    <div style="font-size:15px;font-weight:800;margin-bottom:4px;line-height:1.4">我们提效的是「<span style="color:var(--accent-ink)">企业职业健康管理工作流</span>」——从「花钱听响」变「投入有数」</div>
+    <div style="font-size:13px;color:var(--ink-2);line-height:1.55;margin-bottom:14px;max-width:70ch">工具赛道第一刀必是「你这是个 to C 游戏,凭什么算工具?」。答案:游戏化是让员工愿意用的外壳,内核是嵌入企业健康管理流程、把它变得可量化高依从的 AI 提效工具。</div>
+    <div class="flow">
+      <div class="st before"><div class="h">现状工作流(低效)</div><div class="c">HR 发按摩椅/体检/传单 → <b>员工不用、用了没数据</b> → 无法证明 ROI → 明年预算难批</div></div>
+      <span class="arrow">→</span>
+      <div class="st after"><div class="h">接入工具后(提效)</div><div class="c">员工每天玩几分钟 → AI 采集 ROM/依从数据 → <b>后台看板量化改善</b> → HR 算得清健康投入回报</div></div>
+    </div>
+  </div>
+
+  <!-- TIER 1 -->
+  <section>
+    <div class="sec-title"><span class="k num">1</span><h2>一档 · 几乎必问</h2><span>工具赛道特有送命题 + 命中价值 50% / 孵化 30%</span></div>
+    <div class="qs">
+
+      <article class="qc t1">
+        <div class="qc-head">
+          <span class="qc-no num">1</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">你这是个 to C 健康游戏产品,凭什么算「工具应用」?提效了谁?</div>
+            <div class="qc-tags"><span class="wtag val">价值 50%</span><span class="qc-src">· 工具赛道第一刀 · 判据① · 答不好整场跑题</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>我们是嵌入<b>企业职业健康管理工作流</b>的 AI 提效工具。企业现在的健康福利是「花钱听响」—— 发按摩椅、发体检,员工不用、用了没数据、HR 无法证明回报。我们把这条工作流从「不可量化」变成<span class="g">高依从、可量化、近乎零边际成本</span>:员工每天玩几分钟,AI 自动采集颈肩活动度和依从数据,后台看板让 HR 第一次能算清健康投入的 ROI。游戏化只是让员工愿意用的外壳,<b>内核是提效工具,不是游戏</b>。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">嵌入企业健康工作流</span><span class="chip">花钱听响 → 投入有数</span><span class="chip">HR 数据看板</span></div>
+        <div class="dont"><span class="ic">✕</span><span class="tx">开场<b>千万别说「我们是个健康游戏」</b> —— 工具赛道这句话直接出局。第一句就要说「嵌入企业健康管理工作流的 AI 提效工具」。</span></div>
+      </article>
+
+      <article class="qc t1">
+        <div class="qc-head">
+          <span class="qc-no num">2</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">提效多少?给「前 vs 后」的效率/质量对比数据。</div>
+            <div class="qc-tags"><span class="wtag val">价值 50%</span><span class="qc-src">· 判据①④ · 工具赛道硬通货,没对比数=不合格</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>两层数据。<b>底层 · 工具真有效</b>:试点 N 人,颈肩活动度平均改善 __、依从率 __%（对比传统健康操依从率不足 ~15%【需核实】,是数倍提升）。<b>价值层 · 企业提效 ROI</b>:传统健康福利无效果数据、依从极低;我们把依从提到 __%、健康改善可量化。按 ¥199/人/年,对比一次颈肩相关病假的隐性成本,<span class="g">ROI 约 __x</span>。核心是这条链:<b>健康改善(有实证)× 规模 × 成本节省</b>。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">依从 15% → __%</span><span class="chip chk">ROM 改善 __</span><span class="chip chk">ROI __x</span></div>
+        <div class="dont"><span class="ic">!</span><span class="tx">必须给出「前」和「后」两个并列数字。<b>试点真数是当前最大缺口</b>(卡在队友发布上线+招募)—— 9/3 前拿到哪怕 5–15 人的真数,切忌编造,评委会追问穿。</span></div>
+      </article>
+
+      <article class="qc t1">
+        <div class="qc-head">
+          <span class="qc-no num">3</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">你的 AI 是不是就是串了几个 Prompt?核心技术到底是什么?</div>
+            <div class="qc-tags"><span class="wtag cre">创新 20%</span><span class="qc-src">· 判据⑥明写 · 工具赛道最爱问 · 送分也送命</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>不是。提效内核是<b>端侧实时姿态识别算法</b> —— 用 <b>MediaPipe</b> 实时计算颈部头姿和上肢关节角度,叠加我们基于<span class="g">康复医学指南自建的医学动作库</span>做 ROM 评分和实时纠错。外围 3 个 AI Skill:健康问询、运动前风险评估、端侧运动数据评分 —— 初赛评委专门夸过设计合理。Prompt 只是问询交互的一环,<b>真正提效的是姿态算法 + 医学库</b>,这是抄不走的硬技术。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">MediaPipe 姿态内核</span><span class="chip">医学动作库</span><span class="chip">3 个 AI Skill</span></div>
+        <div class="dont"><span class="ic">✕</span><span class="tx"><b>是 MediaPipe,不是 OpenCV</b>(初赛口误被扣印象分)。答不出硬技术就被评委归为「套壳」—— 这是工具赛道最致命的降档。</span></div>
+      </article>
+
+      <article class="qc t1">
+        <div class="qc-head">
+          <span class="qc-no num">4</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">能稳定跑吗?真有人用过?识别不准/光线差怎么办?</div>
+            <div class="qc-tags"><span class="wtag fea">稳定</span><span class="qc-src">· 判据②③⑤ · 初赛最大失分点(Q1 答「强光没测过」)</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>能。<b>真实案例</b>:试点 N 人在真实办公环境用了 __ 天。<b>稳定性 + 容错</b>:关卡有 <span class="g">ROM 个人校准 + 置信度护栏</span> —— 光线差、识别不到时提示重试,而不是误判乱给分,这就是容错设计。<b>现场可以直接开摄像头</b>演示拳击关的实时识别。诚实说清:拳击、摘星是全程真识别,划船、喂食目前是视频底演示形态。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">ROM 校准 + 置信度护栏</span><span class="chip">现场开摄像头</span></div>
+        <div class="dont"><span class="ic">!</span><span class="tx">初赛这题最丢分(答「强光没测过」)。护栏是现成的 —— <b>主动亮出来</b>,别等被戳;能现场开摄像头就开,真实即说服力。</span></div>
+      </article>
+
+      <article class="qc t1">
+        <div class="qc-head">
+          <span class="qc-no num">5</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">这工具能推广到多少企业/团队?怎么复制?</div>
+            <div class="qc-tags"><span class="wtag inc">孵化 30%</span><span class="qc-src">· 工具赛道的规模化 = 可复制性</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>工具的可复制性极强 —— <b>纯软件、零边际成本、无需硬件</b>,不像重服务要线性堆人。落地通道:<span class="g">京东企业购的企业福利/EAP</span>(工会经费本有预算)、体检机构衔接(查出问题→我们做持续干预)。一个 500 人公司就是一笔标准化合同,三年从 5 家试点到 200 家企业。<b>因为是工具不是服务,复制不靠堆人</b>。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">零边际成本</span><span class="chip chk">500 人 = 一笔合同</span><span class="chip chk">3 年 200 家企业</span></div>
+        <div class="dont"><span class="ic">✕</span><span class="tx">强调「<b>零边际成本、不堆人</b>」—— 工具赛道的规模化优势正在于此。别讲成需要重运营的健康服务,那是产品孵化赛道的叙事。</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- TIER 2 -->
+  <section>
+    <div class="sec-title"><span class="k t2 num">2</span><h2>二档 · 很可能追问</h2><span>ROI 可信度 + 差异化 + 专业背书</span></div>
+    <div class="qs">
+
+      <article class="qc t2">
+        <div class="qc-head">
+          <span class="qc-no num">6</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">这些提效 / ROI 数字怎么来的?可信吗?</div>
+            <div class="qc-tags"><span class="wtag val">价值 50%</span><span class="qc-src">· 判据④ 的追问</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>分两类标注:【<span class="g">公认量级</span>】的(久坐颈肩患病率 60–70%)可自行复核;【需核实】的(病假成本、依从率)是<b>保守假设</b>。关键不是单个数字,是结构 ——「健康改善 × 规模 × 成本节省」。我们敢用保守值:哪怕依从率只做到行业 2 倍、ROI 也有 __x。<b>结构可信 + 试点实证打底,比一个精确的假数更站得住</b>。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">公认量级 vs 需核实</span><span class="chip">保守值也有 __x</span></div>
+        <div class="dont"><span class="ic">!</span><span class="tx">别报精确到小数的假数。<b>给区间 + 说清哪些实证、哪些假设</b> —— 上台前把病假成本、依从率、¥199 定价换成能引用的真数。</span></div>
+      </article>
+
+      <article class="qc t2">
+        <div class="qc-head">
+          <span class="qc-no num">7</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">京东健康有 H5、市面有 Keep,你的工具差在哪?被抄怎么办?</div>
+            <div class="qc-tags"><span class="wtag cre">创新 20%</span><span class="wtag val">价值 50%</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>三点抄不走:① <b>聚焦颈肩微理疗 + 办公场景的医学动作库</b>,不是泛健身;② <b>端侧实时姿态识别 + 评分纠错</b> —— 健康 H5 做不到,Keep 不做康复;③ <span class="g">面向企业的依从 + 效果数据看板</span> —— 这是 B 端工具的核心,C 端 App 根本没有。护城河是<b>数据与场景,不是玩法</b>。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">医学动作库</span><span class="chip">端侧姿态评分</span><span class="chip">B 端数据看板</span></div>
+      </article>
+
+      <article class="qc t2">
+        <div class="qc-head">
+          <span class="qc-no num">8</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">医学依据可靠吗?员工练出问题谁负责?</div>
+            <div class="qc-tags"><span class="wtag cre">创新 20%</span><span class="wtag fea">稳定</span><span class="qc-src">· 3 位评委点过 · 你们最硬差异点</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>动作库依据 <b>NHS、中国康复医学会</b>的康复指南设计。安全护栏:<span class="g">禁止绕颈等危险动作、达标即停不鼓励过度、BPM 锁死、强制休息拍</span>。定位是<b>预防性微理疗,不替代诊疗</b>,红旗症状直接引导就医。这是我们对纯游戏、纯健身工具的专业壁垒 —— 也是企业敢采购的底气。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">NHS / 中国康复医学会</span><span class="chip">4 条医学护栏</span></div>
+        <div class="dont"><span class="ic">!</span><span class="tx">初赛这张王牌只一句带过 —— <b>这次讲演开场就重锤</b>。专业性是你们对纯工具团队的降维差异,也直接支撑 B 端可信度。</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- TIER 3 -->
+  <section>
+    <div class="sec-title"><span class="k t3 num">3</span><h2>三档 · 可能的刁钻题</h2><span>答得上是加分,答不上不致命</span></div>
+    <div class="qs">
+
+      <article class="qc t3">
+        <div class="qc-head">
+          <span class="qc-no num">9</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">员工三分钟热度,用不起来 —— 这工具不就废了?</div>
+            <div class="qc-tags"><span class="wtag val">价值 50%</span><span class="wtag inc">孵化 30%</span><span class="qc-src">· 依从性 = 工具提效的前提</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>所以我们<b>不靠员工自觉</b>。企业场景有天然抓手:团队健康分排行、工会激励。产品侧靠游戏化降门槛 + 每日健康数据让用户<span class="g">看见改善</span>。试点依从率 __% 就是证据 —— 工具能提效的前提是用得起来,这正是我们设计的核心,也是和传统健康福利拉开差距的地方。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">团队排行 + 工会激励</span><span class="chip">依从率 __%</span></div>
+      </article>
+
+      <article class="qc t3">
+        <div class="qc-head">
+          <span class="qc-no num">10</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">数据是资产 —— 但办公室开摄像头,健康数据合规吗?</div>
+            <div class="qc-tags"><span class="wtag fea">稳定</span><span class="wtag inc">孵化 30%</span><span class="qc-src">· 健康数据属敏感个人信息</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>两点:<b>画面不出端</b> —— 姿态识别在本地做,只上传角度数值、不传摄像头画面。<b>摄像头只在用户主动进关卡时唤起</b>,久坐提醒纯靠时间判断,绝不常开监控。企业看板只做<span class="g">匿名聚合的团队健康分</span>,不暴露个人。健康数据按敏感个人信息合规处理。</p>
+        </div>
+        <div class="ammo"><span class="lab">弹药</span><span class="chip">画面不出端 / 只传数值</span><span class="chip">摄像头非常开</span></div>
+      </article>
+
+      <article class="qc t3">
+        <div class="qc-head">
+          <span class="qc-no num">11</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">2 个设计师、无工程背景 —— 谁来交付企业客户、把工具做稳?</div>
+            <div class="qc-tags"><span class="wtag inc">孵化 30%</span><span class="qc-src">· 执行力质疑</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p><b>2 个设计师用 AI 编程做出了这个能跑的工具,本身就是 AI 提效的活证明。</b>产品洞察和用户体验是我们的强项;工程稳定性和企业 BD,是我们来复赛<span class="g">争取孵化资源要补的一环</span> —— 这恰恰是工具走向规模化之后要放大的部分。</p>
+        </div>
+        <div class="dont"><span class="ic">→</span><span class="tx">诚实,但把短板<b>转成「正因如此才需要孵化投入」</b>,呼应孵化潜力维度。</span></div>
+      </article>
+
+      <article class="qc t3">
+        <div class="qc-head">
+          <span class="qc-no num">12</span>
+          <div class="qc-qwrap">
+            <div class="qc-q">试点就几个人,这数据能代表提效效果吗?</div>
+            <div class="qc-tags"><span class="wtag val">价值 50%</span><span class="qc-src">· 样本效度质疑</span></div>
+          </div>
+        </div>
+        <div class="ans">
+          <div class="h">30 秒应答</div>
+          <p>坦诚,现在是<b>早期验证,不是统计显著</b>。但我们特意选了客观生理指标 <span class="g">ROM,而不是主观留存</span> —— 小样本下 ROM 改善也是真实可测的,不受人工提醒污染。这是可信的第一步;扩大样本、拿到规模化提效证据,正是我们申请孵化投入的用途之一。</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- 两处硬伤 -->
+  <section>
+    <div class="sec-title"><span class="k t3 num" style="color:var(--crit-ink);background:var(--crit-wash)">!</span><h2>初赛两处硬伤 · 别再犯</h2></div>
+    <div class="scars" style="margin-top:12px">
+      <div class="scar"><span class="x">✕</span><span><b>技术栈别说错:</b>是 <b>MediaPipe</b>,不是「OpenCV」。工具赛道正被质疑「是不是套壳」,说错技术栈=坐实质疑。</span></div>
+      <div class="scar"><span class="x">✕</span><span><b>王牌别再埋没:</b>NHS / 中国康复医学会的医学动作库是最强差异点,初赛只一句带过 —— <b>5 分钟讲演里必须开场重锤</b>。</span></div>
+    </div>
+  </section>
+
+  <div class="hook"><span class="ic">“</span><span>一句话钩子(收尾用):游戏化是<b>外壳</b>,提效才是<b>内核</b> —— 我们把企业「花钱听响」的健康福利,变成第一个<b>依从可量化、ROI 算得清</b>的 AI 职业健康干预工具。</span></div>
+
+  <p class="foot">据官方复赛 Q&A(工具应用赛道 · 5 讲+5 问 · 6 条达标判据)+ 5C 权重(价值 50% / 孵化 30% / 创新 20%,工具赛道语境下重解读为提效/可推广/技术差异)+ 9 位评委反馈 + 初赛答辩复盘推导。带「需核实」的数字为合理假设,答辩前须换真数。本页为演练用应答框架,非承诺话术。</p>
+
+</div>
