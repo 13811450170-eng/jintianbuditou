@@ -438,11 +438,19 @@
   /* ---- 3秒倒计时(参考老拳击版:超大弹跳数字 + 品牌辉光) ---- */
   .countdown{
     position:absolute;inset:0;z-index:70;
-    display:flex;align-items:center;justify-content:center;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
     background:radial-gradient(circle at 50% 50%, rgba(0,0,0,.35), rgba(0,0,0,.62));
     backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
   }
   .countdown.hide{display:none;}
+  /* 校准引导:倒计时这几秒同时在采中立位基线,提示用户坐直看镜头,基线才准 */
+  .cd-hint{
+    font-size:20px;font-weight:800;color:#fff;letter-spacing:1px;
+    text-shadow:0 2px 12px rgba(0,0,0,.85);
+    padding:9px 22px;border-radius:999px;
+    background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.24);
+  }
+  .cd-hint.hide{display:none;}
   .countdown .cd-num{
     font-size:150px;font-weight:900;line-height:1;
     color:var(--gold-bright);
@@ -450,9 +458,8 @@
   }
   .countdown .cd-num.go{
     font-size:96px;letter-spacing:6px;
-    background:linear-gradient(135deg,#fff,var(--gold-bright));
-    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    filter:drop-shadow(0 0 40px var(--brand));
+    color:var(--gold-bright);
+    text-shadow:0 0 40px var(--brand),0 0 80px var(--brand),0 6px 18px rgba(0,0,0,.7);
   }
   .cd-pop{animation:cdPop 1s ease-out;}
   @keyframes cdPop{
@@ -508,7 +515,7 @@
   .howto-cap b{color:var(--gold-bright);}
   .howto-timer{width:min(300px,64vw);height:4px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden;}
   .howto-timer i{display:block;height:100%;width:100%;transform-origin:left;
-    background:linear-gradient(90deg,var(--gold),var(--gold-bright));animation:howtoTimer 6s linear forwards;}
+    background:linear-gradient(90deg,var(--gold),var(--gold-bright));animation:howtoTimer 5s linear forwards;}
   @keyframes howtoTimer{from{transform:scaleX(1);}to{transform:scaleX(0);}}
 
   /* ---- 结算页 streak 火苗 +1(多邻国式成就动画) ---- */
@@ -776,8 +783,11 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- 3秒倒计时 -->
-  <div class="countdown hide" id="countdown"><div class="cd-num" id="cdNum">3</div></div>
+  <!-- 3秒倒计时(同时采校准基线) -->
+  <div class="countdown hide" id="countdown">
+    <div class="cd-num" id="cdNum">3</div>
+    <div class="cd-hint" id="cdHint">坐直 · 头摆正看镜头</div>
+  </div>
 
   <!-- 动作提示浮层:浮在真实游戏画面上,5秒后自动进倒计时 -->
   <div class="howto hide" id="howto">
@@ -883,7 +893,30 @@ function syncPose(p){
   if(!p) return;
   pose=p; facePresent=p.facePresent; latestLandmarks=p.landmarks;
 }
-function relAngle(){ return pose.rel; }
+// ===== 自适应零点回正:磨平校准残留的恒定偏移(治"头正着准星仍偏、够不到另一侧")=====
+// 原理:头接近中立且静止那几帧,让 driftBias 缓慢跟随当前角度 → 残留偏移被慢慢吃掉;
+//   大动作(真闪避)或甩头时冻结,绝不吃掉有效动作。所有消费者走 relAngle() → 与判定同源。
+let driftBias={ yaw:0, pitch:0, roll:0 };
+const DRIFT={
+  nearDeg:_num('recenter',4.0),   // 仅当 |原始rel| < 此值(接近中立)才回正
+  maxVel:2.2,                     // 仅当头几乎静止(每帧变化 < 此值°)才回正
+  rate:_num('recenterRate',0.04), // 回正速度:每帧把 bias 往当前角拉这么多比例(越大回正越快)
+  clamp:6.0,                      // bias 上限(°):防跑飞,超此值不再吸收
+};
+function updateDrift(raw){
+  if(!(camOK && facePresent)) return;         // 无脸不动 bias
+  if(angleVel > DRIFT.maxVel) return;          // 头在动 → 冻结(别吃掉闪避)
+  for(const k of ['yaw','pitch','roll']){
+    if(Math.abs(raw[k]) >= DRIFT.nearDeg) continue;  // 离中立远(可能在做动作)→ 该轴不回正
+    let nb=driftBias[k] + (raw[k]-driftBias[k])*DRIFT.rate;
+    driftBias[k]=clamp(nb, -DRIFT.clamp, DRIFT.clamp);
+  }
+}
+// 对外统一取值:内核 rel 再扣掉游戏侧自适应零点。准星/判定都走这里 → 天然同源。
+function relAngle(){
+  const r=pose.rel;
+  return { yaw:r.yaw-driftBias.yaw, pitch:r.pitch-driftBias.pitch, roll:r.roll-driftBias.roll };
+}
 function axisValue(rel,expect){
   if(expect==='roll+')  return  rel.roll;
   if(expect==='roll-')  return -rel.roll;
@@ -1145,13 +1178,14 @@ function loop(now){
     const rel=relAngle();
     angleVel=Math.max(Math.abs(rel.yaw-prevRel.yaw),Math.abs(rel.pitch-prevRel.pitch),Math.abs(rel.roll-prevRel.roll));
     prevRel={...rel};
+    updateDrift(pose.rel);   // 用内核原始 rel 磨平残留零点偏移(在 angleVel 算好之后,避免追自己的尾巴)
   }
   drawFaceMesh();
   updateReticle();
   if(playing){ tickJudge(now); updateTimer(gameMs-(now-sessionStart)); }
   if(DEBUG && dbgAngle){
     const rel=relAngle();
-    dbgAngle.textContent=`roll:${rel.roll.toFixed(0)}° pitch:${rel.pitch.toFixed(0)}° yaw:${rel.yaw.toFixed(0)}° vel:${angleVel.toFixed(1)} face:${facePresent?1:0} ret:${reticlePos.x.toFixed(0)},${reticlePos.y.toFixed(0)}`;
+    dbgAngle.textContent=`roll:${rel.roll.toFixed(0)}° pitch:${rel.pitch.toFixed(0)}° yaw:${rel.yaw.toFixed(0)}° vel:${angleVel.toFixed(1)} bias:${driftBias.roll.toFixed(1)},${driftBias.pitch.toFixed(1)} face:${facePresent?1:0} ret:${reticlePos.x.toFixed(0)},${reticlePos.y.toFixed(0)}`;
   }
 }
 requestAnimationFrame(loop);
@@ -1247,11 +1281,13 @@ function endShow(){
 function runCountdown(done){
   const cd=document.getElementById('countdown');
   const cdNum=document.getElementById('cdNum');
+  const cdHint=document.getElementById('cdHint');
   cd.classList.remove('hide');
+  if(cdHint) cdHint.classList.toggle('hide', !kernel);   // 无摄像头/纯键盘就不提示校准
   let n=3;
   (function step(){
     if(n>0){ cdNum.textContent=n; cdNum.className='cd-num cd-pop'; }
-    else{ cdNum.textContent='GO!'; cdNum.className='cd-num go cd-pop'; }
+    else{ cdNum.textContent='GO!'; cdNum.className='cd-num go cd-pop'; if(cdHint) cdHint.classList.add('hide'); }
     void cdNum.offsetWidth;
     if(n>=0){ n--; setTimeout(step,1000); }
     else{ cd.classList.add('hide'); done&&done(); }
@@ -1280,7 +1316,6 @@ async function start(){
       await kernel.loadModel(txt=>{ if(statusEl && txt) statusEl.textContent=txt; });
     }
     await kernel.startCamera();
-    kernel.beginCalibration();          // 用提示浮层+倒计时这几秒采基线(坐直看屏幕)
     camOK=true;
   }catch(e){
     camOK=false;                        // 摄像头被拒/无设备 → 键盘兜底
@@ -1297,17 +1332,31 @@ function showHowtoThenCountdown(){
   clearTimeout(_howtoTimer);
   _howtoTimer=setTimeout(()=>{
     howto.classList.add('hide');
+    // 演示浮层结束 → 此刻才开始采校准基线:倒计时这几秒提示"坐直看镜头",头最稳,基线最准
+    // 首帧模型可能还在加载,gate 在 kernel 存在即可——内核只在有脸时采样,不足则保留旧基线
+    if(kernel) kernel.beginCalibration();
     runCountdown(()=>{                     // 3 秒倒计时结束后:结束校准 → 开打
-      if(camOK && kernel) kernel.endCalibration();
+      if(kernel) kernel.endCalibration();
       prevRel={ yaw:0, pitch:0, roll:0 };
+      driftBias={ yaw:0, pitch:0, roll:0 };   // 新基线已就位 → 游戏侧零点修正清零,自适应回正从头refine
       runShow();
     });
-  }, 6000);
+  }, 5000);
 }
 document.getElementById('startBtn').addEventListener('click',start);
 document.getElementById('againBtn').addEventListener('click',start);
 document.addEventListener('keydown',e=>{
   if(e.code==='Space'){ e.preventDefault(); start(); return; }
+  // R 键:随时重采中立位基线(准星漂了/坐姿变了时,头摆正按 R 即回中)
+  if(e.code==='KeyR'){
+    e.preventDefault();
+    if(camOK && kernel){
+      kernel.beginCalibration();
+      showToast('坐直 · 头摆正,正在回正准星…',900);
+      setTimeout(()=>{ if(kernel) kernel.endCalibration(); driftBias={ yaw:0, pitch:0, roll:0 }; showToast('准星已回正',1000); }, 700);
+    }
+    return;
+  }
   if(e.code==='ArrowLeft'||e.code==='ArrowRight'||e.code==='ArrowUp'||e.code==='ArrowDown'){
     e.preventDefault(); keyDodge(e.code);
   }
