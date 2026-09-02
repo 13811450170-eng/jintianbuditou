@@ -97,7 +97,7 @@ html, body {
   background: var(--card);
   display: flex; align-items: center; justify-content: center;
   color: var(--ink-3);
-  box-shadow: var(--shadow-1);
+  border: 1px solid var(--line);
   cursor: pointer;
   transition: color .2s;
 }
@@ -109,9 +109,19 @@ html, body {
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: 0.85fr 1fr;
   gap: 20px;
 }
+
+/* 左列:战绩 Hero + 练完感觉,竖排填满左栏 */
+.hero-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+.hero-col .hero { flex: 1; min-height: 280px; }
+.hero-col .feel-card { flex-shrink: 0; min-height: 132px; display: flex; flex-direction: column; justify-content: center; }
 
 /* --- 左侧:成就 Hero(浅色分支渐变) --- */
 .hero {
@@ -128,15 +138,14 @@ html, body {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse at 30% 25%, var(--accent-bg) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 75%, var(--accent-bg-2) 0%, transparent 55%),
-    #FFFFFF;
+    radial-gradient(ellipse 120% 88% at 50% 20%, rgba(150,26,34,0.62) 0%, transparent 58%),
+    radial-gradient(ellipse at 50% 40%, #2f0c11 0%, #1c070a 62%, #120406 100%);
 }
 .hero-bg::after {
   content: "";
   position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse at center, transparent 45%, rgba(10,10,15,0.02) 100%);
+    radial-gradient(ellipse at 50% 36%, transparent 46%, rgba(8,2,3,0.55) 100%);
 }
 
 /* 撒花粒子背景装饰 */
@@ -159,7 +168,7 @@ html, body {
   position: relative;
   z-index: 2;
   padding: 30px 34px;
-  color: var(--ink);
+  color: #fff;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -177,24 +186,25 @@ html, body {
   align-items: center;
   gap: 8px;
   padding: 6px 14px 6px 10px;
-  background: var(--card-alt);
-  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
   border-radius: 100px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.5px;
-  color: var(--ink-2);
+  color: #fff;
+  backdrop-filter: blur(4px);
 }
 .hero-badge-dot {
   width: 6px; height: 6px;
-  background: var(--accent);
+  background: #fff;
   border-radius: 50%;
-  box-shadow: 0 0 8px var(--accent);
+  box-shadow: 0 0 8px rgba(255,255,255,0.9);
 }
 
 .hero-branch {
   font-size: 11px;
-  color: var(--ink-4);
+  color: rgba(255,255,255,0.72);
   letter-spacing: 1.5px;
   font-weight: 600;
 }
@@ -243,14 +253,12 @@ html, body {
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.04em;
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
+  text-shadow: 0 6px 24px rgba(70,8,14,0.4);
 }
 .rating-lbl {
   font-size: 13px;
-  color: var(--ink-3);
+  color: rgba(255,255,255,0.8);
   letter-spacing: 2px;
   font-weight: 700;
 }
@@ -260,7 +268,7 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding-top: 18px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(255,255,255,0.22);
 }
 .streak-change {
   display: flex;
@@ -279,26 +287,27 @@ html, body {
 .streak-info-num {
   font-size: 15px;
   font-weight: 800;
-  color: var(--ink);
+  color: #fff;
 }
-.streak-info-num .arrow { color: var(--fire); margin: 0 4px; }
-.streak-info-num .u { font-size: 11px; color: var(--ink-3); font-weight: 500; margin-left: 3px; }
+.streak-info-num .arrow { color: #FFD27A; margin: 0 4px; }
+.streak-info-num .u { font-size: 11px; color: rgba(255,255,255,0.7); font-weight: 500; margin-left: 3px; }
 .streak-info-lbl {
   font-size: 11px;
-  color: var(--ink-4);
+  color: rgba(255,255,255,0.65);
 }
 
 .joy-quote {
   padding: 8px 16px;
-  background: var(--card-alt);
+  background: rgba(255,255,255,0.16);
   border-radius: 100px;
   font-size: 12px;
-  color: var(--ink-2);
-  border: 1px solid var(--line);
+  color: rgba(255,255,255,0.92);
+  border: 1px solid rgba(255,255,255,0.28);
   max-width: 320px;
   line-height: 1.5;
+  backdrop-filter: blur(4px);
 }
-.joy-quote strong { color: var(--ink); font-weight: 700; margin-right: 4px; }
+.joy-quote strong { color: #fff; font-weight: 700; margin-right: 4px; }
 
 /* --- 右侧:数据+感受+累计+医学 --- */
 .details {
@@ -313,7 +322,7 @@ html, body {
   background: var(--card);
   border-radius: 20px;
   padding: 16px 20px;
-  box-shadow: var(--shadow-1);
+  border: 1px solid var(--line);
 }
 .card-head {
   display: flex; align-items: center; gap: 8px;
@@ -334,6 +343,15 @@ html, body {
   letter-spacing: 1.5px;
   text-transform: uppercase;
 }
+
+/* 本次训练卡:撑高吃掉右列剩余空间,使右列底部与左列战绩栏对齐 */
+.data-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.data-card .data-grid { flex: 1; align-content: center; }
 
 /* 客观数据 - 4 项网格 */
 .data-grid {
@@ -423,33 +441,26 @@ html, body {
 
 /* 医学小卡 */
 .med-card {
-  padding: 12px 14px;
-  background: var(--card-alt);
-  border-radius: 14px;
+  padding: 16px 18px;
+  background: var(--card);
+  border-radius: 20px;
+  border: 1px solid var(--line);
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
+  min-height: 132px;
 }
-.med-icon {
-  width: 32px; height: 32px;
-  border-radius: 10px;
-  background: var(--accent-bg);
-  color: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.med-icon svg { width: 16px; height: 16px; }
 .med-body { flex: 1; }
 .med-title {
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--ink);
-  margin-bottom: 3px;
+  margin-bottom: 6px;
 }
 .med-desc {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-3);
-  line-height: 1.55;
+  line-height: 1.6;
 }
 .med-link {
   color: var(--accent);
@@ -492,39 +503,36 @@ html, body {
 .plan-breaks strong { color: var(--ink-2); font-weight: 700; }
 
 /* ========== 商业化推荐卡(真实京东商品) ========== */
-.shop-card { background: linear-gradient(135deg, #FFF9EC 0%, #FFFDF6 100%); border: 1px solid rgba(255,184,0,0.15); }
-.shop-jd-tag {
-  display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; margin-left: auto;
-  background: rgba(225,37,27,0.08); border: 1px solid rgba(225,37,27,0.2); border-radius: 7px;
-  color: var(--jd-red); font-size: 10px; font-weight: 800; letter-spacing: 0.5px;
-}
-.shop-reason { font-size: 12px; color: var(--ink-2); line-height: 1.5; margin-bottom: 12px; }
-.shop-grid { display: flex; flex-direction: column; gap: 10px; }
+.shop-card { background: var(--card); border: 1px solid var(--line); }
+.shop-reason { font-size: 14px; font-weight: 800; color: var(--ink); line-height: 1.45; margin-bottom: 12px; }
+.shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .shop-item {
-  display: flex; gap: 12px; align-items: center; text-decoration: none;
-  background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 10px;
+  display: flex; gap: 10px; align-items: center; text-decoration: none;
+  background: var(--card-alt); border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px;
   transition: all 0.22s;
 }
 .shop-item:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
-.shop-thumb { width: 62px; height: 62px; border-radius: 10px; flex-shrink: 0; object-fit: cover; background: var(--card-alt); }
+.shop-thumb { width: 72px; height: 72px; border-radius: 10px; flex-shrink: 0; object-fit: cover; background: #fff; }
 .shop-info { flex: 1; min-width: 0; }
-.shop-cat { display: inline-block; font-size: 10px; font-weight: 700; color: var(--gold); background: var(--gold-bg); padding: 1px 7px; border-radius: 6px; margin-bottom: 3px; }
-.shop-name { font-size: 13px; font-weight: 800; color: var(--ink); line-height: 1.35; margin-bottom: 3px; }
-.shop-why { font-size: 11px; color: var(--ink-3); line-height: 1.4; margin-bottom: 5px; }
-.shop-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.shop-price { font-size: 16px; font-weight: 900; color: var(--jd-red); }
-.shop-price span { font-size: 11px; margin-right: 1px; font-weight: 700; }
-.shop-meta { font-size: 10px; color: var(--ink-4); }
-.shop-go { flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; padding: 4px 11px; background: var(--jd-red); color: #fff; border-radius: 100px; font-size: 11px; font-weight: 700; }
-.shop-disclaim { font-size: 10px; color: var(--ink-4); margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(255,184,0,0.3); line-height: 1.45; }
+.shop-name { font-size: 13px; font-weight: 800; color: var(--ink); line-height: 1.3; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.shop-why { font-size: 11px; color: var(--ink-3); line-height: 1.45; margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.shop-bottom { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.shop-price { font-size: 15px; font-weight: 900; color: var(--jd-red); }
+.shop-price span { font-size: 10px; margin-right: 1px; font-weight: 700; }
+.shop-go { flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; padding: 4px 10px; background: var(--jd-red); color: #fff; border-radius: 100px; font-size: 11px; font-weight: 700; }
 
 /* ========== 底部 CTA ========== */
 .actions {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: center;
+  gap: 14px;
+}
+.actions .btn-ghost,
+.actions .btn-primary {
+  width: 200px;
+  justify-content: center;
 }
 .btn-primary {
   background: var(--ink);
@@ -559,27 +567,30 @@ html, body {
 
 /* ==================== 手机端适配 ==================== */
 @media (max-width: 768px) {
-  /* 整页从「单屏内部滚」改为「整页自然滚」 */
   /* body/html 被移动端底座锁成不可滚,故让 .page 自身成为滚动容器 */
   .page {
     height: calc(var(--app-vh, 1vh) * 100);
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: calc(env(safe-area-inset-top) + 14px) 16px calc(env(safe-area-inset-bottom) + 16px);
+    padding: calc(env(safe-area-inset-top) + 14px) 16px 0;
     gap: 14px;
     overflow-x: hidden;
   }
-  /* 两栏 → 上下单列:hero 打分栏在上,details 模块依次在下 */
+  /* 两栏 → 上下单列:hero 打分栏在上,details 模块依次在下;
+     桌面下 .main 是 flex:1 单屏;手机改为高度随内容,让整段能被 .page 滚动 */
   .main {
     grid-template-columns: 1fr;
     gap: 14px;
-    min-height: 0;
+    flex: none;
+    min-height: auto;
+    padding-bottom: 84px;
   }
-  /* 右栏关掉内部滚动,交给整页滚 */
+  /* 右栏关掉内部滚动,高度随内容,交给整页滚 */
   .details {
     overflow-y: visible;
-    min-height: 0;
+    min-height: auto;
+    flex: none;
     gap: 12px;
   }
   /* 打分栏给个稳定高度,别被压扁,让星星/RANK 完整可见 */
@@ -595,16 +606,19 @@ html, body {
   /* 客观数据 4 列 → 2 列,窄屏不挤 */
   .data-grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
 
-  /* 底部操作栏吸底 + 双按钮全宽等分,触摸目标够大 */
+  /* 底部操作栏:固定在屏幕底,双按钮全宽等分,始终可点 */
   .actions {
-    position: sticky;
+    position: fixed;
+    left: 0;
+    right: 0;
     bottom: 0;
     justify-content: stretch;
     gap: 10px;
-    margin-top: 4px;
-    padding: 12px 0 calc(env(safe-area-inset-bottom) + 4px);
-    background: linear-gradient(to top, var(--bg) 78%, transparent);
-    z-index: 20;
+    padding: 10px 16px calc(env(safe-area-inset-bottom) + 10px);
+    background: var(--card);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -4px 20px rgba(10,10,15,0.06);
+    z-index: 50;
   }
   .actions .btn-ghost,
   .actions .btn-primary {
@@ -640,6 +654,8 @@ html, body {
   <!-- 主体两栏 -->
   <main class="main">
 
+    <!-- 左列:成就 Hero + 练完感觉 -->
+    <div class="hero-col">
     <!-- 左:成就 Hero -->
     <section class="hero">
       <div class="hero-bg"></div>
@@ -699,11 +715,31 @@ html, body {
       </div>
     </section>
 
+      <!-- 主观感受(移到左列,紧跟战绩) -->
+      <div class="card feel-card">
+        <div class="card-head">
+          <div class="card-head-icon" style="background: var(--gold-bg); color: var(--gold);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+          <span class="card-head-title">练完感觉怎么样?</span>
+        </div>
+        <div class="feeling-row">
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😩</span><span class="feel-lbl">紧</span></button>
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😐</span><span class="feel-lbl">一般</span></button>
+          <button class="feel-btn selected" onclick="pickFeel(this)"><span class="feel-emoji">🙂</span><span class="feel-lbl">舒展</span></button>
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😊</span><span class="feel-lbl">舒服</span></button>
+          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">🥰</span><span class="feel-lbl">通透</span></button>
+        </div>
+      </div>
+    </div><!-- /hero-col -->
+
     <!-- 右:数据+感受+累计+医学 -->
     <section class="details">
 
       <!-- 客观数据 -->
-      <div class="card">
+      <div class="card data-card">
         <div class="card-head">
           <div class="card-head-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
@@ -729,25 +765,6 @@ html, body {
             <span class="data-num" id="statSpecial">12</span>
             <span class="data-label" id="statSpecialLbl">命中拳</span>
           </div>
-        </div>
-      </div>
-
-      <!-- 主观感受 -->
-      <div class="card">
-        <div class="card-head">
-          <div class="card-head-icon" style="background: var(--gold-bg); color: var(--gold);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </div>
-          <span class="card-head-title">练完感觉怎么样?</span>
-        </div>
-        <div class="feeling-row">
-          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😩</span><span class="feel-lbl">紧</span></button>
-          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😐</span><span class="feel-lbl">一般</span></button>
-          <button class="feel-btn selected" onclick="pickFeel(this)"><span class="feel-emoji">🙂</span><span class="feel-lbl">舒展</span></button>
-          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">😊</span><span class="feel-lbl">舒服</span></button>
-          <button class="feel-btn" onclick="pickFeel(this)"><span class="feel-emoji">🥰</span><span class="feel-lbl">通透</span></button>
         </div>
       </div>
 
@@ -804,27 +821,12 @@ html, body {
 
       <!-- 商业化推荐(真实京东商品) —— 由 /api/game-report 的 recommend 填充,失败则隐藏 -->
       <div class="card shop-card" id="shopCard" style="display:none">
-        <div class="card-head">
-          <div class="card-head-icon" style="background: var(--gold-bg); color: var(--gold);">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
-            </svg>
-          </div>
-          <span class="card-head-title">好物推荐</span>
-          <span class="shop-jd-tag">JD · 京东自营</span>
-        </div>
         <div class="shop-reason" id="shopReason"></div>
         <div class="shop-grid" id="shopGrid"></div>
-        <div class="shop-disclaim">商品由京东提供 · 与训练无强制关联,按需选购即可。</div>
       </div>
 
       <!-- 医学小卡 -->
       <div class="med-card">
-        <div class="med-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-          </svg>
-        </div>
         <div class="med-body">
           <div class="med-title" id="medTitle">今天练的是「颈椎综合灵活性」</div>
           <div class="med-desc">
@@ -851,6 +853,17 @@ html, body {
 
 <script type="module">
 import { postJSONSafe } from './js/services/api.js';
+
+// 本地预览用示例好物(正式站由 /api/game-report 返回真实商品,不会用到这份)。
+// 照正式站样式:颈椎按摩 / 护颈枕 / 升降桌,链接指向京东搜索,图用 img/ 下真实商品图。
+const SAMPLE_RECOMMEND = {
+  reason: '练完这一组,Joy 挑了几样帮你把「少低头」坚持下去的小东西~',
+  products: [
+    { categoryLabel: '颈椎按摩仪', name: 'SKG 颈椎按摩仪 G5', reason: '久坐一天脖子发紧,靠一会儿放松放松也挺舒服的~', price: '195.00', goodRate: 99, salesYear: '10万+', url: 'https://search.jd.com/Search?keyword=颈椎按摩器', image: 'img/按摩器.png' },
+    { categoryLabel: '护颈枕', name: 'YOCOK 护颈椎记忆棉枕头', reason: '睡觉时把颈椎托住,第二天不容易落枕。', price: '208.70', goodRate: 100, salesYear: '1万+', url: 'https://search.jd.com/Search?keyword=护颈枕', image: 'img/颈枕.png' },
+    { categoryLabel: '笔记本支架', name: '赛鲸 站坐两用笔记本支架', reason: '把屏幕垫到平视高度,你就不用一直低头啦 —— 这才是治本。', price: '297.90', goodRate: 98, salesYear: '1000+', url: 'https://search.jd.com/Search?keyword=升降桌', image: 'img/升降桌.png' },
+  ],
+};
 // ========================================================================
 // BRANCH_CONFIG · 4 关分支色 + 关卡文案库
 // 分档吐槽话 = Joy 教练口吻;分支色遵循首页三入口(颈椎蓝),4 关靠辅助色区分
@@ -1013,13 +1026,25 @@ async function fetchGameReport(session, level, fillConclusion) {
   try {
     const profile = readProfile();
     const data = await postJSONSafe('/api/game-report', { session, level, profile }, { timeout: 8000 });
-    if (data && data.degraded) { hideReportCards(fillConclusion); return; }
+    if (data && data.degraded) { hideReportCards(fillConclusion); localFallbackReport(fillConclusion); return; }
     if (fillConclusion) renderAI(data.conclusion || null);
     renderPlan(data.plan || null);
     renderShop(data.recommend || null);
   } catch (e) {
-    hideReportCards(fillConclusion);   // 无后端 / 超时:静默隐藏
+    hideReportCards(fillConclusion);   // 无后端 / 超时:先隐藏
+    localFallbackReport(fillConclusion); // 本地预览环境用示例数据兜底,便于演示/截图(正式站有后端不会走到这)
   }
+}
+
+// 仅本地/预览环境(localhost / file / .local)在后端不可用时,用示例数据填充方案+好物,
+// 让本地也能看到完整报告。生产域名不注入,避免示例商品误当真数据。
+function isLocalPreview() {
+  const h = location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h === '' || h.endsWith('.local');
+}
+function localFallbackReport(fillConclusion) {
+  if (!isLocalPreview()) return;
+  renderShop(SAMPLE_RECOMMEND);
 }
 
 function hideReportCards(includeConclusion) {
@@ -1094,7 +1119,6 @@ function renderShop(rec) {
     img.onerror = function () { this.style.visibility = 'hidden'; };
 
     const info = document.createElement('div'); info.className = 'shop-info';
-    const cat = document.createElement('span'); cat.className = 'shop-cat'; cat.textContent = p.categoryLabel || '';
     const name = document.createElement('div'); name.className = 'shop-name'; name.textContent = p.name || '';
     const why = document.createElement('div'); why.className = 'shop-why'; why.textContent = p.reason || '';
 
@@ -1106,13 +1130,8 @@ function renderShop(rec) {
     const go = document.createElement('span'); go.className = 'shop-go'; go.textContent = '去看看';
     bottom.appendChild(price); bottom.appendChild(go);
 
-    info.appendChild(cat); info.appendChild(name);
+    info.appendChild(name);
     if (p.reason) info.appendChild(why);
-    if (p.goodRate) {
-      const meta = document.createElement('div'); meta.className = 'shop-meta';
-      meta.textContent = '好评 ' + p.goodRate + '%' + (p.salesYear ? ' · 年销 ' + p.salesYear : '');
-      info.appendChild(meta);
-    }
     info.appendChild(bottom);
 
     a.appendChild(img); a.appendChild(info);
